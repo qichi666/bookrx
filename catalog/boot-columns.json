@@ -1,0 +1,265 @@
+[
+  {
+    "book_id": "core:000001",
+    "author_id": "author:ichiro-araki",
+    "category_l1": "psychology",
+    "problem_tags": [
+      {
+        "tag": "speaking-block",
+        "weight": 0.9
+      },
+      {
+        "tag": "evaluation-anxiety",
+        "weight": 0.9
+      }
+    ],
+    "difficulty": 2,
+    "prose_accessibility": 2,
+    "est_reading_hours": 2.5,
+    "length_class": 2,
+    "availability": "bring_your_own",
+    "content_warning": []
+  },
+  {
+    "book_id": "core:000002",
+    "author_id": "author:marshall-rosenberg",
+    "category_l1": "psychology",
+    "problem_tags": [
+      {
+        "tag": "communication-block",
+        "weight": 0.9
+      },
+      {
+        "tag": "people-pleasing",
+        "weight": 0.5
+      }
+    ],
+    "difficulty": 2,
+    "prose_accessibility": 2,
+    "est_reading_hours": 5,
+    "length_class": 3,
+    "availability": "bring_your_own",
+    "content_warning": []
+  },
+  {
+    "book_id": "core:000003",
+    "author_id": "author:kerry-patterson",
+    "category_l1": "social-science",
+    "problem_tags": [
+      {
+        "tag": "speaking-block",
+        "weight": 0.9
+      }
+    ],
+    "difficulty": 2,
+    "prose_accessibility": 2,
+    "est_reading_hours": 6,
+    "length_class": 3,
+    "availability": "bring_your_own",
+    "content_warning": []
+  },
+  {
+    "book_id": "core:000004",
+    "author_id": "author:daniel-kahneman",
+    "category_l1": "psychology",
+    "problem_tags": [
+      {
+        "tag": "cognitive-bias",
+        "weight": 0.8
+      },
+      {
+        "tag": "decision-difficulty",
+        "weight": 0.6
+      }
+    ],
+    "difficulty": 5,
+    "prose_accessibility": 4,
+    "est_reading_hours": 16,
+    "length_class": 4,
+    "availability": "bring_your_own",
+    "content_warning": []
+  },
+  {
+    "book_id": "core:000005",
+    "author_id": "author:thich-nhat-hanh",
+    "category_l1": "other",
+    "problem_tags": [
+      {
+        "tag": "rumination",
+        "weight": 0.5
+      }
+    ],
+    "difficulty": 2,
+    "prose_accessibility": 2,
+    "est_reading_hours": 2,
+    "length_class": 2,
+    "availability": "bring_your_own",
+    "content_warning": []
+  },
+  {
+    "book_id": "core:000010",
+    "author_id": "author:james-clear",
+    "category_l1": "psychology",
+    "problem_tags": [
+      {
+        "tag": "procrastination",
+        "weight": 0.8
+      },
+      {
+        "tag": "cant-persist",
+        "weight": 0.6
+      }
+    ],
+    "difficulty": 2,
+    "prose_accessibility": 2,
+    "est_reading_hours": 6,
+    "length_class": 2,
+    "availability": "bring_your_own",
+    "content_warning": []
+  },
+  {
+    "book_id": "core:000011",
+    "author_id": "author:cal-newport",
+    "category_l1": "psychology",
+    "problem_tags": [
+      {
+        "tag": "attention-scatter",
+        "weight": 0.8
+      },
+      {
+        "tag": "time-losing",
+        "weight": 0.5
+      }
+    ],
+    "difficulty": 3,
+    "prose_accessibility": 2,
+    "est_reading_hours": 7,
+    "length_class": 2,
+    "availability": "bring_your_own",
+    "content_warning": []
+  },
+  {
+    "book_id": "core:000012",
+    "author_id": "author:mihaly-csikszentmihalyi",
+    "category_l1": "psychology",
+    "problem_tags": [
+      {
+        "tag": "emptiness",
+        "weight": 0.6
+      },
+      {
+        "tag": "low-mood",
+        "weight": 0.4
+      }
+    ],
+    "difficulty": 4,
+    "prose_accessibility": 3,
+    "est_reading_hours": 10,
+    "length_class": 3,
+    "availability": "bring_your_own",
+    "content_warning": []
+  },
+  {
+    "book_id": "core:000013",
+    "author_id": "author:wang-yongbin",
+    "category_l1": "philosophy",
+    "problem_tags": [
+      {
+        "tag": "meaning-loss",
+        "weight": 0.5
+      }
+    ],
+    "difficulty": 3,
+    "prose_accessibility": 4,
+    "est_reading_hours": 3,
+    "length_class": 1,
+    "availability": "inline",
+    "content_warning": []
+  },
+  {
+    "book_id": "core:000014",
+    "author_id": "author:zeng-guofan",
+    "category_l1": "biography",
+    "problem_tags": [
+      {
+        "tag": "self-doubt",
+        "weight": 0.4
+      },
+      {
+        "tag": "meaning-loss",
+        "weight": 0.4
+      }
+    ],
+    "difficulty": 4,
+    "prose_accessibility": 4,
+    "est_reading_hours": 12,
+    "length_class": 3,
+    "availability": "inline",
+    "content_warning": []
+  },
+  {
+    "book_id": "core:000015",
+    "author_id": "author:lori-gottlieb",
+    "category_l1": "biography",
+    "problem_tags": [
+      {
+        "tag": "low-mood",
+        "weight": 0.8
+      },
+      {
+        "tag": "emptiness",
+        "weight": 0.5
+      }
+    ],
+    "difficulty": 2,
+    "prose_accessibility": 2,
+    "est_reading_hours": 9,
+    "length_class": 3,
+    "availability": "bring_your_own",
+    "content_warning": []
+  },
+  {
+    "book_id": "core:000016",
+    "author_id": "author:viktor-frankl",
+    "category_l1": "philosophy",
+    "problem_tags": [
+      {
+        "tag": "meaning-loss",
+        "weight": 0.9
+      },
+      {
+        "tag": "emptiness",
+        "weight": 0.6
+      }
+    ],
+    "difficulty": 3,
+    "prose_accessibility": 2,
+    "est_reading_hours": 3.5,
+    "length_class": 1,
+    "availability": "bring_your_own",
+    "content_warning": [
+      "violence"
+    ]
+  },
+  {
+    "book_id": "core:000017",
+    "author_id": "author:john-strelecky",
+    "category_l1": "literature",
+    "problem_tags": [
+      {
+        "tag": "meaning-loss",
+        "weight": 0.8
+      },
+      {
+        "tag": "career-confusion",
+        "weight": 0.7
+      }
+    ],
+    "difficulty": 1,
+    "prose_accessibility": 1,
+    "est_reading_hours": 1.5,
+    "length_class": 1,
+    "availability": "bring_your_own",
+    "content_warning": []
+  }
+]

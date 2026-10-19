@@ -1,0 +1,40 @@
+{
+  "note": "词表种子：6 大困境域 × 32 困境标签（合同层 ProblemTagId），48 主题标签分 8 族（合同层 ThemeTagId）。SPEC v2.2 裁决③：以合同层为准，M0.5 生产 48 困境标签时在此扩表。",
+  "problem_domains": {
+    "emotion": {
+      "label": "情绪与自我",
+      "tags": ["low-mood", "anxiety", "rumination", "self-doubt", "emptiness", "emotional-outburst"]
+    },
+    "relationship": {
+      "label": "关系",
+      "tags": ["communication-block", "frequent-conflict", "intimacy-distance", "people-pleasing", "family-origin", "loneliness"]
+    },
+    "work": {
+      "label": "工作与意义",
+      "tags": ["speaking-block", "evaluation-anxiety", "burnout", "meaning-loss", "management-delegation", "promotion-stuck"]
+    },
+    "habits": {
+      "label": "习惯与行动",
+      "tags": ["procrastination", "cant-persist", "attention-scatter", "time-losing", "action-paralysis"]
+    },
+    "thinking": {
+      "label": "认知与思考",
+      "tags": ["decision-difficulty", "cognitive-bias", "cant-see-whole", "info-overload", "judgment-distortion"]
+    },
+    "transition": {
+      "label": "人生转折",
+      "tags": ["career-confusion", "age-anxiety", "loss-and-farewell", "identity-rebuild", "big-choice"]
+    }
+  },
+  "theme_families": {
+    "work-organization": ["management", "org-design", "feedback", "conflict", "managing-up", "efficiency"],
+    "thinking-toolkit": ["decision", "bias", "systems", "probability", "logic", "critical-thinking"],
+    "self-cultivation": ["self-awareness", "emotion", "anxiety-tag", "habits", "motivation", "boundaries"],
+    "close-relationships": ["intimacy", "parenting", "family-origin-tag", "loneliness-tag", "gender-identity", "repair"],
+    "money-career": ["finance", "investing", "consumption", "career-change", "side-business", "negotiation"],
+    "society-world": ["social-structure", "institution", "history", "economy-cycle", "city", "technology"],
+    "creation-expression": ["writing", "public-speaking", "aesthetics", "creation", "reading-method", "learning-science"],
+    "meaning-faith": ["meaning-of-life", "loss", "faith", "philosophy", "ethics", "freedom"]
+  },
+  "reverse_lookup": {}
+}

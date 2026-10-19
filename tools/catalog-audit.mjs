@@ -8,7 +8,7 @@
  * 必填字段不是手抄清单，而是从 `src/contracts/book.ts` 派生（见 `schema.mjs`）。
  */
 
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { CONDITIONALLY_REQUIRED, TEXT_LIMITS, charCount, loadBookFields } from './schema.mjs';
 
@@ -45,6 +45,24 @@ function walkBooks(node, path, out) {
 const files = jsonFiles(CATALOG_DIR);
 console.log(`catalog-audit：扫了 ${files.length} 个文件（目录 ${CATALOG_DIR}）`);
 
+/**
+ * 派生 / 索引文件不按整本 Book 校验：boot-columns 只装打分数值列、titles 只装标题索引，
+ * 它们的完整性由 `tools/gen-boot-data.mjs`（从种子书目机械派生）保证。
+ * 在这里对它们跑 34 字段校验，等于要求索引文件伪造出全文案——结构上就不成立。
+ */
+const DERIVED_FILES = new Set([
+  'boot-columns.json',
+  'titles.json',
+  'taxonomy.json',
+  'phrases.json',
+  'crisis-resources.json',
+]);
+const bookFiles = files.filter((f) => !DERIVED_FILES.has(f.split(/[\\/]/).pop()));
+if (bookFiles.length === 0) {
+  console.error('[未验证] catalog/ 下没有可校验的书目 .json（全是派生文件）—— 扫描对象为空');
+  process.exit(1);
+}
+
 if (files.length === 0) {
   console.error('[未验证] catalog/ 下没有任何 .json —— 扫描对象为空，不得报"通过"');
   console.error('        书目数据属于 M0.5；在此之前本门禁只能处于未验证状态。');
@@ -55,7 +73,7 @@ const { required, fields } = loadBookFields(join(ROOT, 'src/contracts/book.ts'))
 console.log(`  字段表派生自 src/contracts/book.ts：共 ${fields.length} 个字段，必填 ${required.length} 个`);
 
 const books = [];
-for (const f of files) {
+for (const f of bookFiles) {
   let parsed;
   try {
     parsed = JSON.parse(readFileSync(f, 'utf8'));
@@ -74,6 +92,16 @@ if (books.length === 0) {
 
 const errors = [];
 const SENTENCE_END = /[。！？]$/;
+
+// 派生索引的行数必须与权威书目一致：生成器漏跑或半途失败在这里暴露
+for (const name of ['boot-columns.json', 'titles.json']) {
+  const p = join(CATALOG_DIR, name);
+  if (!existsSync(p)) continue;
+  const derived = JSON.parse(readFileSync(p, 'utf8'));
+  if (Array.isArray(derived) && derived.length !== books.length) {
+    errors.push(`${name} 有 ${derived.length} 行，与权威书目 ${books.length} 本不一致 —— 重新跑 gen-boot-data`);
+  }
+}
 
 for (const { path, book } of books) {
   const id = book.book_id;

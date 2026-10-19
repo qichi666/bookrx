@@ -10,7 +10,7 @@
 
 <template>
   <section class="result">
-    <a class="result-crisis" data-crisis-entry href="/crisis">需要现在就和人说说话</a>
+    <a class="result-crisis" data-crisis-entry href="#/crisis">需要现在就和人说说话</a>
   </section>
 </template>
 

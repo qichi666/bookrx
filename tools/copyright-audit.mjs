@@ -42,8 +42,26 @@ function walkBooks(node, path, out) {
 const files = jsonFiles(CATALOG_DIR);
 console.log(`copyright-audit：扫了 ${files.length} 个文件（目录 ${CATALOG_DIR}）`);
 
+/**
+ * 派生 / 索引文件不参与版权校验：boot-columns / titles 是 gen-boot-data 从权威书目
+ * 机械派生的行索引，不含（也不该含）版权与文案字段——在这里校验它们，
+ * 等于要求索引文件伪造出全文案。权威书目的版权约束在书目记录文件上执行。
+ */
+const DERIVED_FILES = new Set([
+  'boot-columns.json',
+  'titles.json',
+  'taxonomy.json',
+  'phrases.json',
+  'crisis-resources.json',
+]);
+const bookFiles = files.filter((f) => !DERIVED_FILES.has(f.split(/[\\/]/).pop()));
+if (bookFiles.length === 0) {
+  console.error('[未验证] 没有可校验的书目记录文件（全是派生文件）—— 扫描对象为空');
+  process.exit(1);
+}
+
 const books = [];
-for (const f of files) {
+for (const f of bookFiles) {
   let parsed;
   try {
     parsed = JSON.parse(readFileSync(f, 'utf8'));

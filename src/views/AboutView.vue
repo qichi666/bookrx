@@ -8,7 +8,7 @@
 
 <template>
   <section class="about">
-    <a class="about-crisis" data-crisis-entry href="/crisis">心理援助资源</a>
+    <a class="about-crisis" data-crisis-entry href="#/crisis">心理援助资源</a>
   </section>
 </template>
 

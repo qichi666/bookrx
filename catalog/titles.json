@@ -1,0 +1,122 @@
+[
+  {
+    "book_id": "core:000001",
+    "title": "被讨厌的勇气",
+    "authors": [
+      "岸见一郎",
+      "古贺史健"
+    ],
+    "pinyin_full": "bei tao yan de yong qi",
+    "pinyin_initials": "btydyq"
+  },
+  {
+    "book_id": "core:000002",
+    "title": "非暴力沟通",
+    "authors": [
+      "马歇尔·卢森堡"
+    ],
+    "pinyin_full": "fei bao li gou tong",
+    "pinyin_initials": "fblgt"
+  },
+  {
+    "book_id": "core:000003",
+    "title": "关键对话",
+    "authors": [
+      "科里·帕特森",
+      "约瑟夫·格雷尼",
+      "罗恩·麦克米兰"
+    ],
+    "pinyin_full": "guan jian dui hua",
+    "pinyin_initials": "gjdh"
+  },
+  {
+    "book_id": "core:000004",
+    "title": "思考，快与慢",
+    "authors": [
+      "丹尼尔·卡尼曼"
+    ],
+    "pinyin_full": "si kuai yu man",
+    "pinyin_initials": "skym"
+  },
+  {
+    "book_id": "core:000005",
+    "title": "正念的奇迹",
+    "authors": [
+      "一行禅师"
+    ],
+    "pinyin_full": "zheng nian de qi ji",
+    "pinyin_initials": "zndqj"
+  },
+  {
+    "book_id": "core:000010",
+    "title": "掌控习惯",
+    "authors": [
+      "詹姆斯·克利尔"
+    ],
+    "pinyin_full": "zhang kong xi guan",
+    "pinyin_initials": "zkxg"
+  },
+  {
+    "book_id": "core:000011",
+    "title": "深度工作",
+    "authors": [
+      "卡尔·纽波特"
+    ],
+    "pinyin_full": "shen du gong zuo",
+    "pinyin_initials": "sdgz"
+  },
+  {
+    "book_id": "core:000012",
+    "title": "心流",
+    "authors": [
+      "米哈里·契克森米哈赖"
+    ],
+    "pinyin_full": "xin liu",
+    "pinyin_initials": "xl"
+  },
+  {
+    "book_id": "core:000013",
+    "title": "围炉夜话",
+    "authors": [
+      "王永彬"
+    ],
+    "pinyin_full": "wei lu ye hua",
+    "pinyin_initials": "wlyh"
+  },
+  {
+    "book_id": "core:000014",
+    "title": "曾国藩家书",
+    "authors": [
+      "曾国藩"
+    ],
+    "pinyin_full": "zeng guo fan jia shu",
+    "pinyin_initials": "zgfjs"
+  },
+  {
+    "book_id": "core:000015",
+    "title": "也许你该找个人聊聊",
+    "authors": [
+      "洛莉·戈特利布"
+    ],
+    "pinyin_full": "ye xu zhao ge ren liao liao",
+    "pinyin_initials": "yxzgrll"
+  },
+  {
+    "book_id": "core:000016",
+    "title": "活出生命的意义",
+    "authors": [
+      "维克多·弗兰克尔"
+    ],
+    "pinyin_full": "huo chu sheng ming de yi yi",
+    "pinyin_initials": "hcsmdyy"
+  },
+  {
+    "book_id": "core:000017",
+    "title": "世界尽头的咖啡馆",
+    "authors": [
+      "约翰·史崔勒基"
+    ],
+    "pinyin_full": "shi jie jin tou de ka fei guan",
+    "pinyin_initials": "sjjtdkfg"
+  }
+]
