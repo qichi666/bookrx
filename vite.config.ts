@@ -26,6 +26,11 @@ export default defineConfig({
    * 看起来和"有一条断言挂了"一模一样。
    */
   cacheDir: 'node_modules/.vite',
+  /**
+   * 相对 base：GitHub Pages 项目页部署在 /<repo>/ 子路径下，
+   * 默认的绝对 /assets/ 会 404。hash 路由不受 base 影响。
+   */
+  base: './',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
