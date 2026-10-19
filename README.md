@@ -1,7 +1,7 @@
 # BookRx（书方）· 困境 → 书
 
 > 输入你此刻的困境，得到 5 本确实对味的书 + 直接可读的替代路径。
-> **无账号、无上报、无网络请求。**
+> **无账号、无上报、不向第三方发请求。**（书库分片随站点一起发布，首次搜索时从本站加载）
 
 Enter what you're struggling with right now; get five books that actually fit — plus paths you can start reading immediately. **No account, no tracking, no network requests.**
 

@@ -1,6 +1,7 @@
 import type { Book } from '@/contracts/book.js';
 import type { Diagnosis } from '@/contracts/diagnosis.js';
 import type { ProblemDomain, ProblemTagId } from '@/contracts/enums.js';
+import type { CandidateBook } from '@/data/candidates.js';
 import titlesJson from '../../catalog/titles.json';
 import { TAG_OPTIONS } from '@/data/quiz.js';
 import { buildDiagnosis, matchFreeText } from './diagnose.js';
@@ -75,8 +76,7 @@ export function searchBooks(query: string, books: readonly Book[]): BookHit[] {
   return hits;
 }
 
-const TAG_DOMAIN = new Map<ProblemTagId, ProblemDomain>();
-for (const [domain, opts] of Object.entries(TAG_OPTIONS)) {
+const TAG_DOMAIN = new Map<ProblemTagId, ProblemDomain>();for (const [domain, opts] of Object.entries(TAG_OPTIONS)) {
   for (const o of opts) TAG_DOMAIN.set(o.tag, domain as ProblemDomain);
 }
 
@@ -109,4 +109,48 @@ export function searchQuestion(query: string): Diagnosis | null {
   }
   diagnosis.diagnosis_id = `dxs:${diagnosis.diagnosis_id.slice('dx:'.length)}`;
   return diagnosis;
+}
+
+/**
+ * 外围书库检索（书目层）。
+ *
+ * 这些书没有 34 字段标注，**只用于「这个书名/作者我这儿有没有」**，
+ * 不参与打分、不显示契合度；排序只按公开信号（质量档 → 收缩分 → 评价人数），
+ * 同分按 id 升序，保证同输入同输出。
+ */
+const BUCKET_RANK: Record<CandidateBook['bucket'], number> = {
+  high: 3,
+  mid: 2,
+  low: 1,
+  unknown: 0,
+};
+
+export function searchCandidates(
+  query: string,
+  books: readonly CandidateBook[],
+  limit = 12,
+): CandidateBook[] {
+  const q = normalize(query);
+  if (q.length === 0) return [];
+
+  const hits = books.filter(
+    (b) =>
+      normalize(b.title).includes(q) ||
+      normalize(b.subtitle || '').includes(q) ||
+      b.authors.some((a) => normalize(a).includes(q)),
+  );
+
+  hits.sort((a, b) => {
+    const rank = BUCKET_RANK[b.bucket] - BUCKET_RANK[a.bucket];
+    if (rank !== 0) return rank;
+    const qa = a.q ?? -1;
+    const qb = b.q ?? -1;
+    if (qb !== qa) return qb - qa;
+    const va = a.votes ?? -1;
+    const vb = b.votes ?? -1;
+    if (vb !== va) return vb - va;
+    return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+  });
+
+  return hits.slice(0, limit);
 }

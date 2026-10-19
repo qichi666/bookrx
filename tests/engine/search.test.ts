@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SEED_BOOKS } from '@/data/catalog.js';
-import { searchBooks, searchQuestion } from '@/engine/search.js';
+import { searchBooks, searchCandidates, searchQuestion } from '@/engine/search.js';
 
 /**
  * 首页检索（engine/search.ts）：
@@ -85,5 +85,60 @@ describe('searchQuestion', () => {
   it('最多取 3 个命中标签', () => {
     const d = searchQuestion('焦虑 担心 拖延 分心 纠结 失眠');
     expect(d?.need_tags.length).toBeLessThanOrEqual(3);
+  });
+});
+
+describe('searchCandidates（外围书库）', () => {
+  const mk = (over: Record<string, unknown>) => ({
+    id: '1',
+    title: '默认书名',
+    subtitle: '',
+    authors: ['默认作者'],
+    publisher: '',
+    year: 2020,
+    q: 0.7,
+    bucket: 'mid' as const,
+    votes: 100,
+    tags: [],
+    domains: [],
+    url: '',
+    ...over,
+  });
+
+  it('书名与作者命中，简介不参与匹配', () => {
+    const books = [
+      mk({ id: 'a', title: '沟通的艺术', bucket: 'high', q: 0.9 }),
+      mk({ id: 'b', title: '无关书', authors: ['沟通大师'] }),
+      mk({ id: 'c', title: '另一本' }),
+    ];
+    const ids = searchCandidates('沟通', books).map((b) => b.id);
+    expect(ids).toContain('a');
+    expect(ids).toContain('b');
+    expect(ids).not.toContain('c');
+  });
+
+  it('排序：质量档 > 收缩分 > 评价人数 > id', () => {
+    const books = [
+      mk({ id: '1', title: '沟通甲', bucket: 'mid', q: 0.9, votes: 10 }),
+      mk({ id: '2', title: '沟通乙', bucket: 'high', q: 0.7, votes: 10 }),
+      mk({ id: '3', title: '沟通丙', bucket: 'high', q: 0.85, votes: 10 }),
+      mk({ id: '4', title: '沟通丁', bucket: 'high', q: 0.85, votes: 900 }),
+    ];
+    expect(searchCandidates('沟通', books).map((b) => b.id)).toEqual(['4', '3', '2', '1']);
+  });
+
+  it('同输入两次结果一致；默认截断 12 条', () => {
+    const books = Array.from({ length: 20 }, (_, i) =>
+      mk({ id: String(100 + i), title: `沟通 ${i}` }),
+    );
+    const a = searchCandidates('沟通', books);
+    const b = searchCandidates('沟通', books);
+    expect(a.map((x) => x.id)).toEqual(b.map((x) => x.id));
+    expect(a.length).toBe(12);
+  });
+
+  it('空串与无命中返回空数组', () => {
+    expect(searchCandidates('  ', [mk({})])).toEqual([]);
+    expect(searchCandidates('zzz不存在', [mk({ title: '沟通' })])).toEqual([]);
   });
 });

@@ -1,29 +1,45 @@
 <script setup lang="ts">
 /**
- * 首页通用搜索栏（M1a-S）。
+ * 首页通用搜索栏（M1a-S + 书目层）。
  *
  * 一个框、自动分流、不做模式切换：
- * ① 书命中 → 就地列书结果（不打分、不显示档位）+ 「按你的问题推荐」切换按钮；
- * ② 0 书命中且问题命中标签 → 直接跳结果页（与问卷路径同一套引擎呈现）；
- * ③ 全 0 → 库内没找到：路径 C 外链（豆瓣 / 微信读书 / OpenLibrary）+ 问卷兜底。
- * 搜索是只读浏览：合成诊断带 `dxs:` 前缀，本地计数跳过（不进「大家都卡在哪」）。
+ * ① 核心库命中 → 就地列书结果（打过分的，但不显示档位）+ 「按你的问题推荐」切换；
+ * ② 外围书库命中 → 单独一段「未入库」，只有书名/作者，点开去豆瓣（不参与打分）；
+ * ③ 0 书命中且问题命中标签 → 直接跳结果页（与问卷路径同一套引擎）；
+ * ④ 全 0 → 路径 C 外链（豆瓣 / 微信读书 / OpenLibrary）+ 问卷兜底。
+ *
+ * 搜索是只读浏览：合成诊断带 `dxs:` 前缀，本地计数跳过。
+ * 外围书库只从本站加载，加载失败静默降级（只搜核心库）。
  */
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import type { Diagnosis } from '@/contracts/diagnosis.js';
+import type { CandidateBook } from '@/data/candidates.js';
+import { loadCandidateBooks, loadCandidateIndex } from '@/data/candidates.js';
 import { SEED_BOOKS } from '@/data/catalog.js';
 import { saveDiagnosis } from '@/engine/session.js';
-import { searchBooks, searchQuestion, type BookHit } from '@/engine/search.js';
+import { searchBooks, searchCandidates, searchQuestion, type BookHit } from '@/engine/search.js';
+import OuterResults from '@/components/OuterResults.vue';
 
 const router = useRouter();
 
 const query = ref('');
 const bookHits = ref<BookHit[]>([]);
+const candidateHits = ref<CandidateBook[]>([]);
 const questionDiagnosis = ref<Diagnosis | null>(null);
 const searched = ref(false);
 const lastQuery = ref('');
+const hasOuter = ref(false);
+const outerLoading = ref(false);
 
-const noResult = computed(() => searched.value && bookHits.value.length === 0 && questionDiagnosis.value === null);
+const noResult = computed(
+  () =>
+    searched.value &&
+    bookHits.value.length === 0 &&
+    candidateHits.value.length === 0 &&
+    questionDiagnosis.value === null &&
+    !outerLoading.value,
+);
 
 const doubanHref = computed(
   () => `https://www.douban.com/search?cat=1001&q=${encodeURIComponent(lastQuery.value)}`,
@@ -43,14 +59,43 @@ function bookDouban(title: string): string {
   return `https://search.douban.com/book/subject_search?search_text=${encodeURIComponent(title)}`;
 }
 
-function submit(): void {
+onMounted(async () => {
+  hasOuter.value = (await loadCandidateIndex()) !== null;
+});
+
+async function outerSearch(q: string): Promise<void> {
+  candidateHits.value = [];
+  // 不依赖 onMounted 的预取：索引 promise 有缓存，这里等一次即可（避免"手快过预取"）
+  hasOuter.value = (await loadCandidateIndex()) !== null;
+  if (!hasOuter.value) return;
+  outerLoading.value = true;
+  try {
+    const books = await loadCandidateBooks();
+    if (!books) return;
+    const inCore = new Set(bookHits.value.map((h) => h.book.title.replace(/\s+/g, '')));
+    candidateHits.value = searchCandidates(q, books).filter(
+      (c) => !inCore.has(c.title.replace(/\s+/g, '')),
+    );
+  } finally {
+    outerLoading.value = false;
+  }
+}
+
+async function submit(): Promise<void> {
   const q = query.value.trim();
   lastQuery.value = q;
   searched.value = q.length > 0;
   bookHits.value = searchBooks(q, SEED_BOOKS);
   questionDiagnosis.value = searchQuestion(q);
-  // 书 0 命中且问题命中 → 直接跳结果页，不打断
-  if (bookHits.value.length === 0 && questionDiagnosis.value !== null) goQuestion();
+  await outerSearch(q);
+  // 核心库与外围库都没有书，但问句命中困境 → 直接跳结果页
+  if (
+    bookHits.value.length === 0 &&
+    candidateHits.value.length === 0 &&
+    questionDiagnosis.value !== null
+  ) {
+    goQuestion();
+  }
 }
 
 function goQuestion(): void {
@@ -91,7 +136,9 @@ function goQuestion(): void {
       </button>
     </template>
 
-    <div v-else-if="noResult" class="search-empty">
+    <OuterResults :hits="candidateHits" :loading="outerLoading" />
+
+    <div v-if="noResult" class="search-empty">
       <p class="empty-lead">库里没找到和「{{ lastQuery }}」相关的书。</p>
       <p class="empty-links">
         去外面找找：

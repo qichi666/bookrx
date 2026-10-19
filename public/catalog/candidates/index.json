@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-10-19",
+  "all_file": "all.json",
+  "source_file": "catalog/raw/douban.jsonl",
+  "source_sha256": "82ae811fca6c2172532c0e47ce96899a470e79af1386064a10e996a8fad39388",
+  "source_lines": 7734,
+  "total": 6551,
+  "by_domain": {
+    "career": 477,
+    "growth": 1314,
+    "meaning": 984,
+    "psychology": 1342,
+    "relationship": 1270,
+    "thinking": 951,
+    "work": 940
+  },
+  "dropped": {
+    "invalid": 0,
+    "bad_json": 0
+  },
+  "prior": {
+    "m": 50,
+    "c_mean": 0.787,
+    "min_votes": 10
+  }
+}

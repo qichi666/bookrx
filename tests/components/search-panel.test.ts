@@ -5,6 +5,8 @@ import { createMemoryHistory, createRouter } from 'vue-router';
 import { saveDiagnosis } from '@/engine/session.js';
 import { searchQuestion } from '@/engine/search.js';
 import { readCounters, recordResult } from '@/engine/telemetry.js';
+import { resetCandidateCacheForTests } from '@/data/candidates.js';
+import { vi } from 'vitest';
 import SearchPanel from '@/components/SearchPanel.vue';
 
 /**
@@ -27,6 +29,7 @@ function mountWith() {
 async function search(w: ReturnType<typeof mount>, text: string): Promise<void> {
   await w.find('input').setValue(text);
   await w.find('form').trigger('submit');
+  await flushPromises(); // submit 现在是 async（要等外围书库），断言前必须等它落定
 }
 
 describe('SearchPanel', () => {
@@ -53,6 +56,38 @@ describe('SearchPanel', () => {
     await flushPromises(); // router.push 是异步导航管线，等它落定再断言
     expect(router.currentRoute.value.path).toBe('/result');
     expect(readCounters().total).toBe(0);
+  });
+
+  it('外围书库命中：显示「未入库」卡片，不跳转、不算契合', async () => {
+    resetCandidateCacheForTests();
+    const books = [
+      {
+        id: '999',
+        title: '冷门沟通书',
+        subtitle: '',
+        authors: ['某作者'],
+        publisher: '某出版社',
+        year: 2019,
+        q: 0.82,
+        bucket: 'high',
+        votes: 1200,
+        tags: ['沟通'],
+        domains: ['relationship'],
+        url: 'https://book.douban.com/subject/999/',
+      },
+    ];
+    vi.stubGlobal('fetch', async (url: string) => {
+      const body = String(url).endsWith('index.json')
+        ? { all_file: 'all.json', total: 1, by_domain: { relationship: 1 }, generated_at: '2026-10-19', source_sha256: 'x' }
+        : books;
+      return { ok: true, json: async () => body };
+    });
+    const { router, w } = mountWith();
+    await search(w, '冷门沟通');
+    expect(w.text()).toContain('外围书库里还有');
+    expect(w.text()).toContain('未入库');
+    expect(router.currentRoute.value.path).toBe('/');
+    vi.unstubAllGlobals();
   });
 
   it('全 0：库内没找到 → 外链兜底文案', async () => {

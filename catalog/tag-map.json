@@ -1,0 +1,21 @@
+{
+  "_comment": "豆瓣标签 → BookRx 7 域映射。抓取按此表逐标签翻页；一个标签最多抓 pages 页（每页 20 条）。",
+  "tags": [
+    { "tag": "心理学", "domain": "psychology" },
+    { "tag": "心理咨询", "domain": "psychology" },
+    { "tag": "情绪", "domain": "psychology" },
+    { "tag": "人际关系", "domain": "relationship" },
+    { "tag": "沟通", "domain": "relationship" },
+    { "tag": "亲密关系", "domain": "relationship" },
+    { "tag": "职场", "domain": "work" },
+    { "tag": "管理", "domain": "work" },
+    { "tag": "职业发展", "domain": "career" },
+    { "tag": "自我管理", "domain": "growth" },
+    { "tag": "习惯", "domain": "growth" },
+    { "tag": "时间管理", "domain": "growth" },
+    { "tag": "哲学", "domain": "meaning" },
+    { "tag": "人生", "domain": "meaning" },
+    { "tag": "思维", "domain": "thinking" },
+    { "tag": "决策", "domain": "thinking" }
+  ]
+}

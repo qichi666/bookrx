@@ -18,10 +18,13 @@
     "audit:style": "node tools/style-audit.mjs",
     "budget:check": "node tools/budget-check.mjs",
     "check:enums": "node tools/check-enums.mjs",
-    "check": "npm run typecheck && npm run test && npm run check:enums && npm run audit:style",
+    "check": "npm run typecheck && npm run test && npm run check:enums && npm run audit:style && npm run data:verify",
     "check:data": "npm run catalog:audit && npm run audit:copyright && npm run budget:check",
-    "prebuild": "node tools/assert-crisis-chunk-plan.mjs",
-    "postbuild": "node tools/assert-crisis-chunk.mjs"
+    "prebuild": "node tools/assert-crisis-chunk-plan.mjs && node tools/build-candidates.mjs && node tools/verify-candidates.mjs",
+    "postbuild": "node tools/assert-crisis-chunk.mjs",
+    "data:fetch": "node tools/fetch-douban.mjs --all --pages 25",
+    "data:build": "node tools/build-candidates.mjs",
+    "data:verify": "node tools/verify-candidates.mjs"
   },
   "dependencies": {
     "vue": "^3.5.13",
