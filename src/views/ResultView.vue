@@ -11,7 +11,7 @@
  * L4（库内 0 本，SPEC v2.2 裁决①）：不凑数。「这些都不对」+ 困境重述引导 +
  * 路径 D 按原词扩展，仍然成立——空结果是诚实，不是故障。
  */
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import type { Tier } from '@/contracts/recommendation.js';
 import { tierOf } from '@/domain/scoring/tier.js';
@@ -19,8 +19,10 @@ import { CRISIS_RESOURCES } from '@/data/crisis.js';
 import { DOMAIN_OPTIONS } from '@/data/quiz.js';
 import { PHRASES } from '@/data/phrases.js';
 import { clearDiagnosis, loadDiagnosis } from '@/engine/session.js';
+import { recordResult } from '@/engine/telemetry.js';
 import { computeResult, echoPhrases, hasCrisisSignal, type ComputedResult } from '@/engine/result.js';
 import BookCard from '@/components/BookCard.vue';
+import TuneBar from '@/components/TuneBar.vue';
 
 const router = useRouter();
 
@@ -62,9 +64,28 @@ const hasItems = computed(() => (result.value?.items.length ?? 0) > 0);
 const itemCount = computed(() => result.value?.items.length ?? 0);
 const noInline = computed(() => !(result.value?.items ?? []).some((i) => i.book.availability === 'inline'));
 
+// 本地匿名计数（SPEC §10.2）：同一诊断只计一次；只记域与档位，自由文本不入计数
+watch(result, (r) => {
+  if (!r) return;
+  const tiers = r.items.map((it) => tierOf(it.score_bp, it.primary_hit).tier);
+  recordResult(r.diagnosis, tiers);
+});
+
 function restart(): void {
   clearDiagnosis();
   void router.push('/');
+}
+
+/** 调参（M1a-E）：覆写 answers 触发 computeResult 重算；置 null = 回退问卷原值。 */
+const effectiveAnswers = computed(
+  () => ({ ...(diagnosis.value?.answers ?? {}), ...overrides.value }) as Record<string, string | undefined>,
+);
+
+function onTune(key: string, value: string | null): void {
+  const next: Record<string, unknown> = { ...overrides.value };
+  if (value === null) delete next[key];
+  else next[key] = value;
+  overrides.value = next;
 }
 </script>
 
@@ -114,6 +135,8 @@ function restart(): void {
 
       <!-- 推荐结果：三组 -->
       <template v-else-if="!crisis">
+        <TuneBar :answers="effectiveAnswers" @tune="onTune" />
+
         <section v-for="g in grouped" :key="g.tier" v-show="g.items.length > 0" class="tier-group">
           <h2 class="group-title">{{ g.title }}</h2>
           <BookCard v-for="it in g.items" :key="it.book.book_id" :item="it" />

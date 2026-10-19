@@ -30,6 +30,12 @@ function mountWith(d: Diagnosis | null) {
   return mount(ResultView);
 }
 
+function findBtn(w: ReturnType<typeof mount>, text: string) {
+  const btn = w.findAll('button').find((b) => b.text().trim() === text);
+  if (!btn) throw new Error(`找不到按钮「${text}」—— 扫描对象为空，属未验证`);
+  return btn;
+}
+
 beforeEach(() => {
   sessionStorage.clear();
 });
@@ -73,5 +79,17 @@ describe('ResultView', () => {
   it('危机入口恰好 1 个（全项目配额的一半，另一半在 /about）', () => {
     const w = mountWith(workDiagnosis());
     expect(w.element.querySelectorAll('[data-crisis-entry]')).toHaveLength(1);
+  });
+
+  it('调参：选「越轻松越好」后，卡片全是轻松档（即时重算，不持久化）', async () => {
+    const w = mountWith(workDiagnosis());
+    await findBtn(w, '越轻松越好').trigger('click');
+    const metas = w.findAll('.meta-line');
+    expect(metas.length).toBeGreaterThan(0);
+    for (const m of metas) expect(m.text()).toContain('轻松');
+    expect(w.text()).not.toContain('硬核');
+    // 不持久化：sessionStorage 里的诊断未被改写
+    const saved = JSON.parse(sessionStorage.getItem(KEY)!) as Diagnosis;
+    expect(saved.answers.difficulty_pref).toBeUndefined();
   });
 });
