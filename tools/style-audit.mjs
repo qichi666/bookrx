@@ -9,7 +9,7 @@
  */
 
 import { readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 
 const ROOT = new URL('..', import.meta.url).pathname.replace(/^\//, '');
 const TARGETS = ['src', 'tools'];
@@ -61,7 +61,13 @@ const LINE_LIMIT = { src: 300, tools: 400 };
 
 const errors = [];
 for (const f of files) {
-  const rel = f.replace(ROOT, '').replace(/\\/g, '/');
+  /**
+   * 必须用 relative 再归一化斜杠：直接 `f.replace(ROOT, '')` 在 Windows 上
+   * 会因反斜杠匹配失败而留下绝对路径，`startsWith('src/')` 恒假——
+   * 所有文件都被错进 tools 桶（上限 400），src≤300 约束静默失效。
+   * 这类"门禁看起来在跑、其实没在管"的故障比没有门禁更危险。
+   */
+  const rel = relative(ROOT, f).replace(/\\/g, '/');
   const src = readFileSync(f, 'utf8');
   // 去掉结尾换行再数：否则 `split('\n')` 会多出一条空元素，比 wc -l 多 1
   const lines = src.replace(/\n$/, '').split('\n');

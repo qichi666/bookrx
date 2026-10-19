@@ -46,8 +46,10 @@ function bump(map: Record<string, number>, key: string): void {
   map[key] = (map[key] ?? 0) + 1;
 }
 
-/** 结果页渲染时调用。同一诊断只计一次；档位由调用方传入（tierOf 的结果）。 */
+/** 结果页渲染时调用。同一诊断只计一次；档位由调用方传入（tierOf 的结果）。
+ * `dxs:` 前缀 = 搜索入口合成的临时诊断，不计数（搜索是只读浏览，方案承诺）。 */
 export function recordResult(diagnosis: Diagnosis, tiers: readonly string[]): void {
+  if (diagnosis.diagnosis_id.startsWith('dxs:')) return;
   const c = readCounters();
   if (c.last_diagnosis_id === diagnosis.diagnosis_id) return;
   c.total += 1;

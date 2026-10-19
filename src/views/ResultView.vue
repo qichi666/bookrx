@@ -15,13 +15,14 @@ import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import type { Tier } from '@/contracts/recommendation.js';
 import { tierOf } from '@/domain/scoring/tier.js';
-import { CRISIS_RESOURCES } from '@/data/crisis.js';
 import { DOMAIN_OPTIONS } from '@/data/quiz.js';
 import { PHRASES } from '@/data/phrases.js';
 import { clearDiagnosis, loadDiagnosis } from '@/engine/session.js';
 import { recordResult } from '@/engine/telemetry.js';
 import { computeResult, echoPhrases, hasCrisisSignal, type ComputedResult } from '@/engine/result.js';
 import BookCard from '@/components/BookCard.vue';
+import CrisisPanel from '@/components/CrisisPanel.vue';
+import ExternalCard from '@/components/ExternalCard.vue';
 import TuneBar from '@/components/TuneBar.vue';
 
 const router = useRouter();
@@ -112,16 +113,7 @@ function onTune(key: string, value: string | null): void {
       </header>
 
       <!-- P0-17：危机资源条与推荐互斥 -->
-      <div v-if="crisis" class="crisis-panel">
-        <h2>先照顾好此刻的自己</h2>
-        <p class="crisis-note">这一刻书帮不上忙。这些电话有人接，随时可以打：</p>
-        <ul class="crisis-list">
-          <li v-for="r in CRISIS_RESOURCES.resources" :key="r.contact">
-            <strong>{{ r.contact }}</strong>　{{ r.name }}<span v-if="r.hours">（{{ r.hours }}）</span>
-          </li>
-        </ul>
-        <p class="crisis-emergency">{{ CRISIS_RESOURCES.emergency.note }}：{{ CRISIS_RESOURCES.emergency.contact }}</p>
-      </div>
+      <CrisisPanel v-if="crisis" />
 
       <!-- L4：库内 0 本，不凑数 -->
       <div v-if="!crisis && !hasItems" class="empty-state">
@@ -154,13 +146,7 @@ function onTune(key: string, value: string | null): void {
       <!-- 库外路径 D：必标「未入库」。L4 时同样给出（按原词扩展） -->
       <section v-if="!crisis && result.external.length > 0" class="external-group">
         <h2 class="group-title">不在库里，但值得找</h2>
-        <article v-for="s in result.external" :key="s.title" class="external-card">
-          <span class="external-badge">{{ s.badge }}</span>
-          <h3 class="book-title">{{ s.title }}</h3>
-          <p class="book-author">{{ s.author_display.join(' / ') }}</p>
-          <p class="external-reason">{{ s.reason }}</p>
-          <p class="external-find">哪里能找到：{{ s.where_to_find }}</p>
-        </article>
+        <ExternalCard v-for="s in result.external" :key="s.title" :suggestion="s" />
       </section>
 
       <footer class="result-footer">
@@ -222,38 +208,6 @@ function onTune(key: string, value: string | null): void {
   margin: 0;
 }
 
-.crisis-panel {
-  background: var(--surface);
-  border: 2px solid var(--danger);
-  border-radius: 10px;
-  padding: 20px;
-}
-
-.crisis-panel h2 {
-  margin: 0 0 8px;
-}
-
-.crisis-note {
-  color: var(--text-secondary);
-  margin: 0 0 12px;
-}
-
-.crisis-list {
-  margin: 0 0 12px;
-  padding-left: 20px;
-  line-height: 1.8;
-}
-
-.crisis-list strong {
-  font-variant-numeric: tabular-nums;
-}
-
-.crisis-emergency {
-  color: var(--danger);
-  font-size: 0.8125rem;
-  margin: 0;
-}
-
 .empty-state {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -281,47 +235,6 @@ function onTune(key: string, value: string | null): void {
   color: var(--text-muted);
   font-size: 0.8125rem;
   margin: 16px 0;
-}
-
-.external-card {
-  background: var(--surface);
-  border: 1px dashed var(--border);
-  border-radius: 10px;
-  padding: 16px;
-  margin-bottom: 12px;
-}
-
-.external-badge {
-  display: inline-block;
-  font-size: 0.6875rem;
-  border: 1px solid var(--border-control);
-  color: var(--text-muted);
-  border-radius: 3px;
-  padding: 2px 8px;
-  margin-bottom: 8px;
-}
-
-.external-reason {
-  color: var(--text-secondary);
-  font-size: 0.8125rem;
-  margin: 0 0 6px;
-}
-
-.external-find {
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  margin: 0;
-}
-
-.book-title {
-  font-size: 1.125rem;
-  margin: 0;
-}
-
-.book-author {
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  margin: 2px 0 8px;
 }
 
 .result-footer {

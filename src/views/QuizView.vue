@@ -10,7 +10,6 @@ import { computed, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import type { ProblemDomain, ProblemTagId } from '@/contracts/enums.js';
 import {
-  DOMAIN_OPTIONS,
   INCLUDE_HEAVY_PROMPT,
   STEP3_GROUPS,
   TAG_OPTIONS,
@@ -18,6 +17,9 @@ import {
 import { buildDiagnosis } from '@/engine/diagnose.js';
 import { saveDiagnosis } from '@/engine/session.js';
 import ChipRow from '@/components/ChipRow.vue';
+import DomainList from '@/components/DomainList.vue';
+import SearchPanel from '@/components/SearchPanel.vue';
+import TagPicker from '@/components/TagPicker.vue';
 
 const router = useRouter();
 
@@ -102,40 +104,17 @@ function submit(): void {
       <h1 class="quiz-title">说说你现在的处境</h1>
     </header>
 
-    <!-- 第 1 屏：困境域 -->
+    <!-- 第 1 屏：搜索快路径 + 困境域 -->
     <div v-if="step === 1" class="quiz-body">
-      <p class="quiz-lead">哪一类最接近你此刻的状态？</p>
-      <div class="domain-list">
-        <button
-          v-for="d in DOMAIN_OPTIONS"
-          :key="d.domain"
-          type="button"
-          class="domain-item"
-          :class="{ on: domain === d.domain }"
-          @click="chooseDomain(d.domain)"
-        >
-          {{ d.label }}
-        </button>
-      </div>
+      <SearchPanel />
+      <p class="quiz-lead">或者从这几类里选——哪一类最接近你此刻的状态？</p>
+      <DomainList :model-value="domain" @select="chooseDomain" />
     </div>
 
     <!-- 第 2 屏：标签多选 + 主诉追问 -->
     <div v-else-if="step === 2 && domain" class="quiz-body">
       <p class="quiz-lead">具体是哪种感觉？最多选 3 项。</p>
-      <div class="chips">
-        <button
-          v-for="o in tagOptions"
-          :key="o.tag"
-          type="button"
-          class="chip"
-          :class="{ on: selected.includes(o.tag) }"
-          :aria-pressed="selected.includes(o.tag)"
-          :disabled="!selected.includes(o.tag) && selected.length >= 3"
-          @click="toggleTag(o.tag)"
-        >
-          {{ o.label }}
-        </button>
-      </div>
+      <TagPicker :options="tagOptions" :selected="selected" :max="3" @toggle="toggleTag" />
       <div v-if="selected.length >= 2" class="primary-ask">
         <ChipRow
           prompt="哪个最急？"
@@ -214,65 +193,6 @@ function submit(): void {
 
 .quiz-body {
   margin-bottom: 24px;
-}
-
-.domain-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.domain-item {
-  min-height: 44px;
-  padding: 10px 16px;
-  text-align: left;
-  border-radius: 6px;
-  border: 1px solid var(--border-control);
-  background: var(--surface);
-  color: var(--text-secondary);
-  font: inherit;
-  cursor: pointer;
-}
-
-.domain-item.on {
-  border-color: var(--accent);
-  border-width: 2px;
-  padding: 9px 15px;
-  background: var(--surface-brand);
-  color: var(--accent);
-  font-weight: 510;
-}
-
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.chip {
-  min-height: 44px;
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: 1px solid var(--border-control);
-  background: var(--surface);
-  color: var(--text-secondary);
-  font: inherit;
-  cursor: pointer;
-}
-
-.chip.on {
-  border-color: var(--accent);
-  border-width: 2px;
-  padding: 7px 15px;
-  background: var(--surface-brand);
-  color: var(--accent);
-  font-weight: 510;
-}
-
-.chip:disabled {
-  color: var(--text-disabled);
-  border-color: var(--border);
-  cursor: not-allowed;
 }
 
 .primary-ask {
