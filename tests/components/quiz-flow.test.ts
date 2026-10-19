@@ -21,6 +21,21 @@ async function gotoStep2(w: ReturnType<typeof mount>): Promise<void> {
 }
 
 describe('QuizView 四屏流', () => {
+  it('首屏就有读书框架入口（用户反馈「找不到」的直接回归）', () => {
+    // 本文件的 mount 不带 router，router-link 解析不了就会渲染成空——
+    // 断言会拿到空列表，看起来像"入口不存在"。用一个渲染成 <a> 的 stub 兜住。
+    const w = mount(QuizView, {
+      global: {
+        stubs: {
+          RouterLink: { props: ['to'], template: '<a :href="`#${to}`"><slot /></a>' },
+        },
+      },
+    });
+    const links = w.findAll('a').map((a) => a.attributes('href'));
+    expect(links).toContain('#/framework');
+    expect(w.text()).toContain('读书框架');
+  });
+
   it('第 1 屏未选域时下一步禁用', () => {
     const w = mount(QuizView);
     expect(findBtn(w, '下一步').attributes('disabled')).toBeDefined();

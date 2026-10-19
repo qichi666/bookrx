@@ -16,6 +16,7 @@ async function mountWith() {
       { path: '/', component: { template: '<div>home</div>' } },
       { path: '/about', component: { template: '<div>about</div>' } },
       { path: '/result', component: { template: '<div>result</div>' } },
+      { path: '/framework', component: { template: '<div>framework</div>' } },
     ],
   });
   // 先 mount（install 触发初始导航），再等导航落定——顺序反了 isReady 永远挂起
@@ -31,6 +32,16 @@ describe('AppHeader', () => {
     expect(w.text()).not.toContain('返回');
     expect(w.text()).toContain('BookRx');
     expect(w.find('.nav-about').exists()).toBe(true);
+    expect(w.text()).toContain('怎么读');
+  });
+
+  it('读书框架页：隐藏「怎么读」自身，仍能去关于', async () => {
+    const { router, w } = await mountWith();
+    await router.push('/framework');
+    await flushPromises();
+    const links = w.findAll('a').map((a) => a.attributes('href'));
+    expect(links).not.toContain('/framework');
+    expect(links).toContain('/about');
   });
 
   it('关于页：显示返回、不显示「关于」；点返回回上一页', async () => {

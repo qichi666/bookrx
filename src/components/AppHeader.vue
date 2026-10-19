@@ -17,6 +17,7 @@ const router = useRouter();
 
 const isHome = computed(() => route.path === '/');
 const isAbout = computed(() => route.path === '/about');
+const isFramework = computed(() => route.path === '/framework');
 
 /** 有历史就回上一页，直接打开本页时回首页（与危机页同一套逻辑）。 */
 function goBack(): void {
@@ -35,7 +36,8 @@ function goBack(): void {
     </div>
     <router-link class="brand" to="/">BookRx</router-link>
     <div class="header-side header-right">
-      <router-link v-if="!isAbout" class="nav-about" to="/about">关于</router-link>
+      <router-link v-if="!isFramework" class="nav-link" to="/framework">怎么读书</router-link>
+      <router-link v-if="!isAbout" class="nav-link nav-about" to="/about">关于</router-link>
     </div>
   </header>
 </template>
@@ -77,13 +79,17 @@ function goBack(): void {
   text-decoration: none;
 }
 
-.nav-about {
+.nav-link {
   color: var(--text-secondary);
   font-size: 0.875rem;
   text-decoration: none;
 }
 
-.nav-about:hover {
+.nav-about {
+  margin-left: 16px;
+}
+
+.nav-link:hover {
   color: var(--text-primary);
   text-decoration: underline;
 }

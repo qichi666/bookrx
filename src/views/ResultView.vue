@@ -21,6 +21,9 @@ import { clearDiagnosis, loadDiagnosis } from '@/engine/session.js';
 import { recordResult } from '@/engine/telemetry.js';
 import { computeResult, echoPhrases, hasCrisisSignal, type ComputedResult } from '@/engine/result.js';
 import BookCard from '@/components/BookCard.vue';
+import WideResults from '@/components/WideResults.vue';
+import { useWidePool } from '@/composables/useWidePool.js';
+import { normalizeTitle } from '@/engine/wide-pool.js';
 import CrisisPanel from '@/components/CrisisPanel.vue';
 import ExternalCard from '@/components/ExternalCard.vue';
 import TuneBar from '@/components/TuneBar.vue';
@@ -57,9 +60,24 @@ const GROUPS: ReadonlyArray<{ tier: Tier; title: string }> = [
 
 const grouped = computed(() => {
   const items = result.value?.items ?? [];
-  const judged = items.map((it) => ({ it, tier: tierOf(it.score_bp, it.primary_hit).tier }));
+  // 兜底去重：同一本书（书名归一后相同）在本次结果里只出现一次
+  const seen = new Set<string>();
+  const unique = items.filter((it) => {
+    const key = normalizeTitle(it.book.title);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  const judged = unique.map((it) => ({ it, tier: tierOf(it.score_bp, it.primary_hit).tier }));
   return GROUPS.map((g) => ({ ...g, items: judged.filter((x) => x.tier === g.tier).map((x) => x.it) }));
 });
+
+// 全库推荐池：与核心库、库外建议按书名去重，避免同一本书出现两次
+const usedTitles = computed(() => [
+  ...(result.value?.items ?? []).map((it) => it.book.title),
+  ...(result.value?.external ?? []).map((s) => s.title),
+]);
+const { loading: wideLoading, pool, next } = useWidePool(diagnosis, usedTitles);
 
 const hasItems = computed(() => (result.value?.items.length ?? 0) > 0);
 const itemCount = computed(() => result.value?.items.length ?? 0);
@@ -143,6 +161,9 @@ function onTune(key: string, value: string | null): void {
         </p>
       </template>
 
+      <!-- 全库推荐池：同域轮转，标「未标注」，与核心库分开 -->
+      <WideResults v-if="!crisis" :picks="pool.picks" :size="pool.size" :loading="wideLoading" @next="next" />
+
       <!-- 库外路径 D：必标「未入库」。L4 时同样给出（按原词扩展） -->
       <section v-if="!crisis && result.external.length > 0" class="external-group">
         <h2 class="group-title">不在库里，但值得找</h2>
@@ -151,6 +172,7 @@ function onTune(key: string, value: string | null): void {
 
       <footer class="result-footer">
         <button type="button" class="btn-ghost" @click="restart">重新填问卷</button>
+        <a href="#/framework">怎么读这本书</a>
         <a href="#/about">关于 BookRx 与你的数据</a>
       </footer>
     </template>

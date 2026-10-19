@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 import { createMemoryHistory, createRouter } from 'vue-router';
 import { saveDiagnosis } from '@/engine/session.js';
@@ -33,6 +33,12 @@ async function search(w: ReturnType<typeof mount>, text: string): Promise<void> 
 }
 
 describe('SearchPanel', () => {
+  // fetch 默认已由 tests/setup.ts 桩成「书目层不可用」（不发真请求）；
+  // 这里只需清掉模块级缓存，避免上一个用例的 stub 数据泄漏到下一个。
+  beforeEach(() => {
+    resetCandidateCacheForTests();
+  });
+
   it('书命中：就地展示书卡，不跳转', async () => {
     const { router, w } = mountWith();
     await search(w, '非暴力');
@@ -59,7 +65,6 @@ describe('SearchPanel', () => {
   });
 
   it('外围书库命中：显示「未入库」卡片，不跳转、不算契合', async () => {
-    resetCandidateCacheForTests();
     const books = [
       {
         id: '999',
@@ -87,7 +92,6 @@ describe('SearchPanel', () => {
     expect(w.text()).toContain('外围书库里还有');
     expect(w.text()).toContain('未入库');
     expect(router.currentRoute.value.path).toBe('/');
-    vi.unstubAllGlobals();
   });
 
   it('全 0：库内没找到 → 外链兜底文案', async () => {

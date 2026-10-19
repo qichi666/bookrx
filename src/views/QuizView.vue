@@ -164,6 +164,10 @@ function submit(): void {
         {{ step === 4 ? '看推荐' : '下一步' }}
       </button>
     </footer>
+
+    <p class="quiz-hint">
+      拿到书不知道怎么读？<router-link to="/framework">先看这套读书框架</router-link>
+    </p>
   </section>
 </template>
 
@@ -217,6 +221,17 @@ function submit(): void {
   display: flex;
   justify-content: space-between;
   gap: 8px;
+}
+
+.quiz-hint {
+  margin: 18px 0 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.quiz-hint a {
+  color: var(--accent);
 }
 
 .btn-ghost {
