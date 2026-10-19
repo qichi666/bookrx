@@ -10,9 +10,10 @@ import type { CandidateBook } from '@/data/candidates.js';
  * 候选层按「同域 + 质量档」轮转补位，如实标「未标注」。
  *
  * 三条硬规则：
- *  ① 全库覆盖：按质量档分桶，桶内用 epoch 偏移循环取——同一批不重复，
- *     跑满 ceil(池子大小/limit) 轮后每本都出现过；
- *  ② 不重复：同 id、同书名（归一后）在本次结果里只出现一次，且与核心库已展示书名去重；
+ *  ① 全库覆盖：质量桶加权摊成一条全局序列，第 epoch 批 = 第 epoch 个窗口，
+ *     严格 ceil(池子大小/limit) 轮翻完，一个周期内每本只出现一次；
+ *  ② 不重复：同 id、同书名（归一后，含同名不同版）在整个池里只留一本，
+ *     且与核心库已展示书名、库外建议书名去重；
  *  ③ 确定性：同 (diagnosis, epoch) → 同结果，不用 Math.random / 时间。
  */
 
@@ -54,9 +55,16 @@ export interface WidePool {
 /**
  * 取一批候选书。
  *
- * 抽取顺序：high → mid → unknown → low 轮转，每桶按 epoch 步进游标。
- * 这样「换一批」既换书，又不会一下掉到低质量区；跑满一轮后回到开头，
- * 保证**池子里每一本都会轮到**。
+ * 做法：先把四个质量桶**加权摊成一条全局序列**，再按 limit 切窗，
+ * 第 epoch 批就是第 epoch 个窗口（越界后回卷）。
+ *
+ * 为什么不是「四桶轮流各取一本」：那样小桶会空转。实测 1215 本的域里，
+ * 轮流法要 752 批才翻完，理论下限是 ceil(1215/5)=243 批——慢了 3 倍，
+ * 用户按到手酸也见不到全部书。切窗法把覆盖轮数压到 **严格 ceil(n/limit)**，
+ * 且一个完整周期内每本只出现一次。
+ *
+ * 质量梯度靠「摊序列」保留：第一条仍是 high，同一批里 high/mid/unknown/low
+ * 按各自体量分配名额，不会一下掉到低质量区。
  */
 export function pickWide(
   candidates: readonly CandidateBook[],
@@ -84,38 +92,63 @@ export function pickWide(
     buckets[key].sort(compareInBucket);
   }
 
-  const size = Object.values(buckets).reduce((n, arr) => n + arr.length, 0);
   const order: WideBucket[] = ['high', 'mid', 'unknown', 'low'];
-  // 游标每轮只前进 1（滑动窗口）：若按 limit 步进，会与桶大小形成短周期，
-  // 永远只覆盖前几本。步进 1 保证跑满 ceil(n/k) 轮后每本都露过面。
-  const cursor: Record<WideBucket, number> = {
-    high: opts.epoch,
-    mid: opts.epoch,
-    unknown: opts.epoch,
-    low: opts.epoch,
-  };
 
-  const picks: CandidateBook[] = [];
-  const pickedTitles = new Set<string>();
-  let guard = 0;
-  while (picks.length < opts.limit && guard < opts.limit * 40) {
-    let progressed = false;
-    for (const key of order) {
-      if (picks.length >= opts.limit) break;
-      const arr = buckets[key];
-      if (arr.length === 0) continue;
-      const book = arr[cursor[key] % arr.length];
-      cursor[key] += 1;
-      guard += 1;
-      if (book === undefined) continue;
-      const title = normalizeTitle(book.title);
-      if (pickedTitles.has(title)) continue;
-      pickedTitles.add(title);
-      picks.push(book);
-      progressed = true;
-    }
-    if (!progressed && guard > opts.limit * 4) break;
+  /**
+   * 同名不同版在**建池时**就合成一本（按 high→low 取质量最高的一版）。
+   *
+   * 只做「同批去重」不够：真数据里「沟通的艺术」和「沟通的艺术（第 3 版）」
+   * 是两条不同 id，同批不会撞，但会在第 3 批和第 7 批各出现一次——
+   * 用户视角就是「又推了同一本书」，而这正是最初被反馈的问题。
+   */
+  const seenTitles = new Set<string>();
+  for (const key of order) {
+    buckets[key] = buckets[key].filter((b) => {
+      const t = normalizeTitle(b.title);
+      if (seenTitles.has(t)) return false;
+      seenTitles.add(t);
+      return true;
+    });
   }
 
+  const size = Object.values(buckets).reduce((n, arr) => n + arr.length, 0);
+  if (size === 0) return { size: 0, picks: [] };
+
+  const ordered = interleave(buckets, order, size);
+  const limit = Math.max(1, Math.min(opts.limit, size));
+  const start = (((opts.epoch % Math.ceil(size / limit)) * limit) % size + size) % size;
+  const picks: CandidateBook[] = [];
+  for (let i = 0; i < limit; i += 1) {
+    const book = ordered[(start + i) % size];
+    if (book !== undefined) picks.push(book);
+  }
   return { size, picks };
+}
+
+/**
+ * 平滑加权轮转（nginx 那套）把四个桶摊成一条序列：
+ * 大桶按体量多出书，小桶也不会被饿死，且顺序确定（无随机）。
+ */
+function interleave(
+  buckets: Record<WideBucket, CandidateBook[]>,
+  order: readonly WideBucket[],
+  size: number,
+): CandidateBook[] {
+  const taken: Record<WideBucket, number> = { high: 0, mid: 0, unknown: 0, low: 0 };
+  const credit: Record<WideBucket, number> = { high: 0, mid: 0, unknown: 0, low: 0 };
+  const out: CandidateBook[] = [];
+  while (out.length < size) {
+    let best: WideBucket | null = null;
+    for (const key of order) {
+      if (taken[key] >= buckets[key].length) continue;
+      credit[key] += buckets[key].length;
+      if (best === null || credit[key] > credit[best]) best = key;
+    }
+    if (best === null) break;
+    credit[best] -= size;
+    const book = buckets[best][taken[best]];
+    taken[best] += 1;
+    if (book !== undefined) out.push(book);
+  }
+  return out;
 }
