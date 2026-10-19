@@ -1,0 +1,123 @@
+/**
+ * 全局 CSS 变量桥：把 docs/design-tokens.json 的语义 Token 落成 CSS 自定义属性。
+ *
+ * 本文件是全项目唯一允许出现十六进制色值的源码文件（style-audit 只扫 .ts/.vue/.mjs，
+ * 而色值真源是 design-tokens.json——这里必须与它逐值一致，改色先改那边）。
+ * 组件与视图一律消费 var(--*)，不写兜底 hex：写了兜底，token 缺失时就看不出来。
+ */
+
+:root {
+  /* ── 面 ── */
+  --bg: #f4f6f4;               /* color.light.bg = neutral.50 */
+  --surface: #ffffff;          /* color.light.surface = neutral.0 */
+  --surface-sunken: #e8ebe8;   /* neutral.100：凹陷底 / 输入框底 */
+  --surface-brand: #f0f5f1;    /* brand.50：选中行底 / inline 徽标底 */
+
+  /* ── 字色 ── */
+  --text-primary: #1b1f1d;     /* neutral.950 */
+  --text-secondary: #3d4340;   /* neutral.800 */
+  --text-muted: #5f6660;       /* neutral.700 */
+  --text-disabled: #939a94;    /* neutral.400 */
+
+  /* ── 线 ── */
+  --border: #b9bfba;           /* neutral.300：装饰描边 */
+  --border-soft: #d5d9d5;      /* neutral.200：卡内分割线 */
+  --border-control: #868d87;   /* neutral.500：控件边界（3:1） */
+
+  /* ── 主色 ── */
+  --accent: #2f6449;           /* brand.600 */
+  --accent-hover: #255139;     /* brand.700 */
+  --accent-active: #1d402c;    /* brand.800 */
+  --accent-fg: #ffffff;        /* accent 底上的文字 */
+  --focus-ring-color: #2f6449;
+
+  /* ── 三档符合度（必须同时输出方块数 + 文字标签，颜色不单独编码） ── */
+  --flag-strong: #2f6449;      /* brand.600 */
+  --flag-worth: #3d4340;       /* neutral.800 */
+  --flag-explore: #5f6660;     /* neutral.700 */
+  --tier-track: #d5d9d5;       /* neutral.200 */
+
+  /* ── 语义色 ── */
+  --warn: #8a5a0b;             /* warn.600 */
+  --danger: #992b23;           /* danger.600 */
+  --info: #2b5c7d;             /* info.600 */
+
+  /* ── 可获得性三态（底色有无 + 动词文案区分，不靠色相） ── */
+  --inline-bg: #f0f5f1;
+  --inline-fg: #255139;        /* brand.700 */
+  --byo-bg: #e8ebe8;
+  --byo-fg: #3d4340;
+
+  /* ── 阅读器划线 ── */
+  --highlight: rgba(103, 153, 130, 0.14);
+  --highlight-rule: #4e7a65;
+
+  /* ── 字体栈（中文一律系统栈，不自带 webfont） ── */
+  --font-ui: 'Inter', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  --font-read: 'Source Serif 4', 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121614;
+    --surface: #1a1f1d;
+    --surface-sunken: #222825;
+    --surface-brand: #1d402c33;
+
+    --text-primary: #e6eae7;
+    --text-secondary: #c2c8c3;
+    --text-muted: #9aa19b;
+    --text-disabled: #626a64;
+
+    --border: #2e3532;
+    --border-soft: #2e3532;
+    --border-control: #6b736d;
+
+    /* 暗底上主色必须提亮到 brand.300，600 会陷进背景 */
+    --accent: #93b7a4;
+    --accent-hover: #bcd4c6;
+    --accent-active: #dce8e0;
+    --accent-fg: #121614;
+    --focus-ring-color: #93b7a4;
+
+    --flag-strong: #93b7a4;
+    --flag-worth: #c2c8c3;
+    --flag-explore: #868d87;
+    --tier-track: #2e3532;
+
+    --warn: #dca95c;
+    --danger: #f0968a;
+    --info: #86b6d2;
+
+    --inline-bg: #1d402c33;
+    --inline-fg: #bcd4c6;
+    --byo-bg: #222825;
+    --byo-fg: #c2c8c3;
+
+    --highlight: rgba(103, 153, 130, 0.2);
+    --highlight-rule: #93b7a4;
+  }
+}
+
+/* ── 基础排版 ── */
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.25;
+}
+
+/* 双层焦点环：任何底色上都可见；禁止 outline: none */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--focus-ring-color);
+}

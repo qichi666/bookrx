@@ -1,6 +1,7 @@
 import { createApp } from 'vue';
 import { createRouter, createWebHashHistory } from 'vue-router';
 import App from './App.vue';
+import './tokens.css';
 
 /**
  * hash 路由：纯静态托管（GitHub Pages 等）无需服务端重写规则。

@@ -1,6 +1,18 @@
+import { mkdirSync } from 'node:fs';
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
+
+/**
+ * 与 cacheDir 同病的第二处：vitest 的 SSR 转换缓存走 `os.tmpdir()`，
+ * 在受限环境（沙箱 / 只读 temp）抛 EPERM——worker 被杀时测试计数会随机变少
+ * （50/53/54 起伏）、退出码非零，看起来像断言挂了。把 TMPDIR 固定进工作区，
+ * dev / build / test 三条链路一致，且该目录已在 .gitignore 的 node_modules/ 内。
+ */
+const TMP_DIR = fileURLToPath(new URL('./node_modules/.tmp', import.meta.url));
+mkdirSync(TMP_DIR, { recursive: true });
+process.env.TMPDIR = TMP_DIR;
+process.env.TMP = TMP_DIR;
 
 // P8 危机页必须是独立 chunk：copy-audit 层 2 有三条规则按 crisis-* 文件名收窄，
 // 被并进主包时那三条规则会静默失效（不报错、也不命中）。
