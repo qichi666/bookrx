@@ -1,0 +1,1112 @@
+{
+  "$description": "BookRx（产品名待定）设计 Token（DTCG 格式）。所有色值均来自 docs/UIUX.md 第 3 节验算过的色阶，未经验算的色值不得加入本文件。",
+  "$extensions": {
+    "bookrx": {
+      "designer": "颜好看",
+      "date": "2026-10-18",
+      "register": "product",
+      "platform": "web",
+      "axes": {
+        "variance": 4,
+        "motion": 3,
+        "density": 4
+      },
+      "contrastAudit": "docs/UIUX.md §3.3 / §3.4 / §3.5（脚本实测，非目测）"
+    }
+  },
+  "color": {
+    "brand": {
+      "50": {
+        "$value": "#F0F5F1",
+        "$type": "color",
+        "$description": "品牌浅底：inline 徽标底、选中行底"
+      },
+      "100": {
+        "$value": "#DCE8E0",
+        "$type": "color",
+        "$description": "书脊卡 tone-1、次级品牌底"
+      },
+      "200": {
+        "$value": "#BCD4C6",
+        "$type": "color",
+        "$description": "装饰边框、进度条轨道"
+      },
+      "300": {
+        "$value": "#93B7A4",
+        "$type": "color",
+        "$description": "暗色主题主色 / 暗色焦点环"
+      },
+      "400": {
+        "$value": "#679982",
+        "$type": "color",
+        "$description": "划线底色源、最对症卡描边、暗色次品牌"
+      },
+      "500": {
+        "$value": "#477C63",
+        "$type": "color",
+        "$description": "暗色按钮 hover"
+      },
+      "600": {
+        "$value": "#2F6449",
+        "$type": "color",
+        "$description": "主色：主按钮 / 链接 / 焦点环 / 高契合档"
+      },
+      "700": {
+        "$value": "#255139",
+        "$type": "color",
+        "$description": "hover 态；浅底上的品牌深字"
+      },
+      "800": {
+        "$value": "#1D402C",
+        "$type": "color",
+        "$description": "active 态"
+      },
+      "900": {
+        "$value": "#153120",
+        "$type": "color",
+        "$description": "极少使用"
+      }
+    },
+    "neutral": {
+      "0": {
+        "$value": "#FFFFFF",
+        "$type": "color",
+        "$description": "白卡 surface（浅色主题）"
+      },
+      "25": {
+        "$value": "#FAFBFA",
+        "$type": "color",
+        "$description": "阅读纸色（默认）"
+      },
+      "50": {
+        "$value": "#F4F6F4",
+        "$type": "color",
+        "$description": "页面底 bg（浅色主题）"
+      },
+      "100": {
+        "$value": "#E8EBE8",
+        "$type": "color",
+        "$description": "凹陷底 / 输入框底 / 书脊卡 tone-2。禁止承载正文"
+      },
+      "200": {
+        "$value": "#D5D9D5",
+        "$type": "color",
+        "$description": "卡内分割线 / 轨道。禁止用于控件识别"
+      },
+      "300": {
+        "$value": "#B9BFBA",
+        "$type": "color",
+        "$description": "装饰描边（卡片边框）。禁止用于控件识别"
+      },
+      "400": {
+        "$value": "#939A94",
+        "$type": "color",
+        "$description": "仅禁用态文字与图标"
+      },
+      "500": {
+        "$value": "#868D87",
+        "$type": "color",
+        "$description": "控件描边（3:1 来源）/ 装饰图标。禁止承载正文"
+      },
+      "600": {
+        "$value": "#6F766F",
+        "$type": "color",
+        "$description": "仅图形（白底 4.67:1、页底 4.30:1 不达标）。禁止承载正文"
+      },
+      "700": {
+        "$value": "#5F6660",
+        "$type": "color",
+        "$description": "次要文本 / 元数据 / 徽标字（5.44:1 on bg）"
+      },
+      "800": {
+        "$value": "#3D4340",
+        "$type": "color",
+        "$description": "次级正文 / 卡片标题"
+      },
+      "900": {
+        "$value": "#2A2F2C",
+        "$type": "color",
+        "$description": "阅读区正文"
+      },
+      "950": {
+        "$value": "#1B1F1D",
+        "$type": "color",
+        "$description": "界面主标题 / UI 主文本"
+      }
+    },
+    "warn": {
+      "50": {
+        "$value": "#FBF4E6",
+        "$type": "color"
+      },
+      "500": {
+        "$value": "#DCA95C",
+        "$type": "color",
+        "$description": "暗色主题警示色"
+      },
+      "600": {
+        "$value": "#8A5A0B",
+        "$type": "color",
+        "$description": "浅色主题警示色"
+      }
+    },
+    "danger": {
+      "50": {
+        "$value": "#FBEFED",
+        "$type": "color"
+      },
+      "500": {
+        "$value": "#F0968A",
+        "$type": "color",
+        "$description": "暗色主题危险色"
+      },
+      "600": {
+        "$value": "#992B23",
+        "$type": "color",
+        "$description": "浅色主题危险色"
+      }
+    },
+    "info": {
+      "50": {
+        "$value": "#EDF3F7",
+        "$type": "color"
+      },
+      "500": {
+        "$value": "#86B6D2",
+        "$type": "color",
+        "$description": "暗色主题信息色"
+      },
+      "600": {
+        "$value": "#2B5C7D",
+        "$type": "color",
+        "$description": "浅色主题信息色"
+      }
+    },
+    "success": {
+      "$value": "{color.brand.600}",
+      "$type": "color",
+      "$description": "不新增绿：品牌色即成功色，避免两种绿的歧义"
+    },
+    "light": {
+      "bg": {
+        "$value": "{color.neutral.50}",
+        "$type": "color"
+      },
+      "surface": {
+        "$value": "{color.neutral.0}",
+        "$type": "color"
+      },
+      "surface-sunken": {
+        "$value": "{color.neutral.100}",
+        "$type": "color"
+      },
+      "surface-brand": {
+        "$value": "{color.brand.50}",
+        "$type": "color"
+      },
+      "fg": {
+        "$value": "{color.neutral.950}",
+        "$type": "color"
+      },
+      "fg-secondary": {
+        "$value": "{color.neutral.800}",
+        "$type": "color"
+      },
+      "fg-muted": {
+        "$value": "{color.neutral.700}",
+        "$type": "color"
+      },
+      "fg-disabled": {
+        "$value": "{color.neutral.400}",
+        "$type": "color"
+      },
+      "border": {
+        "$value": "{color.neutral.300}",
+        "$type": "color",
+        "$description": "装饰性卡片边框（不承担控件识别）"
+      },
+      "border-soft": {
+        "$value": "{color.neutral.200}",
+        "$type": "color",
+        "$description": "卡内分割线"
+      },
+      "border-control": {
+        "$value": "{color.neutral.500}",
+        "$type": "color",
+        "$description": "输入框/复选/单选边界，3.13:1 达标"
+      },
+      "accent": {
+        "$value": "{color.brand.600}",
+        "$type": "color"
+      },
+      "accent-hover": {
+        "$value": "{color.brand.700}",
+        "$type": "color"
+      },
+      "accent-active": {
+        "$value": "{color.brand.800}",
+        "$type": "color"
+      },
+      "accent-fg": {
+        "$value": "{color.neutral.0}",
+        "$type": "color",
+        "$description": "accent 底上的文字/图标"
+      },
+      "focus-ring": {
+        "$value": "{color.brand.600}",
+        "$type": "color"
+      },
+      "scrim": {
+        "$value": "rgba(27, 31, 29, 0.48)",
+        "$type": "color"
+      }
+    },
+    "dark": {
+      "bg": {
+        "$value": "#121614",
+        "$type": "color",
+        "$description": "绿调炭黑，非纯黑"
+      },
+      "surface": {
+        "$value": "#1A1F1D",
+        "$type": "color"
+      },
+      "surface-raised": {
+        "$value": "#222825",
+        "$type": "color"
+      },
+      "fg": {
+        "$value": "#E6EAE7",
+        "$type": "color",
+        "$description": "13.75:1 on surface"
+      },
+      "fg-secondary": {
+        "$value": "#C2C8C3",
+        "$type": "color",
+        "$description": "9.81:1"
+      },
+      "fg-muted": {
+        "$value": "#9AA19B",
+        "$type": "color",
+        "$description": "6.32:1"
+      },
+      "fg-meta": {
+        "$value": "#868D87",
+        "$type": "color",
+        "$description": "4.91:1 on surface"
+      },
+      "fg-disabled": {
+        "$value": "#626A64",
+        "$type": "color",
+        "$description": "2.99:1 on surface —— 禁用态豁免 4.5:1，但保持约 3:1 以确保仍可见"
+      },
+      "border": {
+        "$value": "#2E3532",
+        "$type": "color",
+        "$description": "装饰性（1.33:1，仅分隔）"
+      },
+      "border-control": {
+        "$value": "#6B736D",
+        "$type": "color",
+        "$description": "3.42:1 达标"
+      },
+      "accent": {
+        "$value": "{color.brand.300}",
+        "$type": "color",
+        "$description": "暗底上必须提亮到 300，600 会陷进背景"
+      },
+      "accent-hover": {
+        "$value": "{color.brand.200}",
+        "$type": "color"
+      },
+      "accent-active": {
+        "$value": "{color.brand.100}",
+        "$type": "color"
+      },
+      "accent-fg": {
+        "$value": "#121614",
+        "$type": "color",
+        "$description": "浅绿底 + 深字：8.30:1"
+      },
+      "focus-ring": {
+        "$value": "{color.brand.300}",
+        "$type": "color",
+        "$description": "8.30:1"
+      },
+      "scrim": {
+        "$value": "rgba(0, 0, 0, 0.64)",
+        "$type": "color"
+      }
+    },
+    "reader": {
+      "paper-white": {
+        "$value": "{color.neutral.25}",
+        "$type": "color",
+        "$description": "默认纸色"
+      },
+      "paper-cream": {
+        "$value": "#F3EEDF",
+        "$type": "color",
+        "$description": "可选，非默认"
+      },
+      "paper-green": {
+        "$value": "#E9F0E9",
+        "$type": "color",
+        "$description": "可选"
+      },
+      "paper-dark": {
+        "$value": "#16191A",
+        "$type": "color",
+        "$description": "可选"
+      },
+      "text-on-light": {
+        "$value": "{color.neutral.900}",
+        "$type": "color",
+        "$description": "11.75–13.13:1"
+      },
+      "text-on-dark": {
+        "$value": "#E6EAE7",
+        "$type": "color",
+        "$description": "14.55:1"
+      },
+      "highlight": {
+        "$value": "{color.highlight.tint-light}",
+        "$type": "color",
+        "$description": "阅读器划线底色（浅色纸），指向 color.highlight.tint-light，不重复定义"
+      },
+      "highlight-active": {
+        "$value": "{color.reader.highlight}",
+        "$type": "color",
+        "$description": "划线选中/编辑态：叠加底不变，由 2px 边线加粗到 3px 表达，不加新色"
+      },
+      "highlight-dark": {
+        "$value": "{color.highlight.tint-dark}",
+        "$type": "color",
+        "$description": "阅读器划线底色（暗色纸）"
+      }
+    },
+    "tier": {
+      "light": {
+        "track": {
+          "$value": "{color.neutral.200}",
+          "$type": "color",
+          "$description": "未填充方块轨道"
+        },
+        "strong": {
+          "$value": "{color.brand.600}",
+          "$type": "color",
+          "$description": "高度契合（Tier = strong，score_bp >= 8000）6.91:1"
+        },
+        "worth": {
+          "$value": "{color.neutral.800}",
+          "$type": "color",
+          "$description": "较为契合（worth，6000-7999）10.12:1"
+        },
+        "explore": {
+          "$value": "{color.neutral.700}",
+          "$type": "color",
+          "$description": "换个角度（explore，< 6000）5.91:1"
+        }
+      },
+      "dark": {
+        "track": {
+          "$value": "#2E3532",
+          "$type": "color"
+        },
+        "strong": {
+          "$value": "{color.brand.300}",
+          "$type": "color",
+          "$description": "高度契合（Tier = strong）8.30:1"
+        },
+        "worth": {
+          "$value": "#C2C8C3",
+          "$type": "color",
+          "$description": "较为契合 9.81:1"
+        },
+        "explore": {
+          "$value": "#868D87",
+          "$type": "color",
+          "$description": "换个角度 4.91:1"
+        }
+      },
+      "$description": "三档符合度标识色。枚举值全项目唯一写法 strong / worth / explore（PRD §7.2/§7.3 与 SPEC §6.3⑦ 明文禁止 high/mid/low/fit；types-draft 的 Tier 同）。中文显示名固定三词：高度契合 / 较为契合 / 换个角度（不许换营销词）。三色两两对比仅 1.17–1.71:1，颜色不得单独编码档位——必须同时输出可数方块填充数 3/2/1 + 文字标签。第三组（explore）卡片不渲染方块，只保留「换个角度」文字 + 可用性 + 按钮：1 格方块等于反复告诉用户「这本不行」，该组定位已由分组标题承担。"
+    },
+    "availability": {
+      "inline-bg": {
+        "$value": "{color.brand.50}",
+        "$type": "color"
+      },
+      "inline-fg": {
+        "$value": "{color.brand.700}",
+        "$type": "color",
+        "$description": "8.22:1"
+      },
+      "byo-bg": {
+        "$value": "{color.neutral.100}",
+        "$type": "color"
+      },
+      "byo-fg": {
+        "$value": "{color.neutral.800}",
+        "$type": "color",
+        "$description": "8.42:1"
+      },
+      "external-bg": {
+        "$value": "transparent",
+        "$type": "color"
+      },
+      "external-fg": {
+        "$value": "{color.neutral.700}",
+        "$type": "color",
+        "$description": "5.91:1"
+      },
+      "$description": "三态靠「底色有无 + 图标 + 动词化文案」区分，不靠色相"
+    },
+    "spine-card": {
+      "tone-1": {
+        "$value": "{color.brand.100}",
+        "$type": "color"
+      },
+      "tone-2": {
+        "$value": "{color.neutral.100}",
+        "$type": "color"
+      },
+      "tone-3": {
+        "$value": "{color.brand.50}",
+        "$type": "color"
+      },
+      "title": {
+        "$value": "{color.brand.700}",
+        "$type": "color",
+        "$description": "7.20–8.22:1，三 tone 均达标"
+      },
+      "author": {
+        "$value": "{color.neutral.800}",
+        "$type": "color",
+        "$description": "8.03–9.17:1"
+      },
+      "spine": {
+        "$value": "{color.brand.600}",
+        "$type": "color"
+      },
+      "$description": "单色阶 3 tone，按 book.id hash 取模分配。禁止扩为多色相"
+    },
+    "highlight": {
+      "$type": "color",
+      "$description": "v1 只有一种划线色。四色 + 线型方案（docs/UIUX.md §3.7 附录）已完整验算但不启用：四色等亮度（叠加底两两 1.001–1.046:1），只能靠色相区分，而松绿/褐玫在红绿色盲下不可分——要上线必须配非颜色标记（线型），并且四色得先有语义（色板可命名、笔记页可按颜色筛选）。没有语义的四种颜色是装饰，v1 不做。键名刻意不带 hl-1..4 编号：留一个空槽位会被读成「原来有四组，现在缺了三组」，而一个名字只要存在就会有人替它想出用途。",
+      "source": {
+        "$value": "{color.brand.400}",
+        "$type": "color",
+        "$description": "源色 #679982，只用于生成叠加底与下边线，不直接上屏"
+      },
+      "tint-light": {
+        "$value": "rgba(103, 153, 130, 0.14)",
+        "$type": "color",
+        "$description": "浅色纸叠加底 #EAF1EE。在 #FFFFFF / #FAFBFA / #F3EEDF / #E9F0E9 上正文(neutral-900)对比 11.88 / 11.43 / 10.35 / 10.39:1"
+      },
+      "tint-dark": {
+        "$value": "rgba(103, 153, 130, 0.20)",
+        "$type": "color",
+        "$description": "暗色纸 #16191A 叠加底 #26332F，正文对比 10.83:1"
+      },
+      "rule": {
+        "$value": "#4E7A65",
+        "$type": "color",
+        "$description": "浅色 2px 下边线。对纸底 4.21–4.89:1、对自身叠加底 3.71–4.26:1（2px 线属图形，基线 3:1）。叠加底与纸底仅差 1.13–1.15:1，肉眼看不出「这里有划线」，这条边线不是装饰是功能，不可减到 1px"
+      },
+      "rule-dark": {
+        "$value": "{color.brand.300}",
+        "$type": "color",
+        "$description": "暗色 2px 下边线，对 #16191A 与叠加底均 >= 3:1"
+      }
+    },
+    "bridge": {
+      "$description": "桥接层：ARCH §13 期望的变量名指向本文语义 Token。两套名字都可用，源只有一个，不会漂移。",
+      "ink-1": {
+        "$value": "{color.neutral.950}",
+        "$type": "color"
+      },
+      "ink-2": {
+        "$value": "{color.neutral.900}",
+        "$type": "color"
+      },
+      "ink-3": {
+        "$value": "{color.neutral.800}",
+        "$type": "color"
+      },
+      "ink-4": {
+        "$value": "{color.neutral.700}",
+        "$type": "color"
+      },
+      "ink-5": {
+        "$value": "{color.neutral.600}",
+        "$type": "color"
+      },
+      "ink-6": {
+        "$value": "{color.neutral.500}",
+        "$type": "color"
+      },
+      "ink-7": {
+        "$value": "{color.neutral.400}",
+        "$type": "color"
+      },
+      "ink-8": {
+        "$value": "{color.neutral.300}",
+        "$type": "color"
+      },
+      "ink-9": {
+        "$value": "{color.neutral.200}",
+        "$type": "color"
+      },
+      "paper-0": {
+        "$value": "{color.neutral.0}",
+        "$type": "color"
+      },
+      "paper-1": {
+        "$value": "{color.neutral.25}",
+        "$type": "color"
+      },
+      "paper-2": {
+        "$value": "{color.neutral.50}",
+        "$type": "color"
+      },
+      "paper-3": {
+        "$value": "{color.neutral.100}",
+        "$type": "color"
+      },
+      "accent": {
+        "$value": "{color.light.accent}",
+        "$type": "color",
+        "$description": "暗色主题下解析为 brand-300"
+      },
+      "flag-strong": {
+        "$value": "{color.tier.light.strong}",
+        "$type": "color",
+        "$description": "三档标识色 · 高度契合（Tier = strong）"
+      },
+      "flag-worth": {
+        "$value": "{color.tier.light.worth}",
+        "$type": "color",
+        "$description": "三档标识色 · 较为契合（Tier = worth）"
+      },
+      "flag-explore": {
+        "$value": "{color.tier.light.explore}",
+        "$type": "color",
+        "$description": "三档标识色 · 换个角度（Tier = explore）"
+      },
+      "warn": {
+        "$value": "{color.warn.600}",
+        "$type": "color"
+      },
+      "highlight": {
+        "$value": "{color.highlight.tint-light}",
+        "$type": "color",
+        "$description": "ARCH §13 期望的 --highlight。v1 单色，四色方案见 UIUX §3.7 附录"
+      }
+    }
+  },
+  "typography": {
+    "fontFamily": {
+      "read": {
+        "$value": [
+          "Source Serif 4",
+          "Noto Serif SC",
+          "Songti SC",
+          "SimSun",
+          "serif"
+        ],
+        "$type": "fontFamily",
+        "$description": "阅读衬线。中文不自托管 webfont，走系统栈（体积 8-10MB 不可接受）"
+      },
+      "ui": {
+        "$value": [
+          "Inter",
+          "Noto Sans SC",
+          "PingFang SC",
+          "Microsoft YaHei",
+          "system-ui",
+          "sans-serif"
+        ],
+        "$type": "fontFamily",
+        "$description": "界面黑体。拉丁自托管 subset，中文走系统栈"
+      },
+      "mono": {
+        "$value": [
+          "JetBrains Mono",
+          "ui-monospace",
+          "SFMono-Regular",
+          "monospace"
+        ],
+        "$type": "fontFamily",
+        "$description": "进度/页码/计数，必须配 tabular-nums"
+      }
+    },
+    "fontSize": {
+      "2xs": {
+        "$value": "0.6875rem",
+        "$type": "dimension",
+        "$description": "11px 徽标字/档位标签"
+      },
+      "xs": {
+        "$value": "0.75rem",
+        "$type": "dimension",
+        "$description": "12px 元数据"
+      },
+      "sm": {
+        "$value": "0.8125rem",
+        "$type": "dimension",
+        "$description": "13px 卡片正文"
+      },
+      "base": {
+        "$value": "0.875rem",
+        "$type": "dimension",
+        "$description": "14px UI 默认正文"
+      },
+      "md": {
+        "$value": "1rem",
+        "$type": "dimension",
+        "$description": "16px"
+      },
+      "lg": {
+        "$value": "1.125rem",
+        "$type": "dimension",
+        "$description": "18px 卡片标题"
+      },
+      "xl": {
+        "$value": "1.375rem",
+        "$type": "dimension",
+        "$description": "22px 区块标题"
+      },
+      "2xl": {
+        "$value": "1.75rem",
+        "$type": "dimension",
+        "$description": "28px 页面标题"
+      },
+      "3xl": {
+        "$value": "2.125rem",
+        "$type": "dimension",
+        "$description": "34px 仅 P1 引导标题（全站上限）"
+      }
+    },
+    "readingSize": {
+      "xs": {
+        "$value": "16px",
+        "$type": "dimension",
+        "$description": "阅读器第 1 档"
+      },
+      "sm": {
+        "$value": "17px",
+        "$type": "dimension",
+        "$description": "第 2 档"
+      },
+      "base": {
+        "$value": "18px",
+        "$type": "dimension",
+        "$description": "第 3 档（默认）"
+      },
+      "lg": {
+        "$value": "20px",
+        "$type": "dimension",
+        "$description": "第 4 档"
+      },
+      "xl": {
+        "$value": "22px",
+        "$type": "dimension",
+        "$description": "第 5 档"
+      }
+    },
+    "fontWeight": {
+      "read": {
+        "$value": 400,
+        "$type": "fontWeight"
+      },
+      "emphasize": {
+        "$value": 510,
+        "$type": "fontWeight"
+      },
+      "announce": {
+        "$value": 590,
+        "$type": "fontWeight"
+      }
+    },
+    "lineHeight": {
+      "reading": {
+        "$value": 1.8,
+        "$type": "number",
+        "$description": "中文正文，5 档间 1.7–1.85"
+      },
+      "body": {
+        "$value": 1.6,
+        "$type": "number"
+      },
+      "compact": {
+        "$value": 1.45,
+        "$type": "number"
+      },
+      "heading": {
+        "$value": 1.25,
+        "$type": "number"
+      },
+      "display": {
+        "$value": 1.15,
+        "$type": "number"
+      },
+      "label": {
+        "$value": 1.4,
+        "$type": "number"
+      }
+    },
+    "letterSpacing": {
+      "display": {
+        "$value": "-0.01em",
+        "$type": "dimension",
+        "$description": "≥22px 标题"
+      },
+      "body": {
+        "$value": "0",
+        "$type": "dimension"
+      },
+      "small": {
+        "$value": "0.01em",
+        "$type": "dimension",
+        "$description": "11–13px 小字"
+      },
+      "caps": {
+        "$value": "0.06em",
+        "$type": "dimension",
+        "$description": "EPUB/TXT 等全大写"
+      }
+    }
+  },
+  "spacing": {
+    "0": {
+      "$value": "0",
+      "$type": "dimension"
+    },
+    "1": {
+      "$value": "2px",
+      "$type": "dimension",
+      "$description": "唯一允许的 2px：图标与徽标贴合"
+    },
+    "2": {
+      "$value": "4px",
+      "$type": "dimension"
+    },
+    "3": {
+      "$value": "8px",
+      "$type": "dimension"
+    },
+    "4": {
+      "$value": "12px",
+      "$type": "dimension"
+    },
+    "5": {
+      "$value": "16px",
+      "$type": "dimension"
+    },
+    "6": {
+      "$value": "20px",
+      "$type": "dimension"
+    },
+    "7": {
+      "$value": "24px",
+      "$type": "dimension"
+    },
+    "8": {
+      "$value": "32px",
+      "$type": "dimension"
+    },
+    "9": {
+      "$value": "40px",
+      "$type": "dimension"
+    },
+    "10": {
+      "$value": "48px",
+      "$type": "dimension"
+    },
+    "11": {
+      "$value": "64px",
+      "$type": "dimension"
+    },
+    "12": {
+      "$value": "80px",
+      "$type": "dimension"
+    }
+  },
+  "radius": {
+    "xs": {
+      "$value": "3px",
+      "$type": "dimension",
+      "$description": "档位方块 / 徽标"
+    },
+    "sm": {
+      "$value": "6px",
+      "$type": "dimension",
+      "$description": "按钮 / 输入框 / chip"
+    },
+    "md": {
+      "$value": "10px",
+      "$type": "dimension",
+      "$description": "卡片 / 面板（上限）"
+    },
+    "lg": {
+      "$value": "14px",
+      "$type": "dimension",
+      "$description": "模态框 / 抽屉"
+    },
+    "pill": {
+      "$value": "9999px",
+      "$type": "dimension",
+      "$description": "极少用"
+    }
+  },
+  "borderWidth": {
+    "hairline": {
+      "$value": "1px",
+      "$type": "dimension"
+    },
+    "accent-rail": {
+      "$value": "2px",
+      "$type": "dimension",
+      "$description": "仅理由引用段落左竖线，全站唯一用途"
+    },
+    "spine": {
+      "$value": "3px",
+      "$type": "dimension",
+      "$description": "书脊卡书脊条（小尺寸）"
+    },
+    "spine-lg": {
+      "$value": "6px",
+      "$type": "dimension",
+      "$description": "书脊卡书脊条（中尺寸）"
+    },
+    "focus": {
+      "$value": "2px",
+      "$type": "dimension"
+    }
+  },
+  "shadow": {
+    "0": {
+      "$value": "none",
+      "$type": "shadow",
+      "$description": "默认：卡片仅 1px 边框，无阴影"
+    },
+    "1": {
+      "$value": "0 1px 2px rgba(27, 31, 29, 0.05)",
+      "$type": "shadow",
+      "$description": "hover 抬升 / 粘性头部"
+    },
+    "2": {
+      "$value": "0 4px 12px -2px rgba(27, 31, 29, 0.10)",
+      "$type": "shadow",
+      "$description": "下拉 / Popover"
+    },
+    "3": {
+      "$value": "0 12px 32px -8px rgba(27, 31, 29, 0.16)",
+      "$type": "shadow",
+      "$description": "模态框 / 抽屉"
+    },
+    "focus-ring": {
+      "$value": "0 0 0 2px var(--bg), 0 0 0 4px var(--focus-ring-color)",
+      "$type": "shadow",
+      "$description": "双层焦点环：任何底色上都可见，禁止 outline: none"
+    }
+  },
+  "motion": {
+    "duration": {
+      "instant": {
+        "$value": "80ms",
+        "$type": "duration",
+        "$description": "按下反馈"
+      },
+      "fast": {
+        "$value": "150ms",
+        "$type": "duration",
+        "$description": "hover / 选中（收敛值）"
+      },
+      "base": {
+        "$value": "200ms",
+        "$type": "duration",
+        "$description": "展开折叠 / 工具条"
+      },
+      "slow": {
+        "$value": "280ms",
+        "$type": "duration",
+        "$description": "面板 / 模态框"
+      },
+      "skeleton": {
+        "$value": "1200ms",
+        "$type": "duration",
+        "$description": "骨架微光循环"
+      }
+    },
+    "easing": {
+      "standard": {
+        "$value": "cubic-bezier(0.2, 0, 0, 1)",
+        "$type": "cubicBezier"
+      },
+      "enter": {
+        "$value": "cubic-bezier(0.05, 0.7, 0.1, 1)",
+        "$type": "cubicBezier"
+      },
+      "exit": {
+        "$value": "cubic-bezier(0.4, 0, 1, 1)",
+        "$type": "cubicBezier"
+      },
+      "linear": {
+        "$value": "linear",
+        "$type": "cubicBezier",
+        "$description": "仅进度条与骨架位移"
+      }
+    },
+    "$description": "禁止弹性缓动 cubic-bezier(0.68,-0.55,0.265,1.55) 及任何 overshoot/back 曲线；上限 400ms"
+  },
+  "zIndex": {
+    "base": {
+      "$value": 0,
+      "$type": "number"
+    },
+    "sticky": {
+      "$value": 100,
+      "$type": "number"
+    },
+    "dropdown": {
+      "$value": 200,
+      "$type": "number"
+    },
+    "overlay": {
+      "$value": 300,
+      "$type": "number"
+    },
+    "modal": {
+      "$value": 400,
+      "$type": "number"
+    },
+    "toast": {
+      "$value": 500,
+      "$type": "number"
+    }
+  },
+  "size": {
+    "icon-sm": {
+      "$value": "16px",
+      "$type": "dimension",
+      "$description": "行内文字旁"
+    },
+    "icon-md": {
+      "$value": "20px",
+      "$type": "dimension",
+      "$description": "按钮内"
+    },
+    "icon-lg": {
+      "$value": "24px",
+      "$type": "dimension",
+      "$description": "独立导航"
+    },
+    "icon-empty": {
+      "$value": "32px",
+      "$type": "dimension",
+      "$description": "空状态"
+    },
+    "icon-stroke": {
+      "$value": 1.75,
+      "$type": "number",
+      "$description": "全站统一描边；库默认 2，改细 0.25 以削弱模板感"
+    },
+    "touch-target": {
+      "$value": "44px",
+      "$type": "dimension",
+      "$description": "命中区下限（WCAG 2.5.5）"
+    },
+    "tier-square": {
+      "$value": "8px",
+      "$type": "dimension",
+      "$description": "符合度方块边长"
+    },
+    "tier-gap": {
+      "$value": "3px",
+      "$type": "dimension"
+    },
+    "spine-thumb-sm": {
+      "$value": "56px",
+      "$type": "dimension",
+      "$description": "列表卡书脊卡宽（高 84px）"
+    },
+    "spine-thumb-md": {
+      "$value": "160px",
+      "$type": "dimension",
+      "$description": "详情页书脊卡宽（高 228px）"
+    },
+    "reading-column": {
+      "$value": "34em",
+      "$type": "dimension",
+      "$description": "阅读列宽，约 34 汉字/行"
+    },
+    "recommend-card-max": {
+      "$value": "720px",
+      "$type": "dimension",
+      "$description": "推荐卡宽度上限（单列）"
+    }
+  },
+  "breakpoint": {
+    "phone": {
+      "$value": "0px",
+      "$type": "dimension",
+      "$description": "< 640px：4 列，底部 TabBar"
+    },
+    "tablet": {
+      "$value": "640px",
+      "$type": "dimension",
+      "$description": "8 列，顶部导航"
+    },
+    "desktop": {
+      "$value": "1024px",
+      "$type": "dimension",
+      "$description": "12 列，左侧 Sidebar 200px"
+    },
+    "wide": {
+      "$value": "1280px",
+      "$type": "dimension",
+      "$description": "容器 1120px，Sidebar 224px"
+    }
+  },
+  "container": {
+    "page": {
+      "$value": "1120px",
+      "$type": "dimension"
+    },
+    "content": {
+      "$value": "720px",
+      "$type": "dimension",
+      "$description": "文本型页面（P2/P3）主列"
+    },
+    "form": {
+      "$value": "480px",
+      "$type": "dimension",
+      "$description": "P1 表单"
+    },
+    "gutter-phone": {
+      "$value": "16px",
+      "$type": "dimension"
+    },
+    "gutter-tablet": {
+      "$value": "20px",
+      "$type": "dimension"
+    },
+    "gutter-desktop": {
+      "$value": "24px",
+      "$type": "dimension"
+    },
+    "section-y-desktop": {
+      "$value": "64px",
+      "$type": "dimension"
+    },
+    "section-y-tablet": {
+      "$value": "48px",
+      "$type": "dimension"
+    },
+    "section-y-phone": {
+      "$value": "32px",
+      "$type": "dimension"
+    }
+  }
+}

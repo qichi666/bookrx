@@ -1,0 +1,39 @@
+{
+  "name": "bookrx",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit",
+    "test": "vitest run",
+    "test:domain": "vitest run tests/domain",
+    "catalog:audit": "node tools/catalog-audit.mjs",
+    "audit:copyright": "node tools/copyright-audit.mjs",
+    "audit:style": "node tools/style-audit.mjs",
+    "budget:check": "node tools/budget-check.mjs",
+    "check:enums": "node tools/check-enums.mjs",
+    "check": "npm run typecheck && npm run test && npm run check:enums && npm run audit:style",
+    "check:data": "npm run catalog:audit && npm run audit:copyright && npm run budget:check",
+    "prebuild": "node tools/assert-crisis-chunk-plan.mjs",
+    "postbuild": "node tools/assert-crisis-chunk.mjs"
+  },
+  "dependencies": {
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vue/test-utils": "^2.5.1",
+    "happy-dom": "^21.0.3",
+    "typescript": "~5.7.3",
+    "vite": "^6.0.11",
+    "vitest": "^2.1.8",
+    "vue-tsc": "^2.2.0"
+  }
+}
