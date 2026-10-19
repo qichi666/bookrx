@@ -11,8 +11,10 @@ import vue from '@vitejs/plugin-vue';
  */
 const TMP_DIR = fileURLToPath(new URL('./node_modules/.tmp', import.meta.url));
 mkdirSync(TMP_DIR, { recursive: true });
+// Windows 上 os.tmpdir() 只认 TEMP / TMP；TMPDIR 是 Unix 惯例，三个都设
 process.env.TMPDIR = TMP_DIR;
 process.env.TMP = TMP_DIR;
+process.env.TEMP = TMP_DIR;
 
 // P8 危机页必须是独立 chunk：copy-audit 层 2 有三条规则按 crisis-* 文件名收窄，
 // 被并进主包时那三条规则会静默失效（不报错、也不命中）。

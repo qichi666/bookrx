@@ -49,8 +49,7 @@ export function matchFreeText(text: string): Array<{ tag: ProblemTagId; phrase: 
   return hits;
 }
 
-/** 组装诊断记录与打分用的 userTags（权重 ×10000 转基点）。 */
-export function buildDiagnosis(a: QuizAnswers): { diagnosis: Diagnosis; userTags: Map<ProblemTagId, number> } {
+/** 组装诊断记录与打分用的 userTags（权重 ×10000 转基点）。 */export function buildDiagnosis(a: QuizAnswers): { diagnosis: Diagnosis; userTags: Map<ProblemTagId, number> } {
   if (a.tags.length === 0) throw new Error('第 2 屏至少选 1 项');
   if (a.tags.length > 1 && !a.tags.includes(a.primary)) {
     throw new Error('多选时主诉必须是所选标签之一 —— 主诉由用户显式指定，不按选择顺序猜');
@@ -101,4 +100,9 @@ export function buildDiagnosis(a: QuizAnswers): { diagnosis: Diagnosis; userTags
   );
 
   return { diagnosis, userTags };
+}
+
+/** 从已落库的诊断复算打分侧 userTags（结果页 / 调参重算共用）。 */
+export function userTagsOf(d: Diagnosis): Map<ProblemTagId, number> {
+  return new Map(d.need_tags.map((n) => [n.tag, Math.round(n.weight * 10000)]));
 }
