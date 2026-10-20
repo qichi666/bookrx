@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  # 安全问题必须是私密渠道。这里指向 GitHub 官方说明，避免在模板里写死
+  # owner/repo（占位符一旦忘了改，用户点到的就是一个 404，而"报告安全问题的入口坏了"
+  # 比没有入口更糟——他会转而开一个公开 Issue）。
+  - name: 安全问题请走私密报告（不要开公开 Issue）
+    url: https://docs.github.com/zh/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability
+    about: 漏洞、XSS、导入链路解析缺陷；公开 Issue 会让所有部署实例一起暴露

@@ -1,0 +1,33 @@
+name: 功能建议
+description: 想要一个现在没有的能力
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        提之前请先看一眼 [CHANGELOG](../blob/main/CHANGELOG.md) 的「已知限制」和
+        [docs/SPEC.md](../blob/main/docs/SPEC.md) 里明确**不做**的那几条——
+        比如「云同步」「推荐接大模型」「四色划线」都是讨论过并决定不做的，理由写在文档里。
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 你遇到的问题
+      description: 先说问题，再说你想要的功能。反过来写我们很难判断该不该做。
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: 你想到的做法
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternative
+    attributes:
+      label: 现在你怎么绕过这个问题
+      description: 如果一个"笨办法"已经够用，那我们可能不该做这个功能
+    validations:
+      required: false

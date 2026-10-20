@@ -1,0 +1,18 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+[*.md]
+# 中文换行在 markdown 里是有语义的，别让编辑器把行尾空格吃掉
+trim_trailing_whitespace = false
+
+[*.{cmd,bat}]
+# 本机历史脚本是 GBK + CRLF，按 LF 重写会毁掉它们
+end_of_line = crlf
+charset = gbk

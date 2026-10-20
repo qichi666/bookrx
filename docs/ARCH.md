@@ -1383,6 +1383,7 @@ TXT：
 | TXT 编码无法判定 | 步 4 | `E_IMPORT_ENCODING` | 无法确定文本编码，请选择 | 手选 UTF-8 / GB18030 / UTF-16 |
 | 解压后正文为空（全空白 XHTML / 0 字符 TXT） | 步 5 | `E_IMPORT_EMPTY_CONTENT` | 这本书没有可显示的正文 | 拒绝 |
 | 存储配额不足 | 落库时 | `E_STORAGE_QUOTA` | 本地空间不足 | 引导到"我的书"删书 / 只删原文件 |
+| IndexedDB 打不开（隐私模式 / 站点数据被禁） | 落库时 | `E_STORAGE_FAILED` | 本机数据库打不开 | 提示换普通窗口、允许本站保存数据 |
 | 同 `book_id` 已存在 | 落库时 | —— | 不是错误：提示"你已导入过这本书" | 保留原档，不重复写；`put` 幂等 |
 
 `E_IMPORT_BAD_OPF` 的降级导入值得单列：用户手上很多书是"能读但元数据烂"的，直接拒绝会让用户觉得产品脆弱。降级路径 = 标题取文件名、作者空、`content_ready='readable'`、`core_match` 不做。

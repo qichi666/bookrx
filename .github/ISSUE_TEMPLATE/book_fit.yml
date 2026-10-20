@@ -1,0 +1,53 @@
+name: 书单反馈
+description: 推荐结果不对味、理由说不通、档位排错了
+labels: ['书单']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        这类反馈是这个项目最有用的东西。**我们不需要你写得好看，只需要你写得具体。**
+
+  - type: textarea
+    id: struggle
+    attributes:
+      label: 你当时写的困境原话
+      description: 你输入了什么、选了什么标签、有没有点「说具体一点」
+      placeholder: |
+        域：工作与意义
+        标签：当众发言紧张、burnout
+        自由文本：一开会轮到我说话就脑子空白
+    validations:
+      required: true
+
+  - type: textarea
+    id: got
+    attributes:
+      label: 它给出的 5 本
+      description: 书名即可，档位一并写上更好
+      placeholder: |
+        1. 《xxxx》 高度契合
+        2. 《yyyy》 较为契合
+        ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 你觉得该给什么 / 哪本不该出现
+      description: 有具体书名最好；只说"都不对"也有用，但请说一句为什么
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: 最接近哪种问题
+      options:
+        - 全都不对味（方向就错了）
+        - 有一两本对味，但排错位了
+        - 混进了明显不相关的书
+        - 理由说不通（比如命中的不是我说的那个意思）
+        - 该有的书没出现（我确定库里有）
+    validations:
+      required: true

@@ -1,0 +1,71 @@
+name: Bug 报告
+description: 有东西坏了、点了没反应、结果显示不对
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        请先确认：**不要贴受版权保护的全文**，贴一小段引文或截图都可以。
+        涉及安全问题的请改用 [SECURITY.md](../blob/main/SECURITY.md) 里的私密渠道。
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: 哪一块出的问题
+      options:
+        - 问卷 / 诊断
+        - 推荐结果 / 书单
+        - 导入（EPUB / TXT）
+        - 阅读器（翻页、字号、目录、搜索）
+        - 划线 / 笔记
+        - 书架
+        - 危机资源页
+        - 其他
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: 发生了什么
+      description: 你做了什么、看到什么、期待什么。三步以内最好。
+      placeholder: |
+        1. 打开 /import，拖进一本 2 MB 的 EPUB
+        2. 页面停住约 5 秒
+        3. 显示「EPUB 内部结构异常」，但这本书在别的阅读器里正常
+    validations:
+      required: true
+
+  - type: input
+    id: error-code
+    attributes:
+      label: 错误码（如果显示了）
+      placeholder: E_IMPORT_BAD_OPF
+    validations:
+      required: false
+
+  - type: input
+    id: file
+    attributes:
+      label: 涉及的文件格式与大小
+      description: 只写格式和大小，不用上传文件
+      placeholder: EPUB，2.4 MB，文字版无插图
+    validations:
+      required: false
+
+  - type: input
+    id: env
+    attributes:
+      label: 浏览器与系统
+      placeholder: Chrome 141 / macOS 15.2
+    validations:
+      required: true
+
+  - type: textarea
+    id: console
+    attributes:
+      label: 控制台报错（可选）
+      description: F12 → Console，把红色部分贴上来即可
+      render: shell
+    validations:
+      required: false
