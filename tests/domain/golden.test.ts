@@ -114,7 +114,11 @@ describe('M0.5 金标闸门（10 条画像）', () => {
     for (const x of rows) {
       expect(x.rank, `${x.id} 的 expect 书根本没进结果`).toBeGreaterThan(0);
     }
-    expect(recognized + 0).toBeLessThanOrEqual(10);
-    expect(first + 0).toBeLessThanOrEqual(10);
+
+    // 闸门本体（SPEC §7.4）：两个计数各自 ≥7/10，不求平均。
+    // 这里曾经写的是 `toBeLessThanOrEqual(10)` —— 恒真，认出率 0/10 也会通过，
+    // 等于"闸门"从来没闸过门。测试全绿不代表闸门通过，这是两件事。
+    expect(recognized, `认出率 ${recognized}/10 低于闸门 7/10`).toBeGreaterThanOrEqual(7);
+    expect(first, `首屏率 ${first}/10 低于闸门 7/10`).toBeGreaterThanOrEqual(7);
   });
 });

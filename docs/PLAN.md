@@ -67,18 +67,29 @@
 `npm run check`（typecheck + 单测 + 枚举比对 + 风格门禁）当前**全绿**，61 项测试。
 `npm run check:data` 三条闸门在书目数据落地前恒为「未验证」并以非零码退出 —— 这是 SPEC §12 的三态纪律，不是缺陷。
 
-### M0.5 落地状态（2026-10-20）
+### M0.5 落地状态（2026-10-20，第二轮更新）
 
 | 项 | 状态 | 落点 |
 |---|---|---|
 | 字段覆盖率与降级 | 完成 | `src/domain/scoring/coverage.ts`；§6.4 三条硬规则；9 条单测（含"未覆盖字段填 1 与填 5 同分"） |
 | enriched 层（派生困境标签） | 完成 | `catalog/problem-lexicon.json`（28 标签词表）→ `tools/derive-annotations.mjs` → `public/catalog/enriched/derived.json`；6551 本全覆盖（书名命中 1872 / 标签兜底 4679），`tools/verify-derived.mjs` 15 项硬断言 |
 | 按需取书 | 完成 | `src/engine/wide-need.ts`：命中率排序 + 窗口法；实测"发言紧张+怕评价"命中 686 本相关书，138 轮翻完 |
-| 金标 10 条 + 闸门 | 完成（首次测量） | `catalog/golden/profiles.json` + `tests/domain/golden.test.ts`：**认出率 7/10 ｜ 首屏率 10/10**（闸门要求各 ≥7/10，刚过） |
-| 60 本核心库 | **未完成**（13 本） | 缺口明确：g10 的期望书（决策方法类）库里根本没有 |
-| LLM 批量补字段（B1） | 未开始 | 方案与验收口径已登记在 OPEN-DECISIONS |
+| **60 本核心库** | **完成（60 本）** | `catalog/shards/seed-core-01/02/03.json`；**33 个困境标签零覆盖数 12 → 0**；`tests/data/core-library.test.ts` 10 项硬断言 |
+| 核心库 ↔ 候选池身份映射 | 完成 | `tools/map-core-to-candidates.mjs` → `catalog/core-id-map.json`；59/60 唯一映射 + 1 本白名单（《围炉夜话》公版古籍不在池内） |
+| 拼音索引 | 改为构建期生成 | `tools/gen-boot-data.mjs` 改用 `pinyin-pro`，去掉手工表；`ü→v`、数字转汉字两处修正（见下） |
+| 金标 10 条 + 闸门 | 完成（**认出率 10/10 ｜ 首屏率 9/10**） | `catalog/golden/profiles.json` + `tests/domain/golden.test.ts`；闸门要求各 ≥7/10 |
+| LLM 批量补字段（B1） | 未开始（通道受限，见下） | 方案与验收口径已登记在 OPEN-DECISIONS |
 
 > 金标第一次跑就挖出一个 P0：`buildDiagnosis` 组装 `answers` 时丢了第 3 屏五个偏好与 `free_text`，线上所有用户实际都按"全跳答"打分，且 `hasCrisisSignal` 永远读不到自由文本（P0-17 危机互斥从未生效）。已修 + 3 条回归用例。
+
+**第二轮三处必须记住的结论：**
+
+1. **核心库与候选池原本是两个不相交的书集。** `seed-core-01.json` 里 3 条 `source_url` 全部指向候选池里不存在的 subject（《被讨厌的勇气》写的是 26577919，真号 26369699）。没有身份映射时，同一本书会以两个身份各出现一次，而去重按 id 判断看不见。
+2. **拼音手工表在 60 本规模上必然错。** `pinyin-pro` 即使在 `toneType:'none'` 下也返回带 `ü` 的音节，`[^a-z]` 一过滤「虑」就剩一个 `l`，`身份的焦虑` 变成 `shen fen de jiao l`，首字母搜索直接失效且不报错。已改为 `ü→v` 并把"出现单字母音节"变成硬错误。
+3. **新增正确标注会把旧标注的缺口顶出来。** 补 47 本后金标首屏率从 10/10 掉到 7/10——不是新书抢位，而是《非暴力沟通》缺 `frequent-conflict`、《正念的奇迹》缺 `anxiety`、《思考，快与慢》缺 `judgment-distortion`。按"补事实、不调阈值"处理：只补标签、权重取书里真实主次，没动 8000/6000 两个阈值。
+
+**B1 为何没走云服务：** `cloud-service` 的 LLM 通道只能从浏览器（Origin 必须匹配已绑定应用域名）调用，且官方文档把"前端自建 BFF/Node 代理直连模型服务"列为禁止做法；而 B1 的产物是离线 JSON 数据集，不是运行时后端。为跑一次批处理去开通云后端、再发布页面消耗配额，是把工具用错了地方。本轮改为**直接标注 47 本**（零基建、可逐条复核），批量扩到千本级仍待确定通道。
+
 
 ### M1a 落地状态（2026-10-19）
 

@@ -1,0 +1,947 @@
+{
+  "note": "核心库 book_id → 豆瓣 subject_id。由 tools/map-core-to-candidates.mjs 生成，勿手改。",
+  "source_sha256_note": "候选池取自 public/catalog/candidates/all.json",
+  "generated_from": "public/catalog/candidates/all.json",
+  "entries": {
+    "core:000001": {
+      "subject_id": "26369699",
+      "title": "被讨厌的勇气",
+      "matched_title": "被讨厌的勇气",
+      "votes": 148354,
+      "method": "exact",
+      "same_title_count": 2,
+      "author_matched": true
+    },
+    "core:000002": {
+      "subject_id": "3533221",
+      "title": "非暴力沟通",
+      "matched_title": "非暴力沟通",
+      "votes": 75311,
+      "method": "exact",
+      "same_title_count": 4,
+      "author_matched": true
+    },
+    "core:000003": {
+      "subject_id": "10586741",
+      "title": "关键对话",
+      "matched_title": "关键对话",
+      "votes": 7011,
+      "method": "override",
+      "same_title_count": 2,
+      "author_matched": null,
+      "reason": "两个版次，取豆瓣主记录（v7011 > v1019）"
+    },
+    "core:000004": {
+      "subject_id": "10785583",
+      "title": "思考，快与慢",
+      "matched_title": "思考，快与慢",
+      "votes": 25480,
+      "method": "exact",
+      "same_title_count": 2,
+      "author_matched": true
+    },
+    "core:000005": {
+      "subject_id": "4726852",
+      "title": "正念的奇迹",
+      "matched_title": "正念的奇迹",
+      "votes": 6580,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000010": {
+      "subject_id": "34326931",
+      "title": "掌控习惯",
+      "matched_title": "掌控习惯",
+      "votes": 15706,
+      "method": "exact",
+      "same_title_count": 2,
+      "author_matched": true
+    },
+    "core:000011": {
+      "subject_id": "27056409",
+      "title": "深度工作",
+      "matched_title": "深度工作",
+      "votes": 13413,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000012": {
+      "subject_id": "27186106",
+      "title": "心流",
+      "matched_title": "心流",
+      "votes": 22322,
+      "method": "exact",
+      "same_title_count": 2,
+      "author_matched": true
+    },
+    "core:000014": {
+      "subject_id": "26751994",
+      "title": "曾国藩家书",
+      "matched_title": "曾国藩家书",
+      "votes": 489,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000015": {
+      "subject_id": "35481512",
+      "title": "也许你该找个人聊聊",
+      "matched_title": "也许你该找个人聊聊",
+      "votes": 64983,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000016": {
+      "subject_id": "5330333",
+      "title": "活出生命的意义",
+      "matched_title": "活出生命的意义",
+      "votes": 29395,
+      "method": "exact",
+      "same_title_count": 2,
+      "author_matched": true
+    },
+    "core:000017": {
+      "subject_id": "33422386",
+      "title": "世界尽头的咖啡馆",
+      "matched_title": "世界尽头的咖啡馆",
+      "votes": 31368,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000018": {
+      "subject_id": "2033081",
+      "title": "身份的焦虑",
+      "matched_title": "身份的焦虑",
+      "votes": 17390,
+      "method": "exact",
+      "same_title_count": 2,
+      "author_matched": true
+    },
+    "core:000019": {
+      "subject_id": "35022055",
+      "title": "伯恩斯焦虑自助疗法",
+      "matched_title": "伯恩斯焦虑自助疗法",
+      "votes": 1460,
+      "method": "title",
+      "same_title_count": 1,
+      "author_matched": false,
+      "needs_review": true
+    },
+    "core:000020": {
+      "subject_id": "35539713",
+      "title": "焦虑的人",
+      "matched_title": "焦虑的人",
+      "votes": 23612,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000021": {
+      "subject_id": "5980113",
+      "title": "伯恩斯新情绪疗法",
+      "matched_title": "伯恩斯新情绪疗法",
+      "votes": 6209,
+      "method": "exact",
+      "same_title_count": 3,
+      "author_matched": true
+    },
+    "core:000022": {
+      "subject_id": "4929897",
+      "title": "情商",
+      "matched_title": "情商",
+      "votes": 4783,
+      "method": "exact",
+      "same_title_count": 4,
+      "author_matched": true
+    },
+    "core:000023": {
+      "subject_id": "26824855",
+      "title": "高难度谈话",
+      "matched_title": "高难度谈话",
+      "votes": 389,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000024": {
+      "subject_id": "35473807",
+      "title": "沟通的方法",
+      "matched_title": "沟通的方法",
+      "votes": 5850,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000025": {
+      "subject_id": "1444900",
+      "title": "爱的五种语言",
+      "matched_title": "爱的五种语言",
+      "votes": 6436,
+      "method": "exact",
+      "same_title_count": 4,
+      "author_matched": true
+    },
+    "core:000026": {
+      "subject_id": "26585065",
+      "title": "亲密关系（第6版）",
+      "matched_title": "亲密关系（第6版）",
+      "votes": 32928,
+      "method": "exact",
+      "same_title_count": 7,
+      "author_matched": true
+    },
+    "core:000027": {
+      "subject_id": "34460345",
+      "title": "李银河说爱情",
+      "matched_title": "李银河说爱情",
+      "votes": 13074,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000028": {
+      "subject_id": "26286235",
+      "title": "爱情笔记",
+      "matched_title": "爱情笔记",
+      "votes": 5224,
+      "method": "exact",
+      "same_title_count": 2,
+      "author_matched": true
+    },
+    "core:000029": {
+      "subject_id": "30199434",
+      "title": "原生家庭",
+      "matched_title": "原生家庭",
+      "votes": 18846,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000030": {
+      "subject_id": "35173329",
+      "title": "真希望我父母读过这本书",
+      "matched_title": "真希望我父母读过这本书",
+      "votes": 9479,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000031": {
+      "subject_id": "26257557",
+      "title": "热锅上的家庭",
+      "matched_title": "热锅上的家庭",
+      "votes": 4404,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000032": {
+      "subject_id": "35496103",
+      "title": "如何避免孤独终老",
+      "matched_title": "如何避免孤独终老",
+      "votes": 2146,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000033": {
+      "subject_id": "24934182",
+      "title": "一个人的朝圣",
+      "matched_title": "一个人的朝圣",
+      "votes": 81833,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000034": {
+      "subject_id": "26416401",
+      "title": "我敢在你怀里孤独",
+      "matched_title": "我敢在你怀里孤独",
+      "votes": 5789,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000035": {
+      "subject_id": "33442259",
+      "title": "倦怠社会",
+      "matched_title": "倦怠社会",
+      "votes": 21681,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000036": {
+      "subject_id": "35083211",
+      "title": "深度休息",
+      "matched_title": "深度休息",
+      "votes": 697,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000037": {
+      "subject_id": "35263403",
+      "title": "隐性疲劳",
+      "matched_title": "隐性疲劳",
+      "votes": 559,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000038": {
+      "subject_id": "1322025",
+      "title": "卓有成效的管理者",
+      "matched_title": "卓有成效的管理者",
+      "votes": 19486,
+      "method": "exact",
+      "same_title_count": 4,
+      "author_matched": true
+    },
+    "core:000039": {
+      "subject_id": "6536593",
+      "title": "领导梯队",
+      "matched_title": "领导梯队",
+      "votes": 1932,
+      "method": "exact",
+      "same_title_count": 2,
+      "author_matched": true
+    },
+    "core:000040": {
+      "subject_id": "1958120",
+      "title": "格鲁夫给经理人的第一课",
+      "matched_title": "格鲁夫给经理人的第一课",
+      "votes": 1518,
+      "method": "exact",
+      "same_title_count": 2,
+      "author_matched": true
+    },
+    "core:000041": {
+      "subject_id": "3558629",
+      "title": "小强升职记",
+      "matched_title": "小强升职记",
+      "votes": 6227,
+      "method": "exact",
+      "same_title_count": 2,
+      "author_matched": true
+    },
+    "core:000042": {
+      "subject_id": "1039311",
+      "title": "职场动物进化手册",
+      "matched_title": "职场动物进化手册",
+      "votes": 3424,
+      "method": "exact",
+      "same_title_count": 2,
+      "author_matched": true
+    },
+    "core:000043": {
+      "subject_id": "2256039",
+      "title": "杜拉拉升职记",
+      "matched_title": "杜拉拉升职记",
+      "votes": 93607,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000044": {
+      "subject_id": "24878420",
+      "title": "明智行动的艺术",
+      "matched_title": "明智行动的艺术",
+      "votes": 2281,
+      "method": "exact",
+      "same_title_count": 3,
+      "author_matched": true
+    },
+    "core:000045": {
+      "subject_id": "26877306",
+      "title": "微习惯",
+      "matched_title": "微习惯",
+      "votes": 14257,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000046": {
+      "subject_id": "20389195",
+      "title": "慢慢来，一切都来得及",
+      "matched_title": "慢慢来，一切都来得及",
+      "votes": 8013,
+      "method": "exact",
+      "same_title_count": 2,
+      "author_matched": true
+    },
+    "core:000047": {
+      "subject_id": "11528220",
+      "title": "系统之美",
+      "matched_title": "系统之美",
+      "votes": 5634,
+      "method": "exact",
+      "same_title_count": 2,
+      "author_matched": true
+    },
+    "core:000048": {
+      "subject_id": "25783654",
+      "title": "如何高效学习",
+      "matched_title": "如何高效学习",
+      "votes": 12179,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000049": {
+      "subject_id": "6749832",
+      "title": "复杂",
+      "matched_title": "复杂",
+      "votes": 3514,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000050": {
+      "subject_id": "27131763",
+      "title": "如何有效整理信息",
+      "matched_title": "如何有效整理信息",
+      "votes": 4108,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000051": {
+      "subject_id": "37001305",
+      "title": "智人之上",
+      "matched_title": "智人之上",
+      "votes": 6814,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000052": {
+      "subject_id": "1193621",
+      "title": "决策与判断",
+      "matched_title": "决策与判断",
+      "votes": 3985,
+      "method": "exact",
+      "same_title_count": 3,
+      "author_matched": true
+    },
+    "core:000053": {
+      "subject_id": "3223711",
+      "title": "怪诞行为学",
+      "matched_title": "怪诞行为学",
+      "votes": 15421,
+      "method": "exact",
+      "same_title_count": 3,
+      "author_matched": true
+    },
+    "core:000054": {
+      "subject_id": "37270798",
+      "title": "年龄是一种感觉",
+      "matched_title": "年龄是一种感觉",
+      "votes": 6388,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000055": {
+      "subject_id": "36139391",
+      "title": "中年之路",
+      "matched_title": "中年之路",
+      "votes": 3004,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000056": {
+      "subject_id": "26576861",
+      "title": "最好的告别",
+      "matched_title": "最好的告别",
+      "votes": 57849,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000057": {
+      "subject_id": "26660579",
+      "title": "直视骄阳",
+      "matched_title": "直视骄阳",
+      "votes": 2787,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000058": {
+      "subject_id": "36374635",
+      "title": "生命的礼物",
+      "matched_title": "生命的礼物",
+      "votes": 3807,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000059": {
+      "subject_id": "35193035",
+      "title": "认知觉醒",
+      "matched_title": "认知觉醒",
+      "votes": 37985,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000060": {
+      "subject_id": "36132802",
+      "title": "不原谅也没关系",
+      "matched_title": "不原谅也没关系",
+      "votes": 16982,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000061": {
+      "subject_id": "25744065",
+      "title": "决断力",
+      "matched_title": "决断力",
+      "votes": 737,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000062": {
+      "subject_id": "3261600",
+      "title": "人生的智慧",
+      "matched_title": "人生的智慧",
+      "votes": 36547,
+      "method": "exact",
+      "same_title_count": 2,
+      "author_matched": true
+    },
+    "core:000063": {
+      "subject_id": "26672693",
+      "title": "一个叫欧维的男人决定去死",
+      "matched_title": "一个叫欧维的男人决定去死",
+      "votes": 83568,
+      "method": "exact",
+      "same_title_count": 2,
+      "author_matched": true
+    },
+    "core:000064": {
+      "subject_id": "33391219",
+      "title": "金字塔原理",
+      "matched_title": "金字塔原理",
+      "votes": 7695,
+      "method": "exact",
+      "same_title_count": 4,
+      "author_matched": true
+    }
+  },
+  "ambiguous": [
+    {
+      "core_id": "core:000001",
+      "title": "被讨厌的勇气",
+      "picked": "26369699",
+      "picked_votes": 148354,
+      "others": [
+        {
+          "id": "36150914",
+          "title": "被讨厌的勇气",
+          "votes": 44164
+        }
+      ]
+    },
+    {
+      "core_id": "core:000002",
+      "title": "非暴力沟通",
+      "picked": "3533221",
+      "picked_votes": 75311,
+      "others": [
+        {
+          "id": "35519608",
+          "title": "非暴力沟通（修订版）",
+          "votes": 9806
+        },
+        {
+          "id": "26728136",
+          "title": "非暴力沟通",
+          "votes": 3216
+        },
+        {
+          "id": "35713318",
+          "title": "非暴力沟通 (修订版)",
+          "votes": 211
+        }
+      ]
+    },
+    {
+      "core_id": "core:000004",
+      "title": "思考，快与慢",
+      "picked": "10785583",
+      "picked_votes": 25480,
+      "others": [
+        {
+          "id": "37270984",
+          "title": "思考，快与慢",
+          "votes": 1111
+        }
+      ]
+    },
+    {
+      "core_id": "core:000010",
+      "title": "掌控习惯",
+      "picked": "34326931",
+      "picked_votes": 15706,
+      "others": [
+        {
+          "id": "36607425",
+          "title": "掌控习惯",
+          "votes": 2557
+        }
+      ]
+    },
+    {
+      "core_id": "core:000012",
+      "title": "心流",
+      "picked": "27186106",
+      "picked_votes": 22322,
+      "others": [
+        {
+          "id": "33404069",
+          "title": "心流",
+          "votes": 110
+        }
+      ]
+    },
+    {
+      "core_id": "core:000016",
+      "title": "活出生命的意义",
+      "picked": "5330333",
+      "picked_votes": 29395,
+      "others": [
+        {
+          "id": "26373271",
+          "title": "活出生命的意义[珍藏版]",
+          "votes": 2280
+        }
+      ]
+    },
+    {
+      "core_id": "core:000018",
+      "title": "身份的焦虑",
+      "picked": "2033081",
+      "picked_votes": 17390,
+      "others": [
+        {
+          "id": "27625550",
+          "title": "身份的焦虑",
+          "votes": 1549
+        }
+      ]
+    },
+    {
+      "core_id": "core:000021",
+      "title": "伯恩斯新情绪疗法",
+      "picked": "5980113",
+      "picked_votes": 6209,
+      "others": [
+        {
+          "id": "2216703",
+          "title": "伯恩斯新情绪疗法",
+          "votes": 972
+        },
+        {
+          "id": "35248033",
+          "title": "伯恩斯新情绪疗法",
+          "votes": 153
+        }
+      ]
+    },
+    {
+      "core_id": "core:000022",
+      "title": "情商",
+      "picked": "4929897",
+      "picked_votes": 4783,
+      "others": [
+        {
+          "id": "30181152",
+          "title": "情商",
+          "votes": 887
+        },
+        {
+          "id": "3593985",
+          "title": "情商",
+          "votes": 397
+        },
+        {
+          "id": "26825914",
+          "title": "情商",
+          "votes": 158
+        }
+      ]
+    },
+    {
+      "core_id": "core:000025",
+      "title": "爱的五种语言",
+      "picked": "1444900",
+      "picked_votes": 6436,
+      "others": [
+        {
+          "id": "30282281",
+          "title": "爱的五种语言",
+          "votes": 1788
+        },
+        {
+          "id": "36680787",
+          "title": "爱的五种语言",
+          "votes": 1089
+        },
+        {
+          "id": "5386360",
+          "title": "爱的五种语言",
+          "votes": 555
+        }
+      ]
+    },
+    {
+      "core_id": "core:000026",
+      "title": "亲密关系（第6版）",
+      "picked": "26585065",
+      "picked_votes": 32928,
+      "others": [
+        {
+          "id": "5952488",
+          "title": "亲密关系",
+          "votes": 20106
+        },
+        {
+          "id": "6052834",
+          "title": "亲密关系",
+          "votes": 4285
+        },
+        {
+          "id": "36787449",
+          "title": "亲密关系 （第8版）",
+          "votes": 2556
+        }
+      ]
+    },
+    {
+      "core_id": "core:000028",
+      "title": "爱情笔记",
+      "picked": "26286235",
+      "picked_votes": 5224,
+      "others": [
+        {
+          "id": "35170991",
+          "title": "爱情笔记",
+          "votes": 715
+        }
+      ]
+    },
+    {
+      "core_id": "core:000038",
+      "title": "卓有成效的管理者",
+      "picked": "1322025",
+      "picked_votes": 19486,
+      "others": [
+        {
+          "id": "4020857",
+          "title": "卓有成效的管理者",
+          "votes": 1841
+        },
+        {
+          "id": "33395539",
+          "title": "卓有成效的管理者",
+          "votes": 868
+        },
+        {
+          "id": "36336321",
+          "title": "卓有成效的管理者",
+          "votes": 730
+        }
+      ]
+    },
+    {
+      "core_id": "core:000039",
+      "title": "领导梯队",
+      "picked": "6536593",
+      "picked_votes": 1932,
+      "others": [
+        {
+          "id": "37042789",
+          "title": "领导梯队 (第3版)",
+          "votes": 157
+        }
+      ]
+    },
+    {
+      "core_id": "core:000040",
+      "title": "格鲁夫给经理人的第一课",
+      "picked": "1958120",
+      "picked_votes": 1518,
+      "others": [
+        {
+          "id": "27178870",
+          "title": "格鲁夫给经理人的第一课",
+          "votes": 1457
+        }
+      ]
+    },
+    {
+      "core_id": "core:000041",
+      "title": "小强升职记",
+      "picked": "3558629",
+      "picked_votes": 6227,
+      "others": [
+        {
+          "id": "25852981",
+          "title": "小强升职记",
+          "votes": 4812
+        }
+      ]
+    },
+    {
+      "core_id": "core:000042",
+      "title": "职场动物进化手册",
+      "picked": "1039311",
+      "picked_votes": 3424,
+      "others": [
+        {
+          "id": "6716209",
+          "title": "职场动物进化手册",
+          "votes": 423
+        }
+      ]
+    },
+    {
+      "core_id": "core:000044",
+      "title": "明智行动的艺术",
+      "picked": "24878420",
+      "picked_votes": 2281,
+      "others": [
+        {
+          "id": "26871361",
+          "title": "明智行动的艺术",
+          "votes": 426
+        },
+        {
+          "id": "37883488",
+          "title": "明智行动的艺术",
+          "votes": 0
+        }
+      ]
+    },
+    {
+      "core_id": "core:000046",
+      "title": "慢慢来，一切都来得及",
+      "picked": "20389195",
+      "picked_votes": 8013,
+      "others": [
+        {
+          "id": "26772782",
+          "title": "慢慢来，一切都来得及",
+          "votes": 78
+        }
+      ]
+    },
+    {
+      "core_id": "core:000047",
+      "title": "系统之美",
+      "picked": "11528220",
+      "picked_votes": 5634,
+      "others": [
+        {
+          "id": "36675575",
+          "title": "系统之美",
+          "votes": 424
+        }
+      ]
+    },
+    {
+      "core_id": "core:000052",
+      "title": "决策与判断",
+      "picked": "1193621",
+      "picked_votes": 3985,
+      "others": [
+        {
+          "id": "34984211",
+          "title": "决策与判断",
+          "votes": 323
+        },
+        {
+          "id": "27076799",
+          "title": "决策与判断",
+          "votes": 17
+        }
+      ]
+    },
+    {
+      "core_id": "core:000053",
+      "title": "怪诞行为学",
+      "picked": "3223711",
+      "picked_votes": 15421,
+      "others": [
+        {
+          "id": "4929844",
+          "title": "怪诞行为学",
+          "votes": 14872
+        },
+        {
+          "id": "27599381",
+          "title": "怪诞行为学",
+          "votes": 6598
+        }
+      ]
+    },
+    {
+      "core_id": "core:000062",
+      "title": "人生的智慧",
+      "picked": "3261600",
+      "picked_votes": 36547,
+      "others": [
+        {
+          "id": "25867570",
+          "title": "人生的智慧",
+          "votes": 11994
+        }
+      ]
+    },
+    {
+      "core_id": "core:000063",
+      "title": "一个叫欧维的男人决定去死",
+      "picked": "26672693",
+      "picked_votes": 83568,
+      "others": [
+        {
+          "id": "35068894",
+          "title": "一个叫欧维的男人决定去死",
+          "votes": 7032
+        }
+      ]
+    },
+    {
+      "core_id": "core:000064",
+      "title": "金字塔原理",
+      "picked": "33391219",
+      "picked_votes": 7695,
+      "others": [
+        {
+          "id": "1020644",
+          "title": "金字塔原理",
+          "votes": 7412
+        },
+        {
+          "id": "4882120",
+          "title": "金字塔原理",
+          "votes": 5813
+        },
+        {
+          "id": "3026361",
+          "title": "金字塔原理",
+          "votes": 59
+        }
+      ]
+    }
+  ]
+}

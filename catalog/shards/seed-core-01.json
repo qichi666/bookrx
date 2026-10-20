@@ -44,6 +44,7 @@
     "category_l1": "psychology",
     "problem_tags": [
       { "tag": "communication-block", "weight": 0.9 },
+      { "tag": "frequent-conflict", "weight": 0.7 },
       { "tag": "people-pleasing", "weight": 0.5 }
     ],
     "theme_tags": [
@@ -117,6 +118,7 @@
     "category_l1": "psychology",
     "problem_tags": [
       { "tag": "cognitive-bias", "weight": 0.8 },
+      { "tag": "judgment-distortion", "weight": 0.8 },
       { "tag": "decision-difficulty", "weight": 0.6 }
     ],
     "theme_tags": [
@@ -151,7 +153,8 @@
     "translator": "待核对",
     "category_l1": "other",
     "problem_tags": [
-      { "tag": "rumination", "weight": 0.5 }
+      { "tag": "rumination", "weight": 0.6 },
+      { "tag": "anxiety", "weight": 0.5 }
     ],
     "theme_tags": [
       { "tag": "self-awareness", "weight": 0.8 },

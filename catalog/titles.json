@@ -35,8 +35,8 @@
     "authors": [
       "丹尼尔·卡尼曼"
     ],
-    "pinyin_full": "si kuai yu man",
-    "pinyin_initials": "skym"
+    "pinyin_full": "si kao kuai yu man",
+    "pinyin_initials": "skkym"
   },
   {
     "book_id": "core:000005",
@@ -89,8 +89,8 @@
     "authors": [
       "曾国藩"
     ],
-    "pinyin_full": "zeng guo fan jia shu",
-    "pinyin_initials": "zgfjs"
+    "pinyin_full": "ceng guo fan jia shu",
+    "pinyin_initials": "cgfjs"
   },
   {
     "book_id": "core:000015",
@@ -98,8 +98,8 @@
     "authors": [
       "洛莉·戈特利布"
     ],
-    "pinyin_full": "ye xu zhao ge ren liao liao",
-    "pinyin_initials": "yxzgrll"
+    "pinyin_full": "ye xu ni gai zhao ge ren liao liao",
+    "pinyin_initials": "yxngzgrll"
   },
   {
     "book_id": "core:000016",
@@ -118,5 +118,434 @@
     ],
     "pinyin_full": "shi jie jin tou de ka fei guan",
     "pinyin_initials": "sjjtdkfg"
+  },
+  {
+    "book_id": "core:000018",
+    "title": "身份的焦虑",
+    "authors": [
+      "阿兰·德波顿"
+    ],
+    "pinyin_full": "shen fen de jiao lv",
+    "pinyin_initials": "sfdjl"
+  },
+  {
+    "book_id": "core:000019",
+    "title": "伯恩斯焦虑自助疗法",
+    "authors": [
+      "戴维·伯恩斯"
+    ],
+    "pinyin_full": "bo en si jiao lv zi zhu liao fa",
+    "pinyin_initials": "besjlzzlf"
+  },
+  {
+    "book_id": "core:000020",
+    "title": "焦虑的人",
+    "authors": [
+      "弗雷德里克·巴克曼"
+    ],
+    "pinyin_full": "jiao lv de ren",
+    "pinyin_initials": "jldr"
+  },
+  {
+    "book_id": "core:000021",
+    "title": "伯恩斯新情绪疗法",
+    "authors": [
+      "戴维·伯恩斯"
+    ],
+    "pinyin_full": "bo en si xin qing xu liao fa",
+    "pinyin_initials": "besxqxlf"
+  },
+  {
+    "book_id": "core:000022",
+    "title": "情商",
+    "authors": [
+      "丹尼尔·戈尔曼"
+    ],
+    "pinyin_full": "qing shang",
+    "pinyin_initials": "qs"
+  },
+  {
+    "book_id": "core:000023",
+    "title": "高难度谈话",
+    "authors": [
+      "道格拉斯·斯通",
+      "布鲁斯·佩顿",
+      "希拉·汉"
+    ],
+    "pinyin_full": "gao nan du tan hua",
+    "pinyin_initials": "gndth"
+  },
+  {
+    "book_id": "core:000024",
+    "title": "沟通的方法",
+    "authors": [
+      "脱不花"
+    ],
+    "pinyin_full": "gou tong de fang fa",
+    "pinyin_initials": "gtdff"
+  },
+  {
+    "book_id": "core:000025",
+    "title": "爱的五种语言",
+    "authors": [
+      "盖瑞·查普曼"
+    ],
+    "pinyin_full": "ai de wu zhong yu yan",
+    "pinyin_initials": "adwzyy"
+  },
+  {
+    "book_id": "core:000026",
+    "title": "亲密关系（第6版）",
+    "authors": [
+      "罗兰·米勒"
+    ],
+    "pinyin_full": "qin mi guan xi di liu ban",
+    "pinyin_initials": "qmgxdlb"
+  },
+  {
+    "book_id": "core:000027",
+    "title": "李银河说爱情",
+    "authors": [
+      "李银河"
+    ],
+    "pinyin_full": "li yin he shuo ai qing",
+    "pinyin_initials": "lyhsaq"
+  },
+  {
+    "book_id": "core:000028",
+    "title": "爱情笔记",
+    "authors": [
+      "阿兰·德波顿"
+    ],
+    "pinyin_full": "ai qing bi ji",
+    "pinyin_initials": "aqbj"
+  },
+  {
+    "book_id": "core:000029",
+    "title": "原生家庭",
+    "authors": [
+      "苏珊·福沃德",
+      "克雷格·巴克"
+    ],
+    "pinyin_full": "yuan sheng jia ting",
+    "pinyin_initials": "ysjt"
+  },
+  {
+    "book_id": "core:000030",
+    "title": "真希望我父母读过这本书",
+    "authors": [
+      "菲利帕·佩里"
+    ],
+    "pinyin_full": "zhen xi wang wo fu mu du guo zhe ben shu",
+    "pinyin_initials": "zxwwfmdgzbs"
+  },
+  {
+    "book_id": "core:000031",
+    "title": "热锅上的家庭",
+    "authors": [
+      "奥古斯都·纳皮尔",
+      "卡尔·惠特克"
+    ],
+    "pinyin_full": "re guo shang de jia ting",
+    "pinyin_initials": "rgsdjt"
+  },
+  {
+    "book_id": "core:000032",
+    "title": "如何避免孤独终老",
+    "authors": [
+      "洛根·尤里"
+    ],
+    "pinyin_full": "ru he bi mian gu du zhong lao",
+    "pinyin_initials": "rhbmgdzl"
+  },
+  {
+    "book_id": "core:000033",
+    "title": "一个人的朝圣",
+    "authors": [
+      "蕾秋·乔伊斯"
+    ],
+    "pinyin_full": "yi ge ren de chao sheng",
+    "pinyin_initials": "ygrdcs"
+  },
+  {
+    "book_id": "core:000034",
+    "title": "我敢在你怀里孤独",
+    "authors": [
+      "刘若英"
+    ],
+    "pinyin_full": "wo gan zai ni huai li gu du",
+    "pinyin_initials": "wgznhlgd"
+  },
+  {
+    "book_id": "core:000035",
+    "title": "倦怠社会",
+    "authors": [
+      "韩炳哲"
+    ],
+    "pinyin_full": "juan dai she hui",
+    "pinyin_initials": "jdsh"
+  },
+  {
+    "book_id": "core:000036",
+    "title": "深度休息",
+    "authors": [
+      "克劳迪娅·哈蒙德"
+    ],
+    "pinyin_full": "shen du xiu xi",
+    "pinyin_initials": "sdxx"
+  },
+  {
+    "book_id": "core:000037",
+    "title": "隐性疲劳",
+    "authors": [
+      "梶本修身"
+    ],
+    "pinyin_full": "yin xing pi lao",
+    "pinyin_initials": "yxpl"
+  },
+  {
+    "book_id": "core:000038",
+    "title": "卓有成效的管理者",
+    "authors": [
+      "彼得·德鲁克"
+    ],
+    "pinyin_full": "zhuo you cheng xiao de guan li zhe",
+    "pinyin_initials": "zycxdglz"
+  },
+  {
+    "book_id": "core:000039",
+    "title": "领导梯队",
+    "authors": [
+      "拉姆·查兰"
+    ],
+    "pinyin_full": "ling dao ti dui",
+    "pinyin_initials": "ldtd"
+  },
+  {
+    "book_id": "core:000040",
+    "title": "格鲁夫给经理人的第一课",
+    "authors": [
+      "安迪·格鲁夫"
+    ],
+    "pinyin_full": "ge lu fu gei jing li ren de di yi ke",
+    "pinyin_initials": "glfgjlrddyk"
+  },
+  {
+    "book_id": "core:000041",
+    "title": "小强升职记",
+    "authors": [
+      "邹鑫"
+    ],
+    "pinyin_full": "xiao qiang sheng zhi ji",
+    "pinyin_initials": "xqszj"
+  },
+  {
+    "book_id": "core:000042",
+    "title": "职场动物进化手册",
+    "authors": [
+      "雾满拦江"
+    ],
+    "pinyin_full": "zhi chang dong wu jin hua shou ce",
+    "pinyin_initials": "zcdwjhsc"
+  },
+  {
+    "book_id": "core:000043",
+    "title": "杜拉拉升职记",
+    "authors": [
+      "李可"
+    ],
+    "pinyin_full": "du la la sheng zhi ji",
+    "pinyin_initials": "dllszj"
+  },
+  {
+    "book_id": "core:000044",
+    "title": "明智行动的艺术",
+    "authors": [
+      "罗尔夫·多贝里"
+    ],
+    "pinyin_full": "ming zhi xing dong de yi shu",
+    "pinyin_initials": "mzxddys"
+  },
+  {
+    "book_id": "core:000045",
+    "title": "微习惯",
+    "authors": [
+      "斯蒂芬·盖斯"
+    ],
+    "pinyin_full": "wei xi guan",
+    "pinyin_initials": "wxg"
+  },
+  {
+    "book_id": "core:000046",
+    "title": "慢慢来，一切都来得及",
+    "authors": [
+      "meiya"
+    ],
+    "pinyin_full": "man man lai yi qie dou lai de ji",
+    "pinyin_initials": "mmlyqdldj"
+  },
+  {
+    "book_id": "core:000047",
+    "title": "系统之美",
+    "authors": [
+      "德内拉·梅多斯"
+    ],
+    "pinyin_full": "xi tong zhi mei",
+    "pinyin_initials": "xtzm"
+  },
+  {
+    "book_id": "core:000048",
+    "title": "如何高效学习",
+    "authors": [
+      "斯科特·扬"
+    ],
+    "pinyin_full": "ru he gao xiao xue xi",
+    "pinyin_initials": "rhgxxx"
+  },
+  {
+    "book_id": "core:000049",
+    "title": "复杂",
+    "authors": [
+      "梅拉妮·米歇尔"
+    ],
+    "pinyin_full": "fu za",
+    "pinyin_initials": "fz"
+  },
+  {
+    "book_id": "core:000050",
+    "title": "如何有效整理信息",
+    "authors": [
+      "奥野宣之"
+    ],
+    "pinyin_full": "ru he you xiao zheng li xin xi",
+    "pinyin_initials": "rhyxzlxx"
+  },
+  {
+    "book_id": "core:000051",
+    "title": "智人之上",
+    "authors": [
+      "尤瓦尔·赫拉利"
+    ],
+    "pinyin_full": "zhi ren zhi shang",
+    "pinyin_initials": "zrzs"
+  },
+  {
+    "book_id": "core:000052",
+    "title": "决策与判断",
+    "authors": [
+      "斯科特·普劳斯"
+    ],
+    "pinyin_full": "jue ce yu pan duan",
+    "pinyin_initials": "jcypd"
+  },
+  {
+    "book_id": "core:000053",
+    "title": "怪诞行为学",
+    "authors": [
+      "丹·艾瑞里"
+    ],
+    "pinyin_full": "guai dan xing wei xue",
+    "pinyin_initials": "gdxwx"
+  },
+  {
+    "book_id": "core:000054",
+    "title": "年龄是一种感觉",
+    "authors": [
+      "海莉·麦克吉"
+    ],
+    "pinyin_full": "nian ling shi yi zhong gan jue",
+    "pinyin_initials": "nlsyzgj"
+  },
+  {
+    "book_id": "core:000055",
+    "title": "中年之路",
+    "authors": [
+      "詹姆斯·霍利斯"
+    ],
+    "pinyin_full": "zhong nian zhi lu",
+    "pinyin_initials": "znzl"
+  },
+  {
+    "book_id": "core:000056",
+    "title": "最好的告别",
+    "authors": [
+      "阿图·葛文德"
+    ],
+    "pinyin_full": "zui hao de gao bie",
+    "pinyin_initials": "zhdgb"
+  },
+  {
+    "book_id": "core:000057",
+    "title": "直视骄阳",
+    "authors": [
+      "欧文·亚隆"
+    ],
+    "pinyin_full": "zhi shi jiao yang",
+    "pinyin_initials": "zsjy"
+  },
+  {
+    "book_id": "core:000058",
+    "title": "生命的礼物",
+    "authors": [
+      "欧文·亚隆",
+      "玛丽莲·亚隆"
+    ],
+    "pinyin_full": "sheng ming de li wu",
+    "pinyin_initials": "smdlw"
+  },
+  {
+    "book_id": "core:000059",
+    "title": "认知觉醒",
+    "authors": [
+      "周岭"
+    ],
+    "pinyin_full": "ren zhi jue xing",
+    "pinyin_initials": "rzjx"
+  },
+  {
+    "book_id": "core:000060",
+    "title": "不原谅也没关系",
+    "authors": [
+      "皮特·沃克"
+    ],
+    "pinyin_full": "bu yuan liang ye mei guan xi",
+    "pinyin_initials": "bylymgx"
+  },
+  {
+    "book_id": "core:000061",
+    "title": "决断力",
+    "authors": [
+      "奇普·希思",
+      "丹·希思"
+    ],
+    "pinyin_full": "jue duan li",
+    "pinyin_initials": "jdl"
+  },
+  {
+    "book_id": "core:000062",
+    "title": "人生的智慧",
+    "authors": [
+      "叔本华"
+    ],
+    "pinyin_full": "ren sheng de zhi hui",
+    "pinyin_initials": "rsdzh"
+  },
+  {
+    "book_id": "core:000063",
+    "title": "一个叫欧维的男人决定去死",
+    "authors": [
+      "弗雷德里克·巴克曼"
+    ],
+    "pinyin_full": "yi ge jiao ou wei de nan ren jue ding qu si",
+    "pinyin_initials": "ygjowdnrjdqs"
+  },
+  {
+    "book_id": "core:000064",
+    "title": "金字塔原理",
+    "authors": [
+      "芭芭拉·明托"
+    ],
+    "pinyin_full": "jin zi ta yuan li",
+    "pinyin_initials": "jztyl"
   }
 ]
