@@ -39,11 +39,13 @@ export function scoreBook(
   primary: { tag: ProblemTagId; weight: number } | null,
   t: AxisTargets,
   coverage: FieldCoverage = FULL_COVERAGE,
+  /** 用户主动声明的标签（点选），只影响 problem 因子的分母，见 `fit.ts` 的注释 */
+  declaredTags?: ReadonlyMap<ProblemTagId, number>,
 ): ScoredBook {
   // 参与打分的因子 = 用户答了的 ∩ 书上标了的。缺一边就不算，权重还给别人。
   const effective = effectiveFactors(t.active_factors, coverage);
   const weights_used = renormalizeWeights(effective);
-  const { fits, primary_hit } = computeFits(book, userTags, primary, t, coverage);
+  const { fits, primary_hit } = computeFits(book, userTags, primary, t, coverage, declaredTags);
 
   const factors = {} as Record<FactorId, FactorFit>;
   let score_bp = 0;

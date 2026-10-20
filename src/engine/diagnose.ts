@@ -122,3 +122,14 @@ export function buildDiagnosis(a: QuizAnswers): { diagnosis: Diagnosis; userTags
 export function userTagsOf(d: Diagnosis): Map<ProblemTagId, number> {
   return new Map(d.need_tags.map((n) => [n.tag, n.weight]));
 }
+
+/**
+ * 只取用户在问卷里**点选**的标签权重——`problem` 因子分母用这一份。
+ *
+ * 与 `userTagsOf` 的差别只在自由文本命中的新标签上：那些标签按 0.15 追加，
+ * 若进分母就会出现"说得越具体、分数越低"。详见 `domain/scoring/fit.ts`。
+ * `source === 'option'` 的标签权重恒来自 `NEED_TAG_WEIGHTS`（0.6 / 0.25 / 0.15）。
+ */
+export function declaredTagsOf(d: Diagnosis): Map<ProblemTagId, number> {
+  return new Map(d.need_tags.filter((n) => n.source === 'option').map((n) => [n.tag, n.weight]));
+}

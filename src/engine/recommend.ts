@@ -9,6 +9,7 @@ import { buildReason } from '@/domain/scoring/reason.js';
 import { scoreBook, type ScoredBook } from '@/domain/scoring/score.js';
 import { rankBooks } from '@/domain/scoring/rank.js';
 import { deriveTargets } from '@/domain/scoring/targets.js';
+import { declaredTagsOf } from '@/engine/diagnose.js';
 import {
   assertExternal,
   pickExternal,
@@ -62,7 +63,9 @@ export function recommend(input: RecommendInput): RecommendResult {
   const { kept, filtered } = partitionPool(books, ctx);
 
   const primary = { tag: diagnosis.answers.primary_tag, weight: userTags.get(diagnosis.answers.primary_tag) ?? 0 };
-  const scored = kept.map((b) => scoreBook(b, userTags, primary, targets));
+  // 分母只算点选的标签：自由文本新命中的标签只进分子（否则"说得更具体 = 分数更低"）
+  const declared = declaredTagsOf(diagnosis);
+  const scored = kept.map((b) => scoreBook(b, userTags, primary, targets, undefined, declared));
 
   // 理由在排序之后才有意义（只给进前 5 的书写），但它不属于打分，也不影响排序
   const items: RankedItem[] = rankBooks(scored)
