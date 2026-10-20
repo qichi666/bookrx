@@ -82,7 +82,7 @@
 
 **已做**：分两条腿。
 
-- **enriched 层**：把人工投入从"每本书"降到"每个标签"。28 个标签写一次中文触发词，派生 6551 本的 `problem_tags`（书名命中权重 0.85–0.9，豆瓣大类兜底 0.4）。人工从 O(书) 降到 O(标签)。
+- **enriched 层**：把人工投入从"每本书"降到"每个标签"。33 个标签写一次中文触发词，派生 6551 本的 `problem_tags`（书名命中权重 0.85–0.9，豆瓣大类兜底 0.4）。人工从 O(书) 降到 O(标签)。
 - **覆盖率降级**：没标注的书不填默认值，而是让对应因子**整条不参与打分**（复用"跳答"的权重重分配），并如实报出覆盖率。这样 6551 本能进推荐池，但**不会因为填了默认值而假装准确**。
 
 **仍阻塞**：见困境 5。
@@ -257,7 +257,7 @@ src/components/     AppHeader / BookCard / ChipRow / CrisisPanel / DomainList / 
   → public/catalog/candidates/{all,index}.json（6551 本）
   → tools/verify-candidates.mjs（12 项硬断言，含输入 sha256 前后不变）
 
-catalog/problem-lexicon.json（28 标签中文触发词）
+catalog/problem-lexicon.json（33 标签中文触发词）
   → tools/derive-annotations.mjs
   → public/catalog/enriched/{derived,index}.json（6551 本派生标签）
   → tools/verify-derived.mjs（15 项硬断言，含逐标签溯源）
@@ -336,7 +336,7 @@ catalog/shards/seed-core-*.json（60 本核心库）
 **目的**：6551 本不可能逐本人工标注。改成一个标签写一次词表，机器派生。
 
 **做法**：
-- `catalog/problem-lexicon.json`：28 个困境标签 × 中文触发词 + `from_tags`（豆瓣大类映射）。
+- `catalog/problem-lexicon.json`：33 个困境标签 × 中文触发词 + `from_tags`（豆瓣大类映射）。
 - 派生成派生权重：**书名命中 = 0.85**，每多命中一次 +0.05，**上限 0.9**；书名未命中才用豆瓣标签兜底 **0.4**；每本最多留 `top_n = 3` 个。
 - **先取整再排序**（用未取整的浮点权重排序会出现 `0.85+0.05=0.9000000000000001` 的逆序 bug，曾出现 37 处）。
 
