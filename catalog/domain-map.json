@@ -1,0 +1,12 @@
+{
+  "note": "困境域 → 候选池域。两套枚举不是一回事：候选池域来自豆瓣标签（7 个），ProblemDomain 是产品自己的困境域（6 个），只有 3 个名字恰好相同。这张表必须写死，不许按名字猜——部分正确比全错更危险。",
+  "min_pool": 20,
+  "domains": {
+    "emotion": ["psychology", "meaning"],
+    "relationship": ["relationship"],
+    "work": ["work", "career", "meaning"],
+    "habits": ["growth", "psychology"],
+    "thinking": ["thinking", "growth"],
+    "transition": ["career", "meaning"]
+  }
+}

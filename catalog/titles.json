@@ -547,5 +547,79 @@
     ],
     "pinyin_full": "jin zi ta yuan li",
     "pinyin_initials": "jztyl"
+  },
+  {
+    "book_id": "core:000065",
+    "title": "取悦症",
+    "authors": [
+      "哈丽雅特·布莱克"
+    ],
+    "pinyin_full": "qu yue zheng",
+    "pinyin_initials": "qyz"
+  },
+  {
+    "book_id": "core:000066",
+    "title": "过犹不及",
+    "authors": [
+      "亨利·克劳德",
+      "约翰·汤森德"
+    ],
+    "pinyin_full": "guo you bu ji",
+    "pinyin_initials": "gybj"
+  },
+  {
+    "book_id": "core:000067",
+    "title": "拖延心理学",
+    "authors": [
+      "简·博克",
+      "莱诺拉·袁"
+    ],
+    "pinyin_full": "tuo yan xin li xue",
+    "pinyin_initials": "tyxlx"
+  },
+  {
+    "book_id": "core:000068",
+    "title": "自控力",
+    "authors": [
+      "凯利·麦格尼格尔"
+    ],
+    "pinyin_full": "zi kong li",
+    "pinyin_initials": "zkl"
+  },
+  {
+    "book_id": "core:000069",
+    "title": "清醒思考的艺术",
+    "authors": [
+      "罗尔夫·多贝里"
+    ],
+    "pinyin_full": "qing xing si kao de yi shu",
+    "pinyin_initials": "qxskdys"
+  },
+  {
+    "book_id": "core:000070",
+    "title": "演讲的力量",
+    "authors": [
+      "克里斯·安德森"
+    ],
+    "pinyin_full": "yan jiang de li liang",
+    "pinyin_initials": "yjdll"
+  },
+  {
+    "book_id": "core:000071",
+    "title": "你的降落伞是什么颜色？",
+    "authors": [
+      "理查德·尼尔森·鲍利斯"
+    ],
+    "pinyin_full": "ni de jiang luo san shi shen me yan se",
+    "pinyin_initials": "ndjlsssmys"
+  },
+  {
+    "book_id": "core:000072",
+    "title": "吃掉那只青蛙",
+    "authors": [
+      "博恩·崔西"
+    ],
+    "pinyin_full": "chi diao na zhi qing wa",
+    "pinyin_initials": "cdnzqw"
   }
 ]

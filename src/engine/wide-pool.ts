@@ -2,7 +2,11 @@ import type { Diagnosis } from '@/contracts/diagnosis.js';
 import type { ProblemTagWeight } from '@/contracts/book.js';
 import type { ProblemTagId } from '@/contracts/enums.js';
 import type { CandidateBook } from '@/data/candidates.js';
+import { inDomainPool } from '@/data/domain-map.js';
 import { selectByNeed } from './wide-need.js';
+import { normalizeTitle } from './title-key.js';
+
+export { normalizeTitle };
 
 /**
  * 全库推荐池（书目层）。
@@ -22,13 +26,7 @@ import { selectByNeed } from './wide-need.js';
 
 export type WideBucket = CandidateBook['bucket'];
 
-/** 归一化书名：去空白、书名号、常见标点与版本缀，用于跨库去重。 */
-export function normalizeTitle(title: string): string {
-  return title
-    .replace(/[（(【\[].*?[）)】\]]/g, '')
-    .replace(/[\s《》「」『』:：,，.。·\-—_/\\|"'“”‘’!！?？]/g, '')
-    .toLowerCase();
-}
+/** 归一化书名：已移到 `title-key.ts`，此处仅重新导出以保持既有调用点不变。 */
 
 /** 同一档内的确定性顺序：收缩分降序 → 评价人数降序 → id 升序。 */
 function compareInBucket(a: CandidateBook, b: CandidateBook): number {
@@ -60,6 +58,13 @@ export interface WidePool {
   /** 当前域下可用的候选总数（不受 epoch 影响） */
   size: number;
   picks: CandidateBook[];
+  /**
+   * 只有「按需匹配」路径会填。`title` = 整池都是书名证据（默认）；
+   * `fallback` = 书名证据不足 20 本，整池降级把豆瓣大类兜底的书也放了进来。
+   */
+  evidence?: 'title' | 'fallback';
+  /** 整池降级时，仅靠兜底证据进来的书 id —— UI 必须逐本标「相关性较弱」 */
+  weak_ids?: ReadonlySet<string>;
 }
 
 /**
@@ -103,7 +108,7 @@ export function pickWide(
   };
 
   for (const c of candidates) {
-    if (!c.domains.includes(domain)) continue;
+    if (!inDomainPool(c.domains, domain)) continue;
     if (excludedIds.has(c.id)) continue;
     if (seen.has(normalizeTitle(c.title))) continue;
     buckets[c.bucket].push(c);

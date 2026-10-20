@@ -4,6 +4,7 @@
   "profiles": [
     {
       "id": "g01",
+      "author": "internal",
       "scene": "每次开会轮到我说话，脑子就一片空白，越怕越紧张",
       "domain": "work",
       "problem_tags": ["speaking-block", "evaluation-anxiety"],
@@ -19,6 +20,7 @@
     },
     {
       "id": "g02",
+      "author": "internal",
       "scene": "跟伴侣一开口就变成互相指责，最后总是冷战",
       "domain": "relationship",
       "problem_tags": ["frequent-conflict", "communication-block"],
@@ -34,6 +36,7 @@
     },
     {
       "id": "g03",
+      "author": "internal",
       "scene": "当众被质疑就接不上话，事后才想到该怎么回",
       "domain": "work",
       "problem_tags": ["speaking-block", "self-doubt"],
@@ -49,6 +52,7 @@
     },
     {
       "id": "g04",
+      "author": "internal",
       "scene": "想养成运动的习惯，坚持三天就断，断了就更不想开始",
       "domain": "habits",
       "problem_tags": ["cant-persist", "procrastination"],
@@ -64,6 +68,7 @@
     },
     {
       "id": "g05",
+      "author": "internal",
       "scene": "每天都很忙，真正重要的事一件没做完，注意力被手机切得很碎",
       "domain": "work",
       "problem_tags": ["attention-scatter", "time-losing"],
@@ -79,6 +84,7 @@
     },
     {
       "id": "g06",
+      "author": "internal",
       "scene": "提不起劲，做什么都没意思，说不上难过但也高兴不起来",
       "domain": "emotion",
       "problem_tags": ["low-mood", "emptiness"],
@@ -94,6 +100,7 @@
     },
     {
       "id": "g07",
+      "author": "internal",
       "scene": "工作几年了，觉得做的事没意义，想辞职又不敢",
       "domain": "transition",
       "problem_tags": ["meaning-loss", "career-confusion"],
@@ -109,6 +116,7 @@
     },
     {
       "id": "g08",
+      "author": "internal",
       "scene": "经历过一段很糟的日子之后，找不到继续下去的理由",
       "domain": "transition",
       "problem_tags": ["meaning-loss", "emptiness"],
@@ -124,6 +132,7 @@
     },
     {
       "id": "g09",
+      "author": "internal",
       "scene": "一件小事能在脑子里反复过一整天，越想越停不下来",
       "domain": "emotion",
       "problem_tags": ["rumination", "anxiety"],
@@ -139,6 +148,7 @@
     },
     {
       "id": "g10",
+      "author": "internal",
       "scene": "做什么决定都要拖很久，怕选错，选完还后悔",
       "domain": "thinking",
       "problem_tags": ["decision-difficulty", "judgment-distortion"],

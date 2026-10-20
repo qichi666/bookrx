@@ -3,9 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      CSP 走 meta 时，`frame-ancestors` 会被浏览器**忽略并报错**（它只能通过 HTTP 响应头生效）。
+      留着这一条不会带来任何防护，只会让每个打开控制台的人先看到一条红色警告——
+      于是真问题被这条噪声盖住。防点击劫持需要在托管侧发头：
+        Content-Security-Policy: frame-ancestors 'none'
+      GitHub Pages 不支持自定义响应头，所以当前部署形态下这项防护是**缺失**的，
+      不是"已配置"。要补就得换支持 _headers 的托管（Cloudflare Pages / Netlify）或加反代。
+    -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'"
     />
     <title>BookRx</title>
   </head>

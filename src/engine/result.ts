@@ -17,6 +17,10 @@ export type AnswerOverrides = Partial<Diagnosis['answers']>;
 /**
  * 危机信号词（P0-17：危机资源条与推荐结果互斥）。
  * 命中即展示危机资源、隐藏推荐列表——宁可误报，不可漏报。
+ *
+ * 这批词是**互斥开关**，不是"情绪词表"：`活着没意思` 这类说法在口语里
+ * 经常是半句玩笑，但漏报的代价和误报完全不对称——误报只是少看 5 本书，
+ * 漏报是把一个正在悬崖边的人推给"推荐书目"。
  */
 export const CRISIS_KEYWORDS: readonly string[] = [
   '自杀',
@@ -27,6 +31,11 @@ export const CRISIS_KEYWORDS: readonly string[] = [
   '自伤',
   '伤害自己',
   '结束生命',
+  '活着没意思',
+  '活着没意义',
+  '不如死了',
+  '死了算了',
+  '跳下去',
 ];
 
 export function hasCrisisSignal(diagnosis: Diagnosis): boolean {

@@ -247,25 +247,9 @@ function goQuestion(): void {
   text-decoration: none;
 }
 
-.btn-primary {
-  min-height: 44px;
-  padding: 8px 20px;
-  border-radius: 6px;
-  border: none;
-  background: var(--accent);
-  color: var(--accent-fg);
-  font: inherit;
-  cursor: pointer;
-}
-
+.btn-primary,
 .btn-ghost {
-  min-height: 44px;
+  /* 按钮本体在 styles/controls.css */
   padding: 8px 20px;
-  border-radius: 6px;
-  border: 1px solid var(--border-control);
-  background: transparent;
-  color: var(--text-secondary);
-  font: inherit;
-  cursor: pointer;
 }
 </style>

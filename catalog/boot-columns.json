@@ -1278,5 +1278,173 @@
     "length_class": 2,
     "availability": "bring_your_own",
     "content_warning": []
+  },
+  {
+    "book_id": "core:000065",
+    "author_id": "author:harriet-braiker",
+    "category_l1": "psychology",
+    "problem_tags": [
+      {
+        "tag": "people-pleasing",
+        "weight": 0.9
+      },
+      {
+        "tag": "evaluation-anxiety",
+        "weight": 0.6
+      }
+    ],
+    "difficulty": 2,
+    "prose_accessibility": 2,
+    "est_reading_hours": 4.5,
+    "length_class": 2,
+    "availability": "bring_your_own",
+    "content_warning": []
+  },
+  {
+    "book_id": "core:000066",
+    "author_id": "author:henry-cloud",
+    "category_l1": "psychology",
+    "problem_tags": [
+      {
+        "tag": "people-pleasing",
+        "weight": 0.85
+      },
+      {
+        "tag": "communication-block",
+        "weight": 0.5
+      }
+    ],
+    "difficulty": 2,
+    "prose_accessibility": 2,
+    "est_reading_hours": 7,
+    "length_class": 3,
+    "availability": "bring_your_own",
+    "content_warning": []
+  },
+  {
+    "book_id": "core:000067",
+    "author_id": "author:jane-burka",
+    "category_l1": "psychology",
+    "problem_tags": [
+      {
+        "tag": "procrastination",
+        "weight": 0.9
+      },
+      {
+        "tag": "action-paralysis",
+        "weight": 0.6
+      }
+    ],
+    "difficulty": 2,
+    "prose_accessibility": 2,
+    "est_reading_hours": 8,
+    "length_class": 3,
+    "availability": "bring_your_own",
+    "content_warning": []
+  },
+  {
+    "book_id": "core:000068",
+    "author_id": "author:kelly-mcgonigal",
+    "category_l1": "psychology",
+    "problem_tags": [
+      {
+        "tag": "procrastination",
+        "weight": 0.8
+      },
+      {
+        "tag": "attention-scatter",
+        "weight": 0.6
+      }
+    ],
+    "difficulty": 2,
+    "prose_accessibility": 2,
+    "est_reading_hours": 5,
+    "length_class": 2,
+    "availability": "bring_your_own",
+    "content_warning": []
+  },
+  {
+    "book_id": "core:000069",
+    "author_id": "author:rolf-dobelli",
+    "category_l1": "thinking",
+    "problem_tags": [
+      {
+        "tag": "cognitive-bias",
+        "weight": 0.9
+      },
+      {
+        "tag": "judgment-distortion",
+        "weight": 0.7
+      }
+    ],
+    "difficulty": 1,
+    "prose_accessibility": 1,
+    "est_reading_hours": 3,
+    "length_class": 2,
+    "availability": "bring_your_own",
+    "content_warning": []
+  },
+  {
+    "book_id": "core:000070",
+    "author_id": "author:chris-anderson",
+    "category_l1": "other",
+    "problem_tags": [
+      {
+        "tag": "speaking-block",
+        "weight": 0.9
+      },
+      {
+        "tag": "evaluation-anxiety",
+        "weight": 0.6
+      }
+    ],
+    "difficulty": 2,
+    "prose_accessibility": 2,
+    "est_reading_hours": 4,
+    "length_class": 2,
+    "availability": "bring_your_own",
+    "content_warning": []
+  },
+  {
+    "book_id": "core:000071",
+    "author_id": "author:richard-bolles",
+    "category_l1": "other",
+    "problem_tags": [
+      {
+        "tag": "career-confusion",
+        "weight": 0.9
+      },
+      {
+        "tag": "big-choice",
+        "weight": 0.5
+      }
+    ],
+    "difficulty": 2,
+    "prose_accessibility": 2,
+    "est_reading_hours": 7,
+    "length_class": 3,
+    "availability": "bring_your_own",
+    "content_warning": []
+  },
+  {
+    "book_id": "core:000072",
+    "author_id": "author:brian-tracy",
+    "category_l1": "other",
+    "problem_tags": [
+      {
+        "tag": "time-losing",
+        "weight": 0.85
+      },
+      {
+        "tag": "procrastination",
+        "weight": 0.6
+      }
+    ],
+    "difficulty": 1,
+    "prose_accessibility": 1,
+    "est_reading_hours": 2,
+    "length_class": 1,
+    "availability": "bring_your_own",
+    "content_warning": []
   }
 ]

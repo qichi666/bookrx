@@ -171,7 +171,26 @@ async function main() {
   // ---------- 断言 8：先验参数与实现约定一致 ----------
   chk(`index.prior.m == ${M_PRIOR}`, index.prior?.m === M_PRIOR, String(index.prior?.m));
 
-  // ---------- 断言 9：校验本身没写源文件 ----------
+  // ---------- 断言 9：困境域映射后，每个域的候选池都够宽 ----------
+  // 两套域枚举只撞上 3 个名字 → 另 3 个域恒为空，而且不报错。这条断言就是那颗红灯：
+  // 以后任何人改候选池的域，构建会在这里变红，而不是让结果页那一段悄悄消失。
+  const domainMap = JSON.parse(await readFile(path.join(ROOT, 'catalog', 'domain-map.json'), 'utf8'));
+  const minPool = domainMap.min_pool ?? 20;
+  const poolReport = [];
+  const thinPools = [];
+  for (const [problemDomain, pools] of Object.entries(domainMap.domains)) {
+    const n = allRecs.filter((b) => (b.domains || []).some((d) => pools.includes(d))).length;
+    poolReport.push(`${problemDomain}=${n}`);
+    if (n < minPool) thinPools.push(`${problemDomain}=${n}`);
+  }
+  chk(
+    `每个困境域的候选池 ≥ ${minPool} 本（映射表 catalog/domain-map.json）`,
+    thinPools.length === 0,
+    thinPools.join(', '),
+  );
+  console.log(`困境域池：${poolReport.join('  ')}`);
+
+  // ---------- 断言 10：校验本身没写源文件 ----------
   const shaAfter = sha(await readFile(RAW_FILE));
   chk('校验前后原始数据一个字节没变', shaAfter === shaBefore);
 

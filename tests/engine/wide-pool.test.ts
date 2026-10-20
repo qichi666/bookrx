@@ -4,7 +4,8 @@ import { describe, expect, it } from 'vitest';
 import type { Diagnosis } from '@/contracts/diagnosis.js';
 import type { CandidateBook } from '@/data/candidates.js';
 import type { ProblemTagWeight } from '@/contracts/book.js';
-import type { ProblemTagId } from '@/contracts/enums.js';
+import type { ProblemDomain, ProblemTagId } from '@/contracts/enums.js';
+import { inDomainPool } from '@/data/domain-map.js';
 import { normalizeTitle, pickWide } from '@/engine/wide-pool.js';
 
 /**
@@ -187,17 +188,27 @@ describe('真实书目层：全库覆盖', () => {
   const books: CandidateBook[] = existsSync(DATA)
     ? (JSON.parse(readFileSync(DATA, 'utf-8')) as CandidateBook[])
     : [];
+  // 按产品自己的 6 个困境域遍历，不按候选池的 7 个域——
+  // 候选池域只是原料，用户永远不会"选一个叫 career 的域"。
+  const PROBLEM_DOMAINS: ProblemDomain[] = [
+    'emotion',
+    'relationship',
+    'work',
+    'habits',
+    'thinking',
+    'transition',
+  ];
 
   it.skipIf(books.length === 0)('每个域都能被翻到最后一本，且同一批里没有重复书名', () => {
-    const domains = [...new Set(books.flatMap((b) => b.domains))];
-    expect(domains.length).toBeGreaterThanOrEqual(7);
+    expect(PROBLEM_DOMAINS.length).toBe(6);
 
     const report: string[] = [];
-    for (const domain of domains) {
-      const pool = books.filter((b) => b.domains.includes(domain));
+    for (const domain of PROBLEM_DOMAINS) {
       // 同一域里同名不同版（如「沟通的艺术」与「沟通的艺术（第 3 版）」）按设计只露一本，
       // 所以验收基准是「去重后的书名个数」，不是条数。
+      const pool = books.filter((b) => inDomainPool(b.domains, domain));
       const distinct = new Set(pool.map((b) => normalizeTitle(b.title))).size;
+      expect(distinct, `${domain} 的候选池为空`).toBeGreaterThan(0);
       const shown = new Set<string>();
       let epoch = 0;
       while (shown.size < distinct && epoch < distinct * 3 + 50) {

@@ -1,6 +1,6 @@
 import type { Diagnosis, NeedTag } from '@/contracts/diagnosis.js';
 import type { ProblemTagId } from '@/contracts/enums.js';
-import { FREE_TEXT_KEYWORDS } from '@/data/free-text-keywords.js';
+import { matchFreeText } from './free-text-match.js';
 import { TAG_OPTIONS } from '@/data/quiz.js';
 
 /**
@@ -39,15 +39,11 @@ function labelOf(tag: ProblemTagId): string {
   throw new Error(`词典里没有标签 ${tag} 的选项文案 —— data/quiz.ts 与合同层脱节`);
 }
 
-/** 自由文本命中：返回 [tag, 命中片段] 列表。一次命中即止，不重复计。 */
-export function matchFreeText(text: string): Array<{ tag: ProblemTagId; phrase: string }> {
-  const hits: Array<{ tag: ProblemTagId; phrase: string }> = [];
-  for (const [tag, keywords] of Object.entries(FREE_TEXT_KEYWORDS) as Array<[ProblemTagId, readonly string[]]>) {
-    const kw = keywords.find((k) => text.includes(k));
-    if (kw) hits.push({ tag, phrase: kw });
-  }
-  return hits;
-}
+/**
+ * 自由文本命中：实现在 `free-text-match.ts`（整串命中 → 允许插入成分 → 区间消歧）。
+ * 这里只做转出，保持既有调用点（`search.ts` / 测试）不带路径变化。
+ */
+export { matchFreeText } from './free-text-match.js';
 
 /**
  * 组装诊断记录与打分用的 userTags（权重 0–1，与书的 `problem_tags[].weight` 同一把尺子）。

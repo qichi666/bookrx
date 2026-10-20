@@ -535,6 +535,78 @@
       "method": "exact",
       "same_title_count": 4,
       "author_matched": true
+    },
+    "core:000065": {
+      "subject_id": "26585403",
+      "title": "取悦症",
+      "matched_title": "取悦症",
+      "votes": 757,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000066": {
+      "subject_id": "5906677",
+      "title": "过犹不及",
+      "matched_title": "过犹不及",
+      "votes": 1167,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000067": {
+      "subject_id": "4180711",
+      "title": "拖延心理学",
+      "matched_title": "拖延心理学",
+      "votes": 20013,
+      "method": "exact",
+      "same_title_count": 2,
+      "author_matched": true
+    },
+    "core:000068": {
+      "subject_id": "10786473",
+      "title": "自控力",
+      "matched_title": "自控力",
+      "votes": 60304,
+      "method": "exact",
+      "same_title_count": 2,
+      "author_matched": true
+    },
+    "core:000069": {
+      "subject_id": "20492550",
+      "title": "清醒思考的艺术",
+      "matched_title": "清醒思考的艺术",
+      "votes": 9065,
+      "method": "exact",
+      "same_title_count": 2,
+      "author_matched": true
+    },
+    "core:000070": {
+      "subject_id": "26799348",
+      "title": "演讲的力量",
+      "matched_title": "演讲的力量",
+      "votes": 4289,
+      "method": "exact",
+      "same_title_count": 1,
+      "author_matched": true
+    },
+    "core:000071": {
+      "subject_id": "26126225",
+      "title": "你的降落伞是什么颜色？",
+      "matched_title": "你的降落伞是什么颜色",
+      "votes": 979,
+      "method": "exact",
+      "same_title_count": 3,
+      "author_matched": true
+    },
+    "core:000072": {
+      "subject_id": "27130739",
+      "title": "吃掉那只青蛙",
+      "matched_title": "吃掉那只青蛙",
+      "votes": 2571,
+      "method": "exact",
+      "same_title_count": 4,
+      "author_matched": true
     }
   },
   "ambiguous": [
@@ -940,6 +1012,86 @@
           "id": "3026361",
           "title": "金字塔原理",
           "votes": 59
+        }
+      ]
+    },
+    {
+      "core_id": "core:000067",
+      "title": "拖延心理学",
+      "picked": "4180711",
+      "picked_votes": 20013,
+      "others": [
+        {
+          "id": "6753668",
+          "title": "拖延心理学",
+          "votes": 138
+        }
+      ]
+    },
+    {
+      "core_id": "core:000068",
+      "title": "自控力",
+      "picked": "10786473",
+      "picked_votes": 60304,
+      "others": [
+        {
+          "id": "25891495",
+          "title": "自控力",
+          "votes": 938
+        }
+      ]
+    },
+    {
+      "core_id": "core:000069",
+      "title": "清醒思考的艺术",
+      "picked": "20492550",
+      "picked_votes": 9065,
+      "others": [
+        {
+          "id": "26871359",
+          "title": "清醒思考的艺术",
+          "votes": 1762
+        }
+      ]
+    },
+    {
+      "core_id": "core:000071",
+      "title": "你的降落伞是什么颜色？",
+      "picked": "26126225",
+      "picked_votes": 979,
+      "others": [
+        {
+          "id": "1055881",
+          "title": "你的降落伞是什么颜色？",
+          "votes": 643
+        },
+        {
+          "id": "30405077",
+          "title": "你的降落伞是什么颜色？",
+          "votes": 249
+        }
+      ]
+    },
+    {
+      "core_id": "core:000072",
+      "title": "吃掉那只青蛙",
+      "picked": "27130739",
+      "picked_votes": 2571,
+      "others": [
+        {
+          "id": "3371165",
+          "title": "吃掉那只青蛙",
+          "votes": 827
+        },
+        {
+          "id": "1083989",
+          "title": "吃掉那只青蛙",
+          "votes": 300
+        },
+        {
+          "id": "38363194",
+          "title": "吃掉那只青蛙",
+          "votes": 50
         }
       ]
     }

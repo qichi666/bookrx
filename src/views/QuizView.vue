@@ -10,6 +10,7 @@ import { computed, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import type { ProblemDomain, ProblemTagId } from '@/contracts/enums.js';
 import {
+  DOMAIN_OPTIONS,
   INCLUDE_HEAVY_PROMPT,
   STEP3_GROUPS,
   TAG_OPTIONS,
@@ -66,6 +67,27 @@ const canNext = computed(() => {
     return selected.value.length >= 1 && (selected.value.length === 1 || primary.value !== null);
   }
   return true;
+});
+
+/**
+ * 每屏的一句回执（P2-2 「问卷仪式化」）。
+ *
+ * 刻意只做**回执**，不做解读：`记下了：话到嘴边说不出口。`
+ * 一旦写成「你可能有社交焦虑」，这个产品就越界成了诊断工具，
+ * 而我们有书单、没有资质。回执的作用只有一个——让用户知道刚才那一下被接住了，
+ * 不至于填到第 4 屏时已经怀疑"我填这玩意到底有没有人看"。
+ */
+const ceremony = computed(() => {
+  if (step.value === 1) {
+    const label = DOMAIN_OPTIONS.find((o) => o.domain === domain.value)?.label;
+    return label ? `记下了：${label}。` : '';
+  }
+  if (step.value === 2) {
+    if (selected.value.length === 0) return '';
+    return `记下了：${selected.value.map((t) => tagLabel(t)).join('、')}。不用解释原因，我们不需要。`;
+  }
+  if (step.value === 3) return '这几项都可以不选。不选，我们就按「先能读下去」来排。';
+  return '写一句就够。写不出也没关系，上面的选择已经够用了。';
 });
 
 function next(): void {
@@ -158,6 +180,8 @@ function submit(): void {
       ></textarea>
     </div>
 
+    <p v-if="ceremony" class="quiz-ceremony">{{ ceremony }}</p>
+
     <footer class="quiz-nav">
       <button v-if="step > 1" type="button" class="btn-ghost" @click="back">上一步</button>
       <button type="button" class="btn-primary" :disabled="!canNext" @click="next">
@@ -199,6 +223,13 @@ function submit(): void {
   margin-bottom: 24px;
 }
 
+/* 回执：轻、无框。它不是提示也不是结论，所以不能用警告色或强调色 */
+.quiz-ceremony {
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  margin: 0 0 16px;
+}
+
 .primary-ask {
   margin-top: 20px;
   padding-top: 16px;
@@ -232,41 +263,5 @@ function submit(): void {
 
 .quiz-hint a {
   color: var(--accent);
-}
-
-.btn-ghost {
-  min-height: 44px;
-  padding: 8px 20px;
-  border-radius: 6px;
-  border: 1px solid var(--border-control);
-  background: transparent;
-  color: var(--text-secondary);
-  font: inherit;
-  cursor: pointer;
-}
-
-.btn-primary {
-  min-height: 44px;
-  padding: 8px 24px;
-  border-radius: 6px;
-  border: none;
-  background: var(--accent);
-  color: var(--accent-fg);
-  font: inherit;
-  cursor: pointer;
-}
-
-.btn-primary:hover {
-  background: var(--accent-hover);
-}
-
-.btn-primary:active {
-  background: var(--accent-active);
-}
-
-.btn-primary:disabled {
-  background: var(--surface-sunken);
-  color: var(--text-disabled);
-  cursor: not-allowed;
 }
 </style>

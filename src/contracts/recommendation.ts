@@ -45,6 +45,38 @@ export interface ReasonText {
 }
 
 /**
+ * 理由**来源**（可审计性的契约层，§7.3 层的落地）。
+ *
+ * 为什么要单独一个枚举：`ReasonText` 只说"理由长什么样"，说不出"这句话是从哪来的"。
+ * 于是界面上的理由既可能来自编辑写的文案，也可能来自用户自己的回答，
+ * 两者混在一起时，用户没法判断哪句是书里的话、哪句是在复述自己。
+ *
+ * `prewritten` = 编辑为这本书写的；`from_answer` = 回引用户的原词；
+ * `from_tag_weight` = 书的困境标注 × 权重，可追到具体标签与数值。
+ */
+
+export type ReasonSource = 'prewritten' | 'from_answer' | 'from_tag_weight';
+
+/** 一行带来源的理由。**没有 source 的理由不许上界面**。 */
+
+export interface ReasonLine {
+  text: string;
+  source: ReasonSource;
+  /** 可追溯的依据：用户标签 id / 书的标签 id。prewritten 时缺省 */
+  basis?: string;
+}
+
+/**
+ * 卡片理由的两块：`brief` 是卡面那一句（固定来自书里的 `match_brief`），
+ * `lines` 是展开区（你的回答 / 书的标注 / 书里写的）。
+ */
+
+export interface ReasonBlock {
+  brief: ReasonLine;
+  lines: ReasonLine[];
+}
+
+/**
  * 放宽阶梯（§3.8）。
  * 0 = 未放宽；1 = 域内标签级降到域级；2 = 放开到全部域并降 problem 权重；
  * 3 = 只按条件选书。L4（返回空）不体现在此字段，因为没有 Recommendation 产出。

@@ -7,10 +7,11 @@
  * 只展示档位，不渲染分数或百分比（SPEC：加权和不是概率，伪造精度）。
  */
 import { computed } from 'vue';
-import type { ScoredBook } from '@/domain/scoring/score.js';
+import type { RankedItem } from '@/engine/recommend.js';
 import { tierOf } from '@/domain/scoring/tier.js';
+import { SOURCE_LABEL } from '@/domain/scoring/reason.js';
 
-const props = defineProps<{ item: ScoredBook }>();
+const props = defineProps<{ item: RankedItem }>();
 
 const judged = computed(() => tierOf(props.item.score_bp, props.item.primary_hit));
 
@@ -51,6 +52,9 @@ const wereadHref = computed(
 const doubanHref = computed(
   () => `https://search.douban.com/book/subject_search?search_text=${encodeURIComponent(props.item.book.title)}`,
 );
+const dangdangHref = computed(
+  () => `http://search.dangdang.com/?key=${encodeURIComponent(props.item.book.title)}`,
+);
 </script>
 
 <template>
@@ -89,9 +93,22 @@ const doubanHref = computed(
       {{ item.book.boundary_hints.problem ?? item.book.boundary_hints.difficulty }}
     </p>
 
+    <details class="why">
+      <summary class="why-summary">为什么是这本</summary>
+      <ul class="why-list">
+        <li v-for="(line, i) in item.reason.lines" :key="i" class="why-line">
+          <span class="why-source">{{ SOURCE_LABEL[line.source] }}</span>
+          <span class="why-text">{{ line.text }}</span>
+        </li>
+      </ul>
+    </details>
+
     <div class="card-links">
+      <span class="links-label">到哪读</span>
       <a :href="wereadHref" target="_blank" rel="noopener noreferrer">微信读书</a>
+      <a :href="dangdangHref" target="_blank" rel="noopener noreferrer">买一本</a>
       <a :href="doubanHref" target="_blank" rel="noopener noreferrer">豆瓣</a>
+      <a href="https://www.nlc.cn/" target="_blank" rel="noopener noreferrer">图书馆</a>
     </div>
   </article>
 </template>
@@ -188,8 +205,68 @@ const doubanHref = computed(
 
 .card-links {
   display: flex;
-  gap: 16px;
+  gap: 12px;
+  align-items: baseline;
+  flex-wrap: wrap;
   margin-top: 10px;
+}
+
+.links-label {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+/* 理由展开区：默认收起 —— 卡面必须一眼看完，追溯是"想深究时再点"的动作 */
+.why {
+  margin: 4px 0 2px;
+}
+
+.why-summary {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.why-summary::before {
+  content: "？";
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  line-height: 14px;
+  text-align: center;
+  border: 1px solid var(--border-control);
+  border-radius: 50%;
+  margin-right: 6px;
+  font-size: 0.625rem;
+}
+
+.why-list {
+  list-style: none;
+  padding: 8px 0 0;
+  margin: 0;
+}
+
+.why-line {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.why-source {
+  flex: 0 0 auto;
+  padding: 1px 6px;
+  border: 1px solid var(--border-control);
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-size: 0.6875rem;
+}
+
+.why-text {
+  flex: 1 1 auto;
 }
 
 .card-links a {

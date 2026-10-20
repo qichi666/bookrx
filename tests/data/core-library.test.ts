@@ -110,6 +110,35 @@ describe('核心库 ↔ 候选池身份映射', () => {
   });
 });
 
+describe('来源链接与身份映射一致', () => {
+  const map = JSON.parse(readFileSync('catalog/core-id-map.json', 'utf8')) as {
+    entries: Record<string, { subject_id: string; title: string }>;
+  };
+
+  it('每本书的 source_url 指向的豆瓣条目 = 映射到的 subject_id（池外的书除外）', () => {
+    const drift: string[] = [];
+    for (const b of SEED_BOOKS) {
+      const m = map.entries[b.book_id];
+      if (m === undefined) continue; // 公版古籍等池外书，映射表里本来就没有
+      const sid = /subject\/(\d+)/.exec(b.source_url ?? '')?.[1];
+      if (sid !== String(m.subject_id)) {
+        drift.push(`${b.book_id} ${b.title}：url=${sid ?? '非条目链接'} vs 映射=${m.subject_id}`);
+      }
+    }
+    // 这条断言是踩出来的：《被讨厌的勇气》写的是 26577919（另一本书），
+    // 映射按书名匹配到了 26369699。两套 id 各自都能"跑通"，只是指向不同的人。
+    expect(drift, `来源链接与身份映射脱节：\n  ${drift.join('\n  ')}`).toEqual([]);
+  });
+
+  it('池内的书都必须有映射（新书没进候选池要显式加白名单）', () => {
+    const missing = SEED_BOOKS.filter((b) => map.entries[b.book_id] === undefined).map(
+      (b) => `${b.book_id} ${b.title}`,
+    );
+    // 白名单在 tools/map-core-to-candidates.mjs 的 ALLOW_MISSING 里，且必须写理由
+    expect(missing.length).toBeLessThanOrEqual(2);
+  });
+});
+
 describe('启动数据（拼音索引）', () => {
   const titles = JSON.parse(readFileSync('catalog/titles.json', 'utf8')) as {
     book_id: string;

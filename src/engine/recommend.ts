@@ -2,8 +2,10 @@ import type { Book } from '@/contracts/book.js';
 import type { Diagnosis } from '@/contracts/diagnosis.js';
 import type { ExternalSuggestion } from '@/contracts/external.js';
 import type { ProblemTagId, ThemeTagId } from '@/contracts/enums.js';
+import type { ReasonBlock } from '@/contracts/recommendation.js';
 import type { FilteredOut } from '@/domain/scoring/filters.js';
 import { partitionPool, type FilterContext } from '@/domain/scoring/filters.js';
+import { buildReason } from '@/domain/scoring/reason.js';
 import { scoreBook, type ScoredBook } from '@/domain/scoring/score.js';
 import { rankBooks } from '@/domain/scoring/rank.js';
 import { deriveTargets } from '@/domain/scoring/targets.js';
@@ -16,9 +18,12 @@ import {
 /** 结果页目标条数（SPEC §7.2：1 + 1–3 + 0–1，上限 5） */
 export const TARGET_COUNT = 5;
 
+/** 排序后的条目 + 带来源的理由。理由不是打分的一部分，所以不塞进 `scoreBook`。 */
+export type RankedItem = ScoredBook & { reason: ReasonBlock };
+
 export interface RecommendResult {
-  /** 库内书，按 6 级链排好序，已按 `TARGET_COUNT` 截断 */
-  items: ScoredBook[];
+  /** 库内书，按 6 级链排好序，已按 `TARGET_COUNT` 截断；每条都带 `reason` */
+  items: RankedItem[];
   filtered: FilteredOut[];
   /** 库外路径 D 的建议。**与 `items` 并列，不混排、不参与排序 */
   external: ExternalSuggestion[];
@@ -58,7 +63,20 @@ export function recommend(input: RecommendInput): RecommendResult {
 
   const primary = { tag: diagnosis.answers.primary_tag, weight: userTags.get(diagnosis.answers.primary_tag) ?? 0 };
   const scored = kept.map((b) => scoreBook(b, userTags, primary, targets));
-  const items = rankBooks(scored).slice(0, TARGET_COUNT);
+
+  // 理由在排序之后才有意义（只给进前 5 的书写），但它不属于打分，也不影响排序
+  const items: RankedItem[] = rankBooks(scored)
+    .slice(0, TARGET_COUNT)
+    .map((s) => ({
+      ...s,
+      reason: buildReason({
+        book: s.book,
+        userTags,
+        primaryTag: diagnosis.answers.primary_tag,
+        primaryPhrase: diagnosis.need_tags.find((n) => n.tag === diagnosis.answers.primary_tag)
+          ?.user_phrase,
+      }),
+    }));
 
   const shortfall = TARGET_COUNT - items.length;
   let external: ExternalSuggestion[] = [];

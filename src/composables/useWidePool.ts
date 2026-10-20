@@ -5,7 +5,7 @@ import type { CandidateBook } from '@/data/candidates.js';
 import { loadCandidateBooks } from '@/data/candidates.js';
 import { loadDerivedTags } from '@/data/enriched.js';
 import { userTagsOf } from '@/engine/diagnose.js';
-import { pickWide } from '@/engine/wide-pool.js';
+import { pickWide, type WidePool } from '@/engine/wide-pool.js';
 
 /**
  * 全库推荐池的状态与「换一批」。
@@ -51,8 +51,10 @@ export function useWidePool(diagnosis: Ref<Diagnosis | null>, excludeTitles: Ref
     }
   });
 
-  const pool = computed(() => {
-    if (!diagnosis.value || !books.value) return { size: 0, picks: [] as CandidateBook[] };
+  const pool = computed<WidePool>(() => {
+    if (!diagnosis.value || !books.value) {
+      return { size: 0, picks: [] as CandidateBook[], evidence: 'title', weak_ids: new Set<string>() };
+    }
     return pickWide(books.value, diagnosis.value, {
       epoch: epoch.value,
       limit: 5,

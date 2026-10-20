@@ -65,7 +65,7 @@ function clear(): void {
       </ul>
     </template>
     <p v-else class="aggregate-note">还没有记录。</p>
-    <button v-if="counters.total > 0" type="button" class="btn-ghost" @click="clear">
+    <button v-if="counters.total > 0" type="button" class="btn-ghost clear-counts" @click="clear">
       清空这份计数
     </button>
   </section>
@@ -120,15 +120,8 @@ h2 {
   margin: 0 0 8px;
 }
 
-.btn-ghost {
-  min-height: 44px;
-  padding: 8px 20px;
-  border-radius: 6px;
-  border: 1px solid var(--border-control);
-  background: transparent;
-  color: var(--text-secondary);
-  font: inherit;
-  cursor: pointer;
+/* 按钮本体在 styles/controls.css，这里只补这块版式需要的间距 */
+.clear-counts {
   margin-top: 8px;
 }
 </style>

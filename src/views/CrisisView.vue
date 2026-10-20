@@ -13,9 +13,12 @@
  * 返回出口是必须的：这一页的人随时可能想退回去，没有出口等于把人困在门口。
  */
 import { useRouter } from 'vue-router';
-import { CRISIS_RESOURCES } from '@/data/crisis.js';
+import { CRISIS_RESOURCES, latestVerifiedAt } from '@/data/crisis.js';
 
 const router = useRouter();
+
+/** 页脚那行用「最近一次核实」：每条各自有日期，全局日期只作汇总。 */
+const lastChecked = latestVerifiedAt();
 
 /** 有历史就回上一页（结果页 / 问卷），直接打开本页时回首页。 */
 function goBack(): void {
@@ -42,6 +45,10 @@ function goBack(): void {
           {{ r.scope }}<span v-if="r.hours"> · {{ r.hours }}</span>
         </p>
         <p v-if="r.note" class="crisis-meta">{{ r.note }}</p>
+        <p class="crisis-meta crisis-source">
+          核实 {{ r.verified_at }}
+          <a :href="r.source_url" target="_blank" rel="noopener noreferrer">来源</a>
+        </p>
       </li>
     </ul>
 
@@ -51,7 +58,10 @@ function goBack(): void {
       <p class="crisis-meta">{{ CRISIS_RESOURCES.emergency.note }}</p>
     </div>
 
-    <p class="crisis-verified">清单核对日期：{{ CRISIS_RESOURCES.verified_at }}。号码若有变动，以官方公布为准。</p>
+    <p class="crisis-verified">
+      最近核实日期：{{ lastChecked }}。号码若有变动，以官方公布为准。
+      这一页每一条都带来源链接——我们不希望你在最需要的时候，拨一个没人接的号码。
+    </p>
   </section>
 </template>
 
@@ -127,5 +137,14 @@ function goBack(): void {
   color: var(--text-muted);
   font-size: 0.75rem;
   margin: 20px 0 0;
+}
+
+.crisis-source a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.crisis-source a:hover {
+  text-decoration: underline;
 }
 </style>

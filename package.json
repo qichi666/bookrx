@@ -18,16 +18,17 @@
     "audit:style": "node tools/style-audit.mjs",
     "budget:check": "node tools/budget-check.mjs",
     "check:enums": "node tools/check-enums.mjs",
-    "check": "npm run typecheck && npm run test && npm run check:enums && npm run audit:style && npm run data:verify && npm run data:map-core",
+    "check": "npm run typecheck && npm run test && npm run check:enums && npm run audit:style && npm run audit:crisis && npm run data:verify && npm run data:map-core",
     "check:data": "npm run catalog:audit && npm run audit:copyright && npm run budget:check",
-    "prebuild": "node tools/assert-crisis-chunk-plan.mjs && node tools/map-core-to-candidates.mjs && node tools/gen-boot-data.mjs && node tools/build-candidates.mjs && node tools/verify-candidates.mjs && node tools/derive-annotations.mjs && node tools/verify-derived.mjs",
+    "prebuild": "node tools/assert-crisis-chunk-plan.mjs && node tools/crisis-audit.mjs && node tools/map-core-to-candidates.mjs && node tools/gen-boot-data.mjs && node tools/build-candidates.mjs && node tools/verify-candidates.mjs && node tools/derive-annotations.mjs && node tools/verify-derived.mjs",
     "postbuild": "node tools/assert-crisis-chunk.mjs",
     "data:fetch": "node tools/fetch-douban.mjs --all --pages 25",
     "data:build": "node tools/build-candidates.mjs",
     "data:verify": "node tools/verify-candidates.mjs && node tools/verify-derived.mjs",
     "data:derive": "node tools/derive-annotations.mjs",
     "data:map-core": "node tools/map-core-to-candidates.mjs",
-    "data:boot": "node tools/gen-boot-data.mjs"
+    "data:boot": "node tools/gen-boot-data.mjs",
+    "audit:crisis": "node tools/crisis-audit.mjs"
   },
   "dependencies": {
     "vue": "^3.5.13",

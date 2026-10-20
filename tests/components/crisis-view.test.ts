@@ -24,11 +24,16 @@ function mountWith() {
 }
 
 describe('CrisisView', () => {
-  it('渲染核对过的热线清单（12356）与核对日期', () => {
+  it('渲染核对过的热线清单（12356）与核实日期、来源链接', () => {
     const { w } = mountWith();
     expect(w.text()).toContain('12356');
-    expect(w.text()).toContain('清单核对日期');
+    expect(w.text()).toContain('最近核实日期');
     expect(w.text()).toContain('120 / 110');
+    // 每一条都要能看到"哪天核的、从哪核的"——只有全局一个日期说明不了号码来源
+    const links = w.findAll('.crisis-source a');
+    expect(links.length).toBe(3);
+    expect(links[0]!.attributes('href')).toMatch(/^https?:\/\//);
+    expect(w.findAll('.crisis-source')[0]!.text()).toContain('核实 20');
   });
 
   it('有返回按钮；无历史时点击回到首页', async () => {

@@ -1,7 +1,7 @@
 {
   "version": "2026.10.20",
-  "note": "困境词表 → 中文触发词。人工只需维护这一张表（33 个标签），不用逐本核对。weights: title=命中书名/副标题，tag=从豆瓣标签粗分类兜底。",
-  "weights": { "title": 0.85, "title_extra": 0.6, "tag": 0.35 },
+  "note": "困境词表 → 中文触发词。人工只需维护这一张表（33 个标签），不用逐本核对。weights 是派生根，必须与 tools/derive-annotations.mjs 的读数一致：title=命中书名/副标题（每多命中 +title_extra，封顶 title_max），tag=从豆瓣标签粗分类兜底。",
+  "weights": { "title": 0.85, "title_extra": 0.05, "title_max": 0.9, "tag": 0.4 },
   "top_n": 3,
   "tags": {
     "low-mood": {

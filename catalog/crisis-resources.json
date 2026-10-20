@@ -1,30 +1,47 @@
 {
-  "note": "心理援助资源。改任何一条前先重核官方来源，并把 verified_at 改成核对当日。",
-  "verified_at": "2026-10-19",
+  "note": "心理援助资源。改任何一条前先重核官方来源，并把该条的 verified_at 改成核对当日。每条必须带 source_url —— 没有来源的号码无法核实，只能靠「我们觉得它对」。tools/crisis-audit.mjs 会在超过 90 天未核实时报「未验证」并非零退出。",
+  "verified_at": "2026-10-20",
+  "max_age_days": 90,
   "resources": [
     {
       "name": "全国统一心理援助热线",
       "contact": "12356",
       "scope": "全国",
-      "hours": "24 小时"
+      "hours": "每日不少于 18 小时（多数地区为 24 小时）",
+      "source_url": "https://www.gov.cn/zhengce/zhengceku/202412/content_6994470.htm",
+      "source_note": "国家卫生健康委《关于应用“12356”全国统一心理援助热线电话号码的通知》（国卫医政函〔2024〕259号）",
+      "verified_at": "2026-10-20",
+      "verify_method": "official-page"
     },
     {
-      "name": "北京心理危机研究与干预中心热线",
+      "name": "北京心理危机研究与干预中心 · 北京市心理援助热线",
       "contact": "010-82951332",
       "scope": "全国可拨",
-      "hours": "24 小时"
+      "hours": "24 小时",
+      "source_url": "https://www.crisis.org.cn/shows/13/566.html",
+      "source_note": "中心官网公告中列明该号码为 24 小时热线；座机可拨 800-810-1117",
+      "verified_at": "2026-10-20",
+      "verify_method": "official-page"
     },
     {
       "name": "希望24热线",
       "contact": "400-161-9995",
       "scope": "全国",
-      "hours": "24 小时",
-      "note": "按语音提示选择学生或成人专线"
+      "hours": "7×24 小时",
+      "note": "按语音提示选择学生或成人专线",
+      "source_url": "http://www.hope9995.com/about/show.php?lang=cn&id=19",
+      "source_note": "希望24热线官网简介：免费、7×24 小时生命危机干预热线",
+      "verified_at": "2026-10-20",
+      "verify_method": "official-page"
     }
   ],
   "emergency": {
     "name": "紧急情况",
     "contact": "120 / 110",
-    "note": "有即刻的生命危险时，先打急救或报警电话"
+    "note": "有即刻的生命危险时，先打急救或报警电话",
+    "hours": "24 小时",
+    "source_url": "https://www.gov.cn/",
+    "verified_at": "2026-10-20",
+    "verify_method": "official-page"
   }
 }

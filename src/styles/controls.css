@@ -1,0 +1,45 @@
+/**
+ * 控件基础样式：按钮只有这一份。
+ *
+ * 合并前这段在 5 个文件里各抄了一遍，参数已经悄悄分叉（padding 有 8/20、8/24、6/18 三种，
+ * `FeedbackBar` 的 min-height 还掉到了 40px——低于 44px 的触控下限）。
+ * 这种分叉在 diff 里永远看不出来，只会在某天有人量触控区时才发现。
+ *
+ * 44px 是硬下限，不是建议值：手指点不准的「有用 / 没什么用」等于没有这个功能。
+ */
+
+.btn-primary,
+.btn-ghost {
+  min-height: 44px;
+  border-radius: 6px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.btn-primary {
+  padding: 8px 24px;
+  border: none;
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.btn-primary:active:not(:disabled) {
+  background: var(--accent-active);
+}
+
+.btn-primary:disabled {
+  background: var(--surface-sunken);
+  color: var(--text-disabled);
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  padding: 8px 20px;
+  border: 1px solid var(--border-control);
+  background: transparent;
+  color: var(--text-secondary);
+}

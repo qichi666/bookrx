@@ -13,6 +13,10 @@ defineProps<{
   picks: CandidateBook[];
   size: number;
   loading: boolean;
+  /** `fallback` = 书名证据不够 20 本，整池降级用了豆瓣分类兜底 */
+  evidence?: 'title' | 'fallback';
+  /** 仅靠兜底证据进来的书 —— 必须逐本标出来 */
+  weakIds?: ReadonlySet<string>;
 }>();
 
 defineEmits<{ next: [] }>();
@@ -28,10 +32,16 @@ defineEmits<{ next: [] }>();
     </div>
 
     <p v-if="loading" class="wide-note">正在打开全库书单…</p>
-    <p v-else class="wide-note">
-      和你这个困境相关的还有 {{ size }} 本，这里每次给你 5 本，换一批就会翻到别的书。
-      它们的标签是从书名和分类推出来的，没有人工核对过难度和篇幅，点开去豆瓣看是否对味。
-    </p>
+    <template v-else>
+      <p class="wide-note">
+        和你这个困境相关的还有 {{ size }} 本，这里每次给你 5 本，换一批就会翻到别的书。
+        它们的标签是从书名和分类推出来的，没有人工核对过难度和篇幅，点开去豆瓣看是否对味。
+      </p>
+      <p v-if="evidence === 'fallback'" class="wide-note wide-note-weak">
+        这个困境对得上的书不多，下面有一部分只能凭豆瓣分类推断和你相关，标了「相关性较弱」——
+        当线索看，别当结论。
+      </p>
+    </template>
 
     <article v-for="c in picks" :key="c.id" class="wide-item">
       <div class="wide-line">
@@ -41,6 +51,7 @@ defineEmits<{ next: [] }>();
       <p class="wide-meta">
         {{ c.publisher }}<span v-if="c.year"> · {{ c.year }}</span>
         <span class="wide-tag">未标注</span>
+        <span v-if="weakIds?.has(c.id)" class="wide-tag wide-weak">相关性较弱</span>
       </p>
       <a class="wide-link" :href="c.url" target="_blank" rel="noopener noreferrer">豆瓣条目</a>
     </article>
@@ -121,6 +132,15 @@ defineEmits<{ next: [] }>();
   border: 1px solid var(--border-control);
   border-radius: 4px;
   color: var(--text-muted);
+}
+
+.wide-weak {
+  color: var(--warn);
+  border-color: var(--warn);
+}
+
+.wide-note-weak {
+  color: var(--warn);
 }
 
 .wide-link {
