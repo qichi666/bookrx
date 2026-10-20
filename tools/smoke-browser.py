@@ -218,6 +218,98 @@ def run_checks() -> None:
         page.wait_for_selector(".summary-echo", timeout=8000)
         check("详情页能退回推荐", page.locator(".book-card").count() > 0)
 
+        # 导入 → 阅读 → 划线（P0-8 / P0-9 / P0-12 的唯一端到端验证）
+        # 这里用「内置示例」而不是造一个 EPUB 文件：它走的是**同一条**导入链路
+        # （fetch 文本 → importAndStore → IndexedDB → ReaderView），
+        # 所以能验到真实落库与真实渲染，而不需要把二进制塞进脚本。
+        page.goto(BASE + "#/library", wait_until="networkidle")
+        page.wait_for_timeout(400)
+        page.screenshot(path=str(SHOT / "10-library-empty.png"), full_page=True)
+        check("空书架给出下一步", page.locator(".lib-title").count() == 1)
+        sample_btn = page.get_by_role("button", name="先试读一段示例")
+        check("空书架提供示例试读", sample_btn.count() == 1)
+        if sample_btn.count() == 1:
+            sample_btn.click()
+            page.wait_for_selector(".chapter-title", timeout=15000)
+            page.wait_for_timeout(500)
+            page.screenshot(path=str(SHOT / "11-reader.png"), full_page=True)
+
+            check("阅读页有章节标题", bool(page.locator(".chapter-title").inner_text().strip()))
+            check("阅读页不显示全局导航", page.locator(".app-header").count() == 0)
+            para = page.locator("p.para").first
+            check("正文渲染出来了", para.count() == 1 and len(para.inner_text()) > 10,
+                  para.inner_text()[:20])
+
+            foot = page.locator(".foot-info").inner_text()
+            check("翻页栏显示页码", "/" in foot and "页" in foot, foot)
+            check("翻页栏显示本章百分比", "%" in foot, foot)
+
+            # 示例第一章只有一页，所以"翻页"要跨章验证：
+            # 末页再点「下一页」就该进下一章，这是真翻页而不是空转
+            first_chapter = page.locator(".chapter-title").inner_text().strip()
+            page.get_by_role("button", name="下一页").click()
+            page.wait_for_timeout(400)
+            moved = (
+                page.locator(".chapter-title").inner_text().strip() != first_chapter
+                or page.locator(".foot-info").inner_text() != foot
+            )
+            check("末页再翻会进入下一章（不是空转）", moved,
+                  page.locator(".chapter-title").inner_text()[:20])
+            page.get_by_role("button", name="上一页").click()
+            page.wait_for_timeout(400)
+            check("上一页能回到原章", page.locator(".chapter-title").inner_text().strip() == first_chapter,
+                  page.locator(".chapter-title").inner_text()[:20])
+
+            # 选区 → 浮条 → 划线。用 DOM Range 造一次真实选区，
+            # 因为 Playwright 的鼠标拖选在长段落上不稳定（会选到半个字）。
+            # 注意：段落的第一层子节点可能是 Vue 的 fragment 注释锚点（`<!--[-->`），
+            # 直接拿 firstChild 去建 Range 会得到一个**折叠**的空选区，
+            # 症状是"点了划线没反应"——第一次写这段就踩了，所以这里找第一个有字的文本节点。
+            page.evaluate(
+                """() => {
+                const p = document.querySelector('p.para');
+                const walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT);
+                let node = walker.nextNode();
+                while (node && !node.textContent.trim()) node = walker.nextNode();
+                if (!node) return 'no-text';
+                const r = document.createRange();
+                r.setStart(node, 0);
+                r.setEnd(node, Math.min(8, node.textContent.length));
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(r);
+                p.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+                return sel.toString();
+            }"""
+            )
+            page.wait_for_timeout(300)
+            tip = page.locator(".mark-tip")
+            check("选中后浮出划线按钮", tip.count() == 1)
+            if tip.count() == 1:
+                page.screenshot(path=str(SHOT / "12-select.png"), full_page=True)
+                page.locator(".mark-tip .tip-btn").click()
+                page.wait_for_timeout(600)
+                check("划线后正文出现高亮", page.locator("mark.mark").count() >= 1)
+                check("划线后给出下一步提示",
+                      "划线" in page.locator(".tip-line").inner_text(),
+                      page.locator(".tip-line").inner_text()[:30])
+
+                page.get_by_role("button", name="划线", exact=True).first.click()
+                page.wait_for_timeout(400)
+                check("划线抽屉列出这一条", page.locator(".mark-item").count() >= 1,
+                      f"{page.locator('.mark-item').count()} 条")
+                page.screenshot(path=str(SHOT / "13-marks.png"), full_page=True)
+                page.locator(".drawer-close").click()
+                page.wait_for_timeout(200)
+
+            # 退出阅读：顶栏是唯一出口，必须能回去
+            page.locator(".reader-bar .bar-btn").first.click()
+            page.wait_for_selector(".lib-title", timeout=8000)
+            page.wait_for_timeout(400)
+            page.screenshot(path=str(SHOT / "14-library.png"), full_page=True)
+            check("书架出现「在读」组", page.locator(".group-title", has_text="在读").count() == 1)
+            check("书架里有这本书", page.locator(".shelf-item").count() >= 1)
+
         # 危机页（懒加载独立 chunk）
         page.goto(BASE + "#/crisis", wait_until="networkidle")
         page.wait_for_timeout(400)
