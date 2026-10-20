@@ -49,7 +49,15 @@ export function matchFreeText(text: string): Array<{ tag: ProblemTagId; phrase: 
   return hits;
 }
 
-/** 组装诊断记录与打分用的 userTags（权重 ×10000 转基点）。 */export function buildDiagnosis(a: QuizAnswers): { diagnosis: Diagnosis; userTags: Map<ProblemTagId, number> } {
+/**
+ * 组装诊断记录与打分用的 userTags（权重 0–1，与书的 `problem_tags[].weight` 同一把尺子）。
+ *
+ * 这里曾经只写了 `domain / problem_tags / primary_tag / primary_source` 四个键，
+ * 把第 3 屏的五个偏好和 `free_text` **全丢了**：于是线上每个用户都按"第 3 屏全跳答"
+ * 打分（problem 9200 / availability 800），`hasCrisisSignal` 读的 `free_text`
+ * 恒为 undefined —— 危机互斥这条 P0-17 实际上从未生效。金标评测第一次跑就暴露了它。
+ */
+export function buildDiagnosis(a: QuizAnswers): { diagnosis: Diagnosis; userTags: Map<ProblemTagId, number> } {
   if (a.tags.length === 0) throw new Error('第 2 屏至少选 1 项');
   if (a.tags.length > 1 && !a.tags.includes(a.primary)) {
     throw new Error('多选时主诉必须是所选标签之一 —— 主诉由用户显式指定，不按选择顺序猜');
@@ -89,20 +97,32 @@ export function matchFreeText(text: string): Array<{ tag: ProblemTagId; phrase: 
       problem_tags: a.tags.slice(0, 3),
       primary_tag: a.primary,
       primary_source: a.tags.length === 1 ? 'single' : 'explicit',
+      // 第 3 屏与自由文本必须落库：不存 = 打分与危机互斥都拿不到用户的选择
+      ...(a.time_budget === undefined ? {} : { time_budget: a.time_budget }),
+      ...(a.difficulty_pref === undefined ? {} : { difficulty_pref: a.difficulty_pref }),
+      ...(a.urgency === undefined ? {} : { urgency: a.urgency }),
+      ...(a.form_pref === undefined ? {} : { form_pref: a.form_pref }),
+      ...(a.depth_pref === undefined ? {} : { depth_pref: a.depth_pref }),
+      ...(a.free_text === undefined ? {} : { free_text: a.free_text }),
     },
     need_tags: truncated,
     include_heavy: a.include_heavy ?? false,
     excluded_book_ids: [],
   };
 
-  const userTags = new Map<ProblemTagId, number>(
-    truncated.map((n) => [n.tag, Math.round(n.weight * 10000)]),
-  );
+  const userTags = new Map<ProblemTagId, number>(truncated.map((n) => [n.tag, n.weight]));
 
   return { diagnosis, userTags };
 }
 
-/** 从已落库的诊断复算打分侧 userTags（结果页 / 调参重算共用）。 */
+/**
+ * 从已落库的诊断复算打分侧 userTags（结果页 / 调参重算共用）。
+ *
+ * **单位必须是 0–1，与书的 `problem_tags[].weight` 同一把尺子。**
+ * 曾经这里乘过 10000（转基点），于是 `min(用户权重, 书权重)` 变成 `min(6000, 0.9)`，
+ * `primary_hit` 被算成 1–2 分——`tierOf` 只判 `=== 0`，所以档位看着正常，
+ * 但那个数已经不是"主诉命中率"，任何按 `primary_hit ≥ 8000` 写的判据都会恒假。
+ */
 export function userTagsOf(d: Diagnosis): Map<ProblemTagId, number> {
-  return new Map(d.need_tags.map((n) => [n.tag, Math.round(n.weight * 10000)]));
+  return new Map(d.need_tags.map((n) => [n.tag, n.weight]));
 }
