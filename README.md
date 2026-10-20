@@ -15,24 +15,35 @@ This is a pure front-end app: recommendations come from a local deterministic al
    When the diagnosis matches crisis signals, the app shows helplines instead of recommendations. Two permanent help entries (result page & about page) are guarded by build gates.
 2. **不凑数 / No padding**：库内没有合适的书就明说「这些都不对」，引导你重述困境，同时给出库外书名——永远不会拿三本不对症的书把列表填满。
    If nothing in the library fits, it says so, asks you to rephrase, and lists out-of-library titles — never pads the list with wrong books.
-3. **数据只在你机器上 / Data stays local**：所有数据只存本机浏览器，卸载即消失；没有服务器可上报，About 页的「大家都卡在哪」是本机匿名计数。
-   Everything lives in your browser and disappears when you uninstall. The "what others struggle with" view is built from local anonymous counters only.
+3. **数据只在你机器上 / Data stays local**：所有数据只存本机浏览器，卸载即消失；没有服务器可上报，About 页的「大家都卡在哪」是本机匿名计数。结果页的「有用 / 没什么用」同样只存在本机，**且不记录你写的任何一句话**（只存困境域、标签、三档计数）——想带走可以自己点一次导出 JSON。
+   Everything lives in your browser and disappears when you uninstall. The "what others struggle with" view is built from local anonymous counters only. The result-page "useful / not useful" vote is local too, and **never stores what you typed** — only the domain, tag, and tier counts. You can export it yourself as JSON.
 
 ## 快速开始 / Quick start
 
 ```bash
 npm install
 npm run dev        # 本地开发 / local dev
-npm run check      # typecheck + 单测 + 枚举比对 + 风格门禁 / full gate
+npm run check      # typecheck + 单测 + 枚举比对 + 风格门禁 + 危机资源 + 数据一致性 / full gate
 npm run build      # 产物含独立 crisis chunk（构建期断言）/ crisis chunk asserted
 ```
+
+想确认真实浏览器里点得通（单测跑在 happy-dom 里，看不见 CSS、路由、CSP）：
+
+Want to verify it actually works in a real browser (unit tests run in happy-dom, which can't see CSS, routing, or CSP):
+
+```bash
+npm run build
+python tools/smoke-browser.py   # 需要 Playwright 的 Python 包 + chromium；端口没人监听会自己起 preview
+```
+
+脚本走完「问卷 → 结果 → 危机页 → 关于页」，断言原词回显逐字来自用户、每句理由都有来源徽章、反馈不落自由文本，并检查控制台零报错。截图落在 `.vitest-tmp/shots/`。
 
 > 仅支持 HTTPS（或 localhost）：Web Crypto 需要 secure context，不支持 `file://` 直接打开。
 > HTTPS (or localhost) only — Web Crypto requires a secure context; opening via `file://` is not supported.
 
 ## 文档 / Docs
 
-- [`docs/SPEC.md`](docs/SPEC.md) — 唯一契约（v2.2）/ the single contract; all other docs defer to it
+- [`docs/SPEC.md`](docs/SPEC.md) — 唯一契约（v2.6）/ the single contract; all other docs defer to it
 - [`docs/ARCH.md`](docs/ARCH.md) — 架构与黄金算例 / architecture & the golden scoring example (§3.9)
 - [`docs/PLAN.md`](docs/PLAN.md) — 里程碑与任务 / milestones & tasks
 

@@ -72,7 +72,7 @@
 | 项 | 状态 | 落点 |
 |---|---|---|
 | 字段覆盖率与降级 | 完成 | `src/domain/scoring/coverage.ts`；§6.4 三条硬规则；9 条单测（含"未覆盖字段填 1 与填 5 同分"） |
-| enriched 层（派生困境标签） | 完成 | `catalog/problem-lexicon.json`（28 标签词表）→ `tools/derive-annotations.mjs` → `public/catalog/enriched/derived.json`；6551 本全覆盖（书名命中 1872 / 标签兜底 4679），`tools/verify-derived.mjs` 15 项硬断言 |
+| enriched 层（派生困境标签） | 完成 | `catalog/problem-lexicon.json`（33 标签词表）→ `tools/derive-annotations.mjs` → `public/catalog/enriched/derived.json`；6551 本全覆盖（书名命中 1872 / 标签兜底 4679），`tools/verify-derived.mjs` 15 项硬断言 |
 | 按需取书 | 完成 | `src/engine/wide-need.ts`：命中率排序 + 窗口法；实测"发言紧张+怕评价"命中 686 本相关书，138 轮翻完 |
 | **60 本核心库** | **完成（60 本）** | `catalog/shards/seed-core-01/02/03.json`；**33 个困境标签零覆盖数 12 → 0**；`tests/data/core-library.test.ts` 10 项硬断言 |
 | 核心库 ↔ 候选池身份映射 | 完成 | `tools/map-core-to-candidates.mjs` → `catalog/core-id-map.json`；59/60 唯一映射 + 1 本白名单（《围炉夜话》公版古籍不在池内） |
@@ -106,6 +106,45 @@
 
 `check:data` 三条闸门已由「未验证」转绿（catalog 13 本 / 版权 / 首屏体积 4.7KB）。
 测试计数从 61 → 95，全部行为锁进组件测试；沙箱 %TEMP% EPERM 已根治（TMPDIR/TEMP 固定进工作区）。
+
+---
+
+## 最终方案 P0/P1/P2 执行状态（2026-10-20）
+
+> **不要和上面的 M1b 混淆**：M1b 是"详情页 / 导入引导"这个产品里程碑，本轮执行的是
+> [`decisions/FINAL-PLAN-2026-10-20.md`](./decisions/FINAL-PLAN-2026-10-20.md) §五 列出的
+> 四项 P0、五项 P1、四项 P2——它们是**修现在这套东西**，不是加新页面。
+>
+> 逐项落点与实测数字见下表；"和原计划不一样"的三处（P0-1 审核人 / P1-3 界面一并做 / P1-4 未完成）
+> 记在 FINAL-PLAN §9.1。用户指令是「把产品做好、交付可用成品」，且明确跳过 P0-1 里"审核人写谁"
+> 的文档部分——危机资源照做可核实化，但不写审核人说明。
+
+| 项 | 状态 | 落点 / 实测 |
+|---|---|---|
+| **P0-2** 域映射 | 完成 | `catalog/domain-map.json` + `src/data/domain-map.ts`；**6 域 × 33 标签宽池全部 ≥ 20 本**（最小 `family-origin=20`、`attention-scatter=23`），修复前 3/6 域恒为 0 |
+| **P0-3** 取消字母序截断 | 完成 | `tools/derive-annotations.mjs` 改 `hash32(book.id)` 轮转窗口；`speaking-block` 派生数 **5 → 236**、`info-overload` 20 → 239、`self-doubt` 6 → 497；保留率最低者从中位数的 0.7% 提到 39.5%（中位 59.9%） |
+| **P0-4** 自由文本 | 完成 | `src/engine/free-text-match.ts` 三级匹配 + 词表扩到每标签 18–26 个口语说法；**32 句纯口语金标命中 31/32（97%）、零命中 1/32（3%）**，原为 29% / 64%。唯一漏的是「计划表写得漂亮，第三天就不做了」(`cant-persist`)，**如实记录，未为凑数改语料** |
+| **P0-1** 危机资源可核实化 | 完成（跳过审核人文档） | 4 条全部带 `source_url` / `verified_at` / `verification_method`；来源为 gov.cn 国卫医政函〔2024〕259 号、crisis.org.cn、hope9995.com 官方页；`tools/crisis-audit.mjs` 9 项断言（0 条 → 报「未验证」非零退出；超 90 天红灯） |
+| **P1-1** 证据分级 | 完成 | `TITLE_EVIDENCE_MIN = 0.85` / 兜底 0.4；强证据池 < 20 本时整池降级并逐本标 `weak_ids`，界面标「相关性较弱」 |
+| **P1-2** 噪声预算脚本 | 完成（只报不断） | `tools/sample-audit.mjs` → `catalog/reports/sample-audit.md`，每标签 30 本。**实测书名证据 2274 条 / 兜底 15591 条，27 个标签兜底占比 ≥80%** —— 这条如实写进报表，没有为了让数字好看而调阈值 |
+| **P1-3** 理由来源契约 + 界面 | 完成（原计划只做契约，接界面是 P2-1，一并做了） | `src/contracts/recommendation.ts` 的 `ReasonSource` + `src/domain/scoring/reason.ts`；`BookCard` 展开区三档徽章（书里写的 / 你的回答 / 书的标注） |
+| **P1-4** 外部金标 | **未完成（无人可找）** | `catalog/golden/external-profiles.json` 建好空结构，`golden.test.ts` 分两列报数并如实打印「未采集」。**不伪造外部画像**——伪造的基线比没有基线更糟 |
+| **P1-5** 补薄标签 | 完成 | `catalog/shards/seed-core-04.json` 8 本（取悦症 / 过犹不及 / 拖延心理学 / 自控力 / 清醒思考的艺术 / 演讲的力量 / 你的降落伞是什么颜色？/ 吃掉那只青蛙），核心库 **60 → 68 本** |
+| **P2-1** 理由来源 UI | 完成 | 见 P1-3 |
+| **P2-2** 问卷仪式化 | 完成 | `QuizView` 每屏一句**回执**（如「记下了：话到嘴边说不出口。不用解释原因，我们不需要。」），刻意不解读 |
+| **P2-3** 隐私兼容反馈闭环 | 完成 | `src/engine/feedback.ts` + `FeedbackBar.vue`；不存自由文本、上限 200、同诊断只留一条、导出由用户主动触发 |
+| **P2-4** 冻结 M2–M4 阅读器路线 | 未动 | 属范围决策，需 ADR；本轮未改 |
+
+**收尾验证**（本轮新增一道真实浏览器门禁）：
+
+| 门禁 | 结果 |
+|---|---|
+| `npm run check`（typecheck + 单测 + 枚举 + 风格 + 危机 + 数据） | **30 文件 / 197 条测试全绿**；style-audit 86 文件；crisis-audit 9 项通过 |
+| `npm run build` | 通过；危机页仍为独立 chunk（`crisis-*.js` 97.6 kB） |
+| `npm run check:data` | 三项全过（68 条记录 / 版权 / 首屏体积） |
+| `python tools/smoke-browser.py`（新增） | **真实 Chromium 走完问卷→结果→危机→关于全流程，控制台零报错**，截图存 `.vitest-tmp/shots/` |
+
+> 冒烟脚本当场抓到两条单元测试看不见的问题：① `index.html` 的 meta CSP 里写了 `frame-ancestors`，浏览器**忽略并报错**——删掉并在注释里写明这项防护在当前托管形态下是**缺失**的，不是"已配置"；② 结果页摘要条的断言原先写成「整句出现」，而回显是按匹配片段切的，改成「每段都逐字来自用户写下的话或点选的标签」才是可验证的形态。这两条都是 happy-dom 永远不会报的。
 
 ---
 
