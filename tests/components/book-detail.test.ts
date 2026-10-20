@@ -12,11 +12,13 @@ import { buildDiagnosis } from '@/engine/diagnose.js';
  * 其余几条来自 PRD §9.1 / §9.4，都是措辞与能力一致性问题：
  *  · 三态动词不复用（阅读 / 自备 / 查看）；
  *  · 公版书必须标来源；
- *  · 没有阅读器就不许说「可直接阅读」。
+ *  · 措辞必须与**当前能力**一致：能不能说「可直接阅读」，只取决于 `READER_AVAILABLE`。
  */
 
 const KEY = 'bookrx.diagnosis.v1';
 let currentId = 'core:000013';
+
+import { READER_AVAILABLE } from '@/data/capabilities.js';
 
 vi.mock('vue-router', () => ({
   useRoute: () => ({ params: { id: currentId } }),
@@ -41,7 +43,7 @@ function workDiagnosis(): Diagnosis {
 beforeEach(() => sessionStorage.clear());
 
 describe('书籍详情页', () => {
-  it('公版书：可用性区块紧随书名，且不声称「可直接阅读」', () => {
+  it('公版书：可用性区块紧随书名，措辞与当前能力一致', () => {
     const w = mountDetail('core:000013'); // 围炉夜话
     expect(w.text()).toContain('围炉夜话');
 
@@ -54,9 +56,16 @@ describe('书籍详情页', () => {
     expect(availAt).toBeGreaterThan(briefAt);
 
     const label = w.find('.avail-label').text();
-    expect(label).toContain('公版');
-    expect(label).not.toContain('可直接阅读');
-    expect(w.html()).not.toContain('导入后就能读');
+    // 「可直接阅读」只在真能在这里打开时才允许出现。这条断言跟着能力开关走，
+    // 所以将来无论哪一边变了（文案改了、或能力关了），测试都会立刻指出两边对不上。
+    if (READER_AVAILABLE) {
+      expect(label).toBe('可直接阅读');
+      expect(w.text()).toContain('公版作品');
+    } else {
+      expect(label).toContain('公版');
+      expect(label).not.toContain('可直接阅读');
+      expect(w.html()).not.toContain('导入后就能读');
+    }
   });
 
   it('公版书必须给出正文来源，且第一个链接就是它', () => {

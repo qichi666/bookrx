@@ -12,7 +12,12 @@ import type { Book } from '@/contracts/book.js';
 import { availabilityClass, availabilityOf } from '@/data/availability.js';
 import type { BookLink } from '@/data/book-links.js';
 
-const props = defineProps<{ book: Book; links: BookLink[] }>();
+const props = defineProps<{
+  book: Book;
+  links: BookLink[];
+  /** 本机已有这本书（导入过）时给出它的 id —— 这时"打开"比任何外链都优先 */
+  localId?: string;
+}>();
 
 /** 只取一次：三态文案是一份对象，模板里重复调用等于重复走一遍门控。 */
 const avail = computed(() => availabilityOf(props.book));
@@ -36,6 +41,8 @@ const avail = computed(() => availabilityOf(props.book));
 
       <div class="avail-block" :class="availabilityClass(book)">
         <span class="avail-label">{{ avail.label }}</span>
+        <!-- 本机已导入时，"打开"排在所有外链之前：手里有的东西不该让人再去别处找 -->
+        <router-link v-if="localId" class="local-open" :to="`/reader/${localId}`">打开本机这一份</router-link>
         <p class="avail-note">{{ avail.note }}</p>
         <p v-if="avail.extra" class="avail-extra">{{ avail.extra }}</p>
         <ul class="avail-links">
@@ -138,6 +145,17 @@ const avail = computed(() => availabilityOf(props.book));
 .avail-extra {
   color: var(--text-muted);
   font-size: 0.75rem;
+}
+
+.local-open {
+  display: inline-block;
+  margin: 6px 0 8px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  font-size: 0.8125rem;
+  text-decoration: none;
 }
 
 .avail-links {

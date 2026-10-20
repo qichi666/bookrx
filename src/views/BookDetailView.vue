@@ -15,7 +15,7 @@
  * 与 `detail/BookReason`（命中→讲什么→拿到什么→边界→来源）。拆开的理由不是行数，
  * 而是这两处的元素顺序本身是产品决策：混在一个文件里，下次改排版很容易顺手换位。
  */
-import { computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import BookHead from '@/components/detail/BookHead.vue';
 import BookReason from '@/components/detail/BookReason.vue';
@@ -23,12 +23,19 @@ import { SEED_BOOKS } from '@/data/catalog.js';
 import { linksOf } from '@/data/book-links.js';
 import { CATEGORY_LABEL, DIFFICULTY_LABEL, LENGTH_LABEL, TIER_LABEL, TIER_SQUARES } from '@/data/book-labels.js';
 import { sameTopicBooks } from '@/data/library-index.js';
+import { findLocalCopy } from '@/data/local-copy.js';
+import { listBooks } from '@/storage/db.js';
 import { tierOf } from '@/domain/scoring/tier.js';
 import { computeResult } from '@/engine/result.js';
 import { loadDiagnosis } from '@/engine/session.js';
 
 const route = useRoute();
 const bookId = computed(() => String(route.params.id ?? ''));
+/**
+ * 本机副本：只按规范化书名匹配（见 `data/local-copy.ts` 里为什么不用 ISBN 或作者）。
+ * 读不出来就当没有——隐私模式下打不开 IndexedDB，这时不该让详情页整页报错。
+ */
+const localId = ref<string>();
 const book = computed(() => SEED_BOOKS.find((b) => b.book_id === bookId.value) ?? null);
 
 /**
@@ -52,6 +59,17 @@ const judged = computed(() => {
 const hits = computed(() => (diagnosis ? diagnosis.need_tags.slice(0, 4) : []));
 
 const links = computed(() => (book.value ? linksOf(book.value) : []));
+
+onMounted(async () => {
+  const b = book.value;
+  if (!b) return;
+  try {
+    const hit = findLocalCopy(b, await listBooks());
+    if (hit) localId.value = hit.book_id;
+  } catch {
+    // 本机库打不开就安静地当"没有"，外链仍然可用
+  }
+});
 const related = computed(() => (book.value ? sameTopicBooks(book.value) : []));
 
 /** B1：这本书为什么不是更高一档。没有 hint 就整句不给，不补空话。 */
@@ -86,7 +104,7 @@ const metaItems = computed(() => {
     <template v-else>
       <a class="detail-back" href="#/result">← 回到推荐</a>
 
-      <BookHead :book="book" :links="links" />
+      <BookHead :book="book" :links="links" :local-id="localId" />
 
       <section v-if="judged" class="tier-block">
         <span v-for="i in TIER_SQUARES[judged.tier]" :key="i" class="tier-square" :class="`tier-${judged.tier}`" aria-hidden="true"></span>

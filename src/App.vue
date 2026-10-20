@@ -7,12 +7,22 @@
  *
  * AppHeader 是全局出口（用户两次实测被困后加的）：任何页面都能返回或去关于页。
  */
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 import AppHeader from '@/components/AppHeader.vue';
+
+const route = useRoute();
+/**
+ * 阅读页是全屏的（`position: fixed; inset: 0`）——留着全局导航头，
+ * 它会被压在下面看不见，还多占一段滚动高度。所以这里**真的不渲染**，
+ * 而不是用 CSS 盖住：看不见的元素仍然能被 Tab 聚焦，那是无障碍缺陷。
+ */
+const isReader = computed(() => route.name === 'reader');
 </script>
 
 <template>
-  <AppHeader />
-  <main>
+  <AppHeader v-if="!isReader" />
+  <main :class="{ full: isReader }">
     <router-view />
   </main>
 </template>
@@ -20,5 +30,9 @@ import AppHeader from '@/components/AppHeader.vue';
 <style scoped>
 main {
   padding: 16px;
+}
+
+main.full {
+  padding: 0;
 }
 </style>

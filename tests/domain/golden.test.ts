@@ -19,7 +19,7 @@ import { computeResult } from '@/engine/result.js';
  *
  * **外部组为什么单独一列**：内部出题、内部答题，测得再准也只证明自洽。
  * 外部组首轮**不设通过阈值**，只出基线——先看清差多少，再决定闸门开在哪。
- * 文件：`catalog/golden/external-profiles.json`（空数组 = 未采集，如实打印"未采集"）。
+ * 文件：`catalog/golden/external-profiles.json`（空数组 = 已跳过，见下方那条测试）。
  */
 
 interface Profile {
@@ -158,7 +158,7 @@ describe('M0.5 金标闸门（内部组 10 条）', () => {
   });
 });
 
-describe('外部金标（并行基线，不设阈值）', () => {
+describe('外部金标（本项目决定跳过）', () => {
   it('外部组的每条都必须写 author，且不能写 internal', () => {
     for (const p of external) {
       expect(p.author, `${p.id} 缺 author`).toBeTruthy();
@@ -166,12 +166,13 @@ describe('外部金标（并行基线，不设阈值）', () => {
     }
   });
 
-  it('出基线数字：有就打印，没有就如实说"未采集"', () => {
+  it('外部组：按项目决定跳过（不再是"待采集"）', () => {
     if (external.length === 0) {
       console.log(
-        '  ── 外部组：未采集 ──\n' +
-          '  外部金标是唯一需要非本项目人员的环节：请 2–3 位未参与标注的人各写 5 条，\n' +
-          '  填进 catalog/golden/external-profiles.json。它不阻塞任何开发，但越早启动越好。',
+        '  ── 外部组：已跳过（项目决定，2026-10-20）──\n' +
+          '  不再安排外部人员写画像，因此没有外部并行基线。\n' +
+          '  内部 10 条金标是唯一闸门；external-profiles.json 保留空数组作为结构占位，\n' +
+          '  将来若有人愿意做，把画像填进去即可，这套代码不用改。',
       );
       return;
     }

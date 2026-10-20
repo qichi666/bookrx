@@ -52,6 +52,18 @@
   --highlight: rgba(103, 153, 130, 0.14);
   --highlight-rule: #4e7a65;
 
+  /* ── 浮层 ──
+     卡片/抽屉/浮条比页面底再高一档；不直接复用 --surface，
+     因为暗色主题下两者会撞成同一个值，浮层就"浮"不起来了。 */
+  --surface-raised: #ffffff;
+  --shadow-pop: 0 6px 20px rgba(27, 31, 29, 0.16);
+
+  /* ── 夜间阅读 ──
+     与界面主题**解耦**：白天用浅色界面的人，晚上照样要开夜间阅读。
+     所以这组值不跟着 prefers-color-scheme 变，是固定的深底浅字。 */
+  --reader-dark-bg: #141715;
+  --reader-dark-fg: #e6eae7;
+
   /* ── 字体栈（中文一律系统栈，不自带 webfont） ── */
   --font-ui: 'Inter', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
   --font-read: 'Source Serif 4', 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
@@ -97,6 +109,11 @@
 
     --highlight: rgba(103, 153, 130, 0.2);
     --highlight-rule: #93b7a4;
+
+    --surface-raised: #222825;
+    --shadow-pop: 0 6px 20px rgba(0, 0, 0, 0.5);
+    --reader-dark-bg: #0f1211;
+    --reader-dark-fg: #e6eae7;
   }
 }
 

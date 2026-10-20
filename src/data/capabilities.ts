@@ -10,7 +10,8 @@
  * 判断标准只有一条：**用户点下去能不能得到我说会得到的东西。**
  * 不能，就得改口径，而不是留着文案等未来。
  *
- * 阅读器上线时把这里翻成 `true`，同时把 `availability.ts` 里被 `READER_AVAILABLE`
- * 挡住的那几段**规格书定稿文案**打开即可 —— 那些文案一直留在代码里，没有删。
+ * 阅读器已于 2026-10-20 上线（P0-9/10/11/12），所以这里是 `true`。
+ * 注意它描述的是「我们能不能在本站打开一本书」，**不是**「书目池里有多少本能读」——
+ * 后者由 `library-index.ts` 从 `availability` 现算，两者不要混用。
  */
-export const READER_AVAILABLE = false;
+export const READER_AVAILABLE = true;

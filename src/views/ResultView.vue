@@ -32,6 +32,7 @@ import ExternalCard from '@/components/ExternalCard.vue';
 import TuneBar from '@/components/TuneBar.vue';
 import ResultSummary from '@/components/ResultSummary.vue';
 import FeedbackBar from '@/components/FeedbackBar.vue';
+import BooklistIO from '@/components/BooklistIO.vue';
 
 const router = useRouter();
 
@@ -197,6 +198,13 @@ function onTune(key: string, value: string | null): void {
       </section>
 
       <FeedbackBar v-if="!crisis && diagnosis" :diagnosis="diagnosis" :tiers="tierCount" />
+
+      <!-- 带走这份书单（P0-15）：导出的只是选择，不是分数 -->
+      <BooklistIO
+        v-if="!crisis && diagnosis && result.items.length > 0"
+        :diagnosis="diagnosis"
+        :result="result"
+      />
 
       <footer class="result-footer">
         <button type="button" class="btn-ghost" @click="restart">重新填问卷</button>

@@ -16,7 +16,8 @@ export type ImportErrorCode =
   | 'E_IMPORT_BAD_OPF'
   | 'E_IMPORT_ENCODING'
   | 'E_IMPORT_EMPTY_CONTENT'
-  | 'E_STORAGE_QUOTA';
+  | 'E_STORAGE_QUOTA'
+  | 'E_STORAGE_FAILED';
 
 export interface ImportError {
   code: ImportErrorCode;

@@ -6,6 +6,7 @@ import { buildDiagnosis } from '@/engine/diagnose.js';
 import { domainsWithoutInline } from '@/data/library-index.js';
 import { SEED_BOOKS } from '@/data/catalog.js';
 import { TAG_OPTIONS } from '@/data/quiz.js';
+import { READER_AVAILABLE } from '@/data/capabilities.js';
 import ResultView from '@/views/ResultView.vue';
 
 /**
@@ -88,10 +89,16 @@ describe('结构性无 inline 域的说明条（P0-17）', () => {
     expect(noteAt).toBeLessThan(cardAt);
   });
 
-  it('文案与当前能力一致：没有阅读器就不能说「导入后就能读」', () => {
-    const w = mountWith(dx('habits'));
-    expect(w.html()).not.toContain('导入后就能读');
-    expect(w.html()).toContain('本站不提供正文');
+  it('文案与当前能力一致：能不能说「导入后就能读」只看有没有阅读器', () => {
+    const html = mountWith(dx('habits')).html();
+    if (READER_AVAILABLE) {
+      // 有阅读器 → 用的是 SPEC 定稿文案，且不得再声称"本站不提供正文"
+      expect(html).toContain('导入后就能读');
+      expect(html).not.toContain('本站不提供正文');
+    } else {
+      expect(html).not.toContain('导入后就能读');
+      expect(html).toContain('本站不提供正文');
+    }
   });
 
   it('有可直读书的域不显示（工作与意义域有《围炉夜话》，情绪域有《曾国藩家书》）', () => {
