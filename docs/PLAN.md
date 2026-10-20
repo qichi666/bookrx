@@ -67,6 +67,19 @@
 `npm run check`（typecheck + 单测 + 枚举比对 + 风格门禁）当前**全绿**，61 项测试。
 `npm run check:data` 三条闸门在书目数据落地前恒为「未验证」并以非零码退出 —— 这是 SPEC §12 的三态纪律，不是缺陷。
 
+### M0.5 落地状态（2026-10-20）
+
+| 项 | 状态 | 落点 |
+|---|---|---|
+| 字段覆盖率与降级 | 完成 | `src/domain/scoring/coverage.ts`；§6.4 三条硬规则；9 条单测（含"未覆盖字段填 1 与填 5 同分"） |
+| enriched 层（派生困境标签） | 完成 | `catalog/problem-lexicon.json`（28 标签词表）→ `tools/derive-annotations.mjs` → `public/catalog/enriched/derived.json`；6551 本全覆盖（书名命中 1872 / 标签兜底 4679），`tools/verify-derived.mjs` 15 项硬断言 |
+| 按需取书 | 完成 | `src/engine/wide-need.ts`：命中率排序 + 窗口法；实测"发言紧张+怕评价"命中 686 本相关书，138 轮翻完 |
+| 金标 10 条 + 闸门 | 完成（首次测量） | `catalog/golden/profiles.json` + `tests/domain/golden.test.ts`：**认出率 7/10 ｜ 首屏率 10/10**（闸门要求各 ≥7/10，刚过） |
+| 60 本核心库 | **未完成**（13 本） | 缺口明确：g10 的期望书（决策方法类）库里根本没有 |
+| LLM 批量补字段（B1） | 未开始 | 方案与验收口径已登记在 OPEN-DECISIONS |
+
+> 金标第一次跑就挖出一个 P0：`buildDiagnosis` 组装 `answers` 时丢了第 3 屏五个偏好与 `free_text`，线上所有用户实际都按"全跳答"打分，且 `hasCrisisSignal` 永远读不到自由文本（P0-17 危机互斥从未生效）。已修 + 3 条回归用例。
+
 ### M1a 落地状态（2026-10-19）
 
 | 项 | 状态 | 落点 |

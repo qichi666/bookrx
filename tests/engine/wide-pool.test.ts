@@ -3,6 +3,8 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { Diagnosis } from '@/contracts/diagnosis.js';
 import type { CandidateBook } from '@/data/candidates.js';
+import type { ProblemTagWeight } from '@/contracts/book.js';
+import type { ProblemTagId } from '@/contracts/enums.js';
 import { normalizeTitle, pickWide } from '@/engine/wide-pool.js';
 
 /**
@@ -118,6 +120,68 @@ describe('pickWide', () => {
  * 把它跑穿——每个域反复「换一批」，直到该域每本书都露过面。
  * 产物缺失时跳过（`npm run data:build` 没跑过就不该在这里红）。
  */
+describe('真实书目层：按需求取书（enriched 派生标签）', () => {
+  const DERIVED = join(process.cwd(), 'public', 'catalog', 'enriched', 'derived.json');
+  const candidates: CandidateBook[] = existsSync(join(process.cwd(), 'public', 'catalog', 'candidates', 'all.json'))
+    ? (JSON.parse(readFileSync(join(process.cwd(), 'public', 'catalog', 'candidates', 'all.json'), 'utf-8')) as CandidateBook[])
+    : [];
+  const derived = new Map<string, ProblemTagWeight[]>(
+    existsSync(DERIVED)
+      ? (JSON.parse(readFileSync(DERIVED, 'utf-8')) as Array<{ id: string; pt: [string, number][] }>).map(
+          (r) => [r.id, r.pt.map(([tag, weight]) => ({ tag: tag as ProblemTagId, weight }))],
+        )
+      : [],
+  );
+
+  it.skipIf(candidates.length === 0 || derived.size === 0)(
+    '给定「发言紧张 + 怕被评价」，每一本都能沾上题，且跑满轮次全覆盖',
+    () => {
+      const demand = new Map<ProblemTagId, number>([
+        ['speaking-block', 0.6],
+        ['evaluation-anxiety', 0.25],
+      ]);
+      const d = dx();
+      const first = pickWide(candidates, d, { epoch: 0, limit: 5, demand, derived });
+      expect(first.size).toBeGreaterThan(20);
+      expect(first.picks.length).toBe(5);
+
+      // 每一本都必须真的沾题（命中率 ≥ 0.2），而不是"同领域随便给"
+      for (const p of first.picks) {
+        const tags = derived.get(p.id) ?? [];
+        const hit =
+          Math.min(0.6, tags.find((t) => t.tag === 'speaking-block')?.weight ?? 0) +
+          Math.min(0.25, tags.find((t) => t.tag === 'evaluation-anxiety')?.weight ?? 0);
+        expect(hit, `《${p.title}》不沾题却进了池子`).toBeGreaterThanOrEqual(0.19);
+      }
+
+      // 覆盖：跑满 ceil(size/5) 轮，池子里每一本都露过面
+      const seen = new Set<string>();
+      const rounds = Math.ceil(first.size / 5);
+      for (let epoch = 0; epoch < rounds; epoch += 1) {
+        for (const p of pickWide(candidates, d, { epoch, limit: 5, demand, derived }).picks) seen.add(p.id);
+      }
+      expect(seen.size).toBe(first.size);
+
+      console.log(
+        `  按需池：${first.size} 本相关（${rounds} 轮翻完）｜首批 = ${first.picks.map((p) => p.title).join('、')}`,
+      );
+    },
+  );
+
+  it.skipIf(candidates.length === 0 || derived.size === 0)('没给派生标签时退回质量档池（降级路径仍可用）', () => {
+    const d = dx();
+    const withDerived = pickWide(candidates, d, {
+      epoch: 0,
+      limit: 5,
+      demand: new Map<ProblemTagId, number>([['speaking-block', 0.6]]),
+      derived,
+    });
+    const withoutDerived = pickWide(candidates, d, { epoch: 0, limit: 5 });
+    expect(withDerived.size).not.toBe(withoutDerived.size);
+    expect(withoutDerived.picks.length).toBe(5);
+  });
+});
+
 describe('真实书目层：全库覆盖', () => {
   const DATA = join(process.cwd(), 'public', 'catalog', 'candidates', 'all.json');
   const books: CandidateBook[] = existsSync(DATA)

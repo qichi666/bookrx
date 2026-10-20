@@ -1,0 +1,83 @@
+{
+  "generated_at": "2026-10-20",
+  "lexicon_version": "2026.10.20",
+  "source_sha256": "09bcfd80edefcadeaf00e34186bc4a9a3f77ee40038e771c112951b94b7431d6",
+  "total": 6551,
+  "with_tags": 6551,
+  "without_tags": 0,
+  "by_source": {
+    "title": 1872,
+    "tag": 4679,
+    "none": 0
+  },
+  "by_tag": {
+    "anxiety": 1361,
+    "low-mood": 987,
+    "action-paralysis": 955,
+    "big-choice": 939,
+    "communication-block": 889,
+    "attention-scatter": 881,
+    "family-origin": 861,
+    "career-confusion": 856,
+    "emptiness": 842,
+    "decision-difficulty": 793,
+    "burnout": 766,
+    "intimacy-distance": 762,
+    "frequent-conflict": 733,
+    "evaluation-anxiety": 696,
+    "management-delegation": 569,
+    "identity-rebuild": 542,
+    "judgment-distortion": 521,
+    "age-anxiety": 514,
+    "cant-see-whole": 481,
+    "cognitive-bias": 467,
+    "emotional-outburst": 442,
+    "cant-persist": 435,
+    "loss-and-farewell": 409,
+    "time-losing": 394,
+    "promotion-stuck": 367,
+    "people-pleasing": 220,
+    "meaning-loss": 55,
+    "loneliness": 40,
+    "speaking-block": 31,
+    "info-overload": 20,
+    "procrastination": 20,
+    "rumination": 11,
+    "self-doubt": 6
+  },
+  "by_domain": {
+    "career": {
+      "total": 477,
+      "with_tags": 477
+    },
+    "growth": {
+      "total": 1314,
+      "with_tags": 1314
+    },
+    "meaning": {
+      "total": 984,
+      "with_tags": 984
+    },
+    "psychology": {
+      "total": 1342,
+      "with_tags": 1342
+    },
+    "relationship": {
+      "total": 1270,
+      "with_tags": 1270
+    },
+    "thinking": {
+      "total": 951,
+      "with_tags": 951
+    },
+    "work": {
+      "total": 940,
+      "with_tags": 940
+    }
+  },
+  "weights": {
+    "title": 0.85,
+    "tag": 0.4,
+    "top_n": 3
+  }
+}

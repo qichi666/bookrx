@@ -31,6 +31,7 @@ function mk(over: {
     primary_hit: 0,
     factors,
     weights_used: {} as Record<FactorId, number>,
+    book_coverage_bp: 10000,
   };
 }
 

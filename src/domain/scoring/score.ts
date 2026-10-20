@@ -2,6 +2,7 @@ import type { Book } from '@/contracts/book.js';
 import type { FactorFit } from '@/contracts/recommendation.js';
 import type { FactorId, ProblemTagId } from '@/contracts/enums.js';
 import { BP_SCALE } from './numeric.js';
+import { coverageBp, effectiveFactors, FULL_COVERAGE, type FieldCoverage } from './coverage.js';
 import { computeFits } from './fit.js';
 import { FACTOR_IDS, renormalizeWeights } from './weights.js';
 import type { AxisTargets } from './targets.js';
@@ -13,6 +14,11 @@ export interface ScoredBook {
   primary_hit: number;
   factors: Record<FactorId, FactorFit>;
   weights_used: Record<FactorId, number>;
+  /**
+   * 这本书的标注覆盖率（0–10000）。13 本核心库 = 10000（28 字段人工核对），
+   * 候选层 = 3800（只有困境标签可推）。**档位会按它封顶**，见 `tierOf`。
+   */
+  book_coverage_bp: number;
 }
 
 const ZERO_FIT: FactorFit = { fit_bp: 0, weight_bp: 0, contribution: 0 };
@@ -32,9 +38,12 @@ export function scoreBook(
   userTags: ReadonlyMap<ProblemTagId, number>,
   primary: { tag: ProblemTagId; weight: number } | null,
   t: AxisTargets,
+  coverage: FieldCoverage = FULL_COVERAGE,
 ): ScoredBook {
-  const weights_used = renormalizeWeights(t.active_factors);
-  const { fits, primary_hit } = computeFits(book, userTags, primary, t);
+  // 参与打分的因子 = 用户答了的 ∩ 书上标了的。缺一边就不算，权重还给别人。
+  const effective = effectiveFactors(t.active_factors, coverage);
+  const weights_used = renormalizeWeights(effective);
+  const { fits, primary_hit } = computeFits(book, userTags, primary, t, coverage);
 
   const factors = {} as Record<FactorId, FactorFit>;
   let score_bp = 0;
@@ -51,7 +60,7 @@ export function scoreBook(
     score_bp += contribution;
   }
 
-  return { book, score_bp, primary_hit, factors, weights_used };
+  return { book, score_bp, primary_hit, factors, weights_used, book_coverage_bp: coverageBp(coverage) };
 }
 
 /** 契约硬校验：七项 contribution 之和必须严格等于 score_bp。测试与调试构建都调用它。 */

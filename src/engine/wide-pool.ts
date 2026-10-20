@@ -1,5 +1,8 @@
 import type { Diagnosis } from '@/contracts/diagnosis.js';
+import type { ProblemTagWeight } from '@/contracts/book.js';
+import type { ProblemTagId } from '@/contracts/enums.js';
 import type { CandidateBook } from '@/data/candidates.js';
+import { selectByNeed } from './wide-need.js';
 
 /**
  * 全库推荐池（书目层）。
@@ -44,6 +47,13 @@ export interface WidePickOptions {
   limit: number;
   /** 已展示过的书名（核心库 + 库外建议），用于跨层去重 */
   excludeTitles?: readonly string[];
+  /**
+   * 用户需求（困境标签 → 权重）。与 `derived` 同时给出时改走「按需匹配」：
+   * 只取沾题的书，按命中率排序——见 `wide-need.ts`。
+   */
+  demand?: ReadonlyMap<ProblemTagId, number>;
+  /** 候选层的派生困境标签（id → problem_tags） */
+  derived?: ReadonlyMap<string, readonly ProblemTagWeight[]>;
 }
 
 export interface WidePool {
@@ -73,6 +83,16 @@ export function pickWide(
 ): WidePool {
   const domain = diagnosis.answers.domain;
   const excludedIds = new Set(diagnosis.excluded_book_ids.map(String));
+
+  // 有派生标签就按需求匹配；没有则退回「同域 + 口碑档」（老行为，作为降级路径）
+  if (opts.demand !== undefined && opts.derived !== undefined && opts.demand.size > 0) {
+    return selectByNeed(candidates, opts.derived, opts.demand, domain, excludedIds, {
+      epoch: opts.epoch,
+      limit: opts.limit,
+      excludeTitles: opts.excludeTitles,
+    });
+  }
+
   const seen = new Set((opts.excludeTitles ?? []).map(normalizeTitle));
 
   const buckets: Record<WideBucket, CandidateBook[]> = {

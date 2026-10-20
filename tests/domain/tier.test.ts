@@ -22,14 +22,14 @@ describe('档位判定（SPEC §6.3 ⑦）', () => {
   });
 
   it('主诉未命中 ⇒ 封顶 explore，与总分无关', () => {
-    expect(tierOf(10000, 0)).toEqual({ tier: 'explore', capped_by_primary_miss: true });
+    expect(tierOf(10000, 0)).toEqual({ tier: 'explore', capped_by_primary_miss: true, capped_by_low_coverage: false });
     expect(tierOf(9080, 0).tier).toBe('explore');
     expect(tierOf(9080, 0).capped_by_primary_miss).toBe(true);
     expect(tierOf(9080, 1).tier).toBe('strong');
   });
 
   it('封顶不改分数，只改标签：原本就是 explore 的不置 capped', () => {
-    expect(tierOf(4000, 0)).toEqual({ tier: 'explore', capped_by_primary_miss: false });
+    expect(tierOf(4000, 0)).toEqual({ tier: 'explore', capped_by_primary_miss: false, capped_by_low_coverage: false });
   });
 
   it('档位枚举只允许三个值', () => {

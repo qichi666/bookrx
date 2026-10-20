@@ -1,7 +1,10 @@
 import { computed, onMounted, ref, type Ref } from 'vue';
 import type { Diagnosis } from '@/contracts/diagnosis.js';
+import type { ProblemTagWeight } from '@/contracts/book.js';
 import type { CandidateBook } from '@/data/candidates.js';
 import { loadCandidateBooks } from '@/data/candidates.js';
+import { loadDerivedTags } from '@/data/enriched.js';
+import { userTagsOf } from '@/engine/diagnose.js';
 import { pickWide } from '@/engine/wide-pool.js';
 
 /**
@@ -33,13 +36,16 @@ function saveEpoch(n: number): void {
 
 export function useWidePool(diagnosis: Ref<Diagnosis | null>, excludeTitles: Ref<string[]>) {
   const books = ref<CandidateBook[] | null>(null);
+  const derived = ref<Map<string, ProblemTagWeight[]> | null>(null);
   const loading = ref(false);
   const epoch = ref(readEpoch());
 
   onMounted(async () => {
     loading.value = true;
     try {
-      books.value = await loadCandidateBooks();
+      const [b, d] = await Promise.all([loadCandidateBooks(), loadDerivedTags()]);
+      books.value = b;
+      derived.value = d;
     } finally {
       loading.value = false;
     }
@@ -51,6 +57,9 @@ export function useWidePool(diagnosis: Ref<Diagnosis | null>, excludeTitles: Ref
       epoch: epoch.value,
       limit: 5,
       excludeTitles: excludeTitles.value,
+      // 两条路都传：派生标签缺失时 pickWide 自动退回质量档轮转
+      demand: userTagsOf(diagnosis.value),
+      derived: derived.value ?? undefined,
     });
   });
 

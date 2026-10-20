@@ -1,5 +1,6 @@
 import type { Book } from '@/contracts/book.js';
 import type { Availability, DepthLevel, FactorId, FormType, ProblemTagId } from '@/contracts/enums.js';
+import { FULL_COVERAGE, type FieldCoverage } from './coverage.js';
 import { BP_SCALE, bp, clampBp } from './numeric.js';
 import type { AxisTargets } from './targets.js';
 
@@ -57,24 +58,27 @@ export function computeFits(
   userTags: ReadonlyMap<ProblemTagId, number>,
   primary: { tag: ProblemTagId; weight: number } | null,
   t: AxisTargets,
+  coverage: FieldCoverage = FULL_COVERAGE,
 ): FitResult {
   const fits: Partial<Record<FactorId, number>> = {};
 
-  fits.problem = problemFit(book, userTags);
+  // 每个因子都先看「这本书这个字段标过没有」——未标注就不产生 fit，
+  // 而不是拿占位值算出一个看起来合理的分。
+  if (coverage.problem) fits.problem = problemFit(book, userTags);
 
-  if (t.active_factors.includes('difficulty')) {
+  if (t.active_factors.includes('difficulty') && coverage.difficulty) {
     fits.difficulty = scaleDistanceFit(book.difficulty, t.difficulty_target);
   }
-  if (t.active_factors.includes('readability')) {
+  if (t.active_factors.includes('readability') && coverage.readability) {
     fits.readability = scaleDistanceFit(book.prose_accessibility, t.readability_target);
   }
-  if (t.active_factors.includes('depth') && t.depth_target) {
+  if (t.active_factors.includes('depth') && t.depth_target && coverage.depth) {
     fits.depth = ordinalFit(DEPTH_ORDER[book.depth], DEPTH_ORDER[t.depth_target]);
   }
-  if (t.active_factors.includes('form') && t.form_target) {
+  if (t.active_factors.includes('form') && t.form_target && coverage.form) {
     fits.form = ordinalFit(FORM_ORDER[book.form], FORM_ORDER[t.form_target]);
   }
-  if (t.active_factors.includes('length')) {
+  if (t.active_factors.includes('length') && coverage.length) {
     fits.length = t.length_target === null
       ? LENGTH_FIT_UNRESTRICTED
       : (LENGTH_FIT_BY_GAP[Math.min(Math.abs(book.length_class - t.length_target), 3)] as number);
@@ -82,7 +86,7 @@ export function computeFits(
   fits.availability = AVAILABILITY_FIT[book.availability];
 
   let primary_hit = 0;
-  if (primary && primary.weight > 0) {
+  if (coverage.problem && primary && primary.weight > 0) {
     const covered = Math.min(primary.weight, bookWeightOn(book, primary.tag));
     primary_hit = clampBp(bp(covered / primary.weight));
   }
