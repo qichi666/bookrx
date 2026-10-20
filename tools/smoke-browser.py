@@ -176,10 +176,52 @@ def run_checks() -> None:
             check("反馈里没有自由文本", "脑子" not in (stored or ""))
             page.screenshot(path=str(SHOT / "06-feedback.png"), full_page=True)
 
+        # 危机入口配额：全项目恒为 2（结果页 1 + 关于页 1），任何新增入口都是越界
+        entries = page.locator("[data-crisis-entry]").count()
+        check("结果页危机入口恰好 1 个", entries == 1, f"{entries} 个")
+
+        # 书籍详情页（P0-7）：从第一张卡的「为什么是这本」进去
+        card_title = cards.first.locator(".book-title").inner_text().strip()
+        cards.first.locator("a.detail-link").click()
+        page.wait_for_selector(".detail-title", timeout=8000)
+        page.wait_for_timeout(300)
+        page.screenshot(path=str(SHOT / "07-detail.png"), full_page=True)
+        check("详情页书名与卡片一致", page.locator(".detail-title").inner_text().strip() == card_title,
+              page.locator(".detail-title").inner_text()[:24])
+
+        # 顺序是硬验收：可用性区块必须排在书名之后、理由段之前（压到页底 = 让人先读完理由才发现读不了）
+        # 先回顶部：上一步在页底点反馈，浏览器会保留滚动位置，边界框就是负值——比较仍然成立，但读起来费劲
+        page.evaluate("() => window.scrollTo(0, 0)")
+        title_box = page.locator(".detail-title").bounding_box()
+        avail_box = page.locator(".avail-block").bounding_box()
+        reason_box = page.locator(".reason-block").bounding_box()
+        check("可用性区块存在", avail_box is not None)
+        if title_box and avail_box and reason_box:
+            check("可用性区块在书名之后", avail_box["y"] > title_box["y"])
+            check("可用性区块在理由段之前（不在页底）", avail_box["y"] < reason_box["y"],
+                  f"avail {avail_box['y']:.0f} / reason {reason_box['y']:.0f}")
+
+        detail_links = page.locator(".avail-links a")
+        check("详情页给出找书路径", detail_links.count() >= 2, f"{detail_links.count()} 个")
+        bad_rel = [
+            detail_links.nth(i).inner_text()
+            for i in range(detail_links.count())
+            if "noopener" not in (detail_links.nth(i).get_attribute("rel") or "")
+        ]
+        check("每个外链都带 rel=noopener", not bad_rel, " / ".join(bad_rel))
+        check("详情页不挂危机入口", page.locator("[data-crisis-entry]").count() == 0)
+
+        detail_src = page.locator(".reason-source").all_inner_texts()
+        check("详情页理由来源只在三档内", all(s in SOURCE_LABELS for s in detail_src), " / ".join(detail_src))
+
+        page.locator(".detail-back").click()
+        page.wait_for_selector(".summary-echo", timeout=8000)
+        check("详情页能退回推荐", page.locator(".book-card").count() > 0)
+
         # 危机页（懒加载独立 chunk）
         page.goto(BASE + "#/crisis", wait_until="networkidle")
         page.wait_for_timeout(400)
-        page.screenshot(path=str(SHOT / "07-crisis.png"), full_page=True)
+        page.screenshot(path=str(SHOT / "08-crisis.png"), full_page=True)
         body = page.locator("body").inner_text()
         check("危机页有号码", any(n in body for n in ("12356", "82951332", "400-161-9995")), body[:40])
         out_links = page.locator("a[href^='http']")
@@ -191,8 +233,14 @@ def run_checks() -> None:
             page.wait_for_timeout(200)
             check(f"{path} 能打开且有内容", page.locator("h1, h2").count() > 0)
 
+        # 配额的另一半：关于页必须有且只有 1 个（结果页 1 + 这里 1 = 2）
+        page.goto(BASE + "#/about", wait_until="networkidle")
+        page.wait_for_timeout(200)
+        about_entries = page.locator("[data-crisis-entry]").count()
+        check("关于页危机入口恰好 1 个", about_entries == 1, f"{about_entries} 个")
+
         page.goto(BASE, wait_until="networkidle")
-        page.screenshot(path=str(SHOT / "08-back-home.png"), full_page=True)
+        page.screenshot(path=str(SHOT / "09-back-home.png"), full_page=True)
 
         ctx.close()
         browser.close()

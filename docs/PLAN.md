@@ -149,6 +149,31 @@
 
 ---
 
+## P0-16 / P0-17 / P0-7 落地（2026-10-21）
+
+> 这一轮只做一件事：把 SPEC §2.1 P0 表里**文档写了、代码没有**的三条补齐。
+> 补齐过程中发现，三条里有两条不能照抄 v1.2 的定稿文案——照抄会变成假话。
+
+| 项 | 状态 | 落点 / 关键约束 |
+|---|---|---|
+| **能力门控**（前置） | 完成 | `src/data/capabilities.ts` 的 `READER_AVAILABLE = false`。规格书按"最终形态"写（有内置阅读器），而阅读器属 M2/M4 已在 P2-4 冻结。判断标准只有一条：**用户点下去能不能得到我说会得到的东西**。阅读器上线只翻开关，被挡住的那几段定稿文案原样启用 |
+| **P0-16** 域级危机条 | 完成 | `src/components/CrisisBar.vue`；情绪与自我域结果页恒显示，替换原来那行小链接（不叠加）。`data-crisis-entry` 全项目配额**仍恒为 2**（结果页 1 + 关于页 1），`AppHeader` / `CrisisView` / 详情页明令不得挂，由 `tests/components/crisis-entry.test.ts` 数真实 DOM 锁定 |
+| **P0-17** 无 inline 域说明条 | 完成 | `src/components/NoInlineNote.vue`（可折叠 `<details>`）。**显示与否由数据算出来**：`domainsWithoutInline()` 实时扫书库得 `relationship`/`habits`/`thinking`/`transition`——v1.2 写死的三个域名里含 `emotion`，而情绪域其实有《曾国藩家书》，照抄会在一个有公版书的域里说"基本都还在版权期内"。书库一长出来说明条自动消失，不需要谁记得回来删 |
+| **P0-7** 书籍详情页 | 完成 | `/book/:id`：`BookHead`（书名 → `match_brief` → **可用性区块**）+ `BookReason`（命中依据 → 讲什么 → 拿到什么 → 边界 → 逐句来源）+ 档位 + 书目信息 + 同主题 3 本。无诊断时退化成"书目页"，不假装知道用户是谁。顺序是硬验收：可用性在书名之后、理由段之前 |
+| 三态动词不复用 | 完成 | `src/data/availability.ts`（公版·站外可读 / 需自备 / 站外查看）、`book-links.ts`（公版全文 → 微信读书 → 买一本 → 图书馆 → 豆瓣，**顺序有语义**，卡片只取前 4 个保证被砍的是豆瓣而非图书馆） |
+| 共享层收口 | 完成 | `book-labels.ts`（枚举→中文一份）、`library-index.ts`（`TAG_DOMAIN` 以问卷选项为唯一真源 + `sameTopicBooks`）。`BookCard` 281 → 271 行且多了详情入口；详情页拆 1 视图 + 2 组件，`.block-title` 进 `styles/sections.css` |
+
+**收尾验证**：
+
+| 门禁 | 结果 |
+|---|---|
+| `npm run check` | **33 文件 / 217 条测试全绿**（新增 `crisis-bar` 6 + `no-inline-note` 7 + `book-detail` 7）；style-audit **96 文件**；crisis-audit / 书目层校验全过 |
+| `npm run build` | 通过；危机页仍为独立 chunk |
+| `python tools/smoke-browser.py` | 通过，**新增 9 条断言**：结果页危机入口恰好 1、详情页书名与卡片一致、可用性区块在书名之后且在理由段之前（实测 avail 426 / reason 637）、外链 ≥2 且都带 `rel=noopener`、详情页不挂危机入口、详情页来源只在三档内、能退回推荐、关于页危机入口恰好 1 |
+
+---
+
+
 ## 数据生产的两种成本（M0.5 前必须选定）
 
 60 本书目分两部分，成本差 5 倍：

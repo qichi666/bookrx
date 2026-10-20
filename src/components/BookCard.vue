@@ -10,51 +10,28 @@ import { computed } from 'vue';
 import type { RankedItem } from '@/engine/recommend.js';
 import { tierOf } from '@/domain/scoring/tier.js';
 import { SOURCE_LABEL } from '@/domain/scoring/reason.js';
+import { metaLine, TIER_LABEL, TIER_SQUARES } from '@/data/book-labels.js';
+import { availabilityClass, availabilityOf } from '@/data/availability.js';
+import { cardLinksOf } from '@/data/book-links.js';
 
 const props = defineProps<{ item: RankedItem }>();
 
 const judged = computed(() => tierOf(props.item.score_bp, props.item.primary_hit));
 
-const TIER_LABEL: Record<string, string> = {
-  strong: '高度契合',
-  worth: '较为契合',
-  explore: '换个角度',
-};
-
-const SQUARES: Record<string, number> = { strong: 3, worth: 2, explore: 0 };
 /** explore 不渲染方块（1 格方块等于反复告诉用户「这本不行」），只留文字标签。 */
-const squareCount = computed(() => SQUARES[judged.value.tier] ?? 0);
+const squareCount = computed(() => TIER_SQUARES[judged.value.tier] ?? 0);
 
-const AVAILABILITY_LABEL: Record<string, string> = {
-  inline: '可直接开读',
-  bring_your_own: '自备书源',
-  external: '站外获取',
-};
+/** 可获得性口径与去哪个链接读，统一走 data 层（能力门控在那一层做，卡片不判断） */
+const avail = computed(() => availabilityOf(props.item.book));
+const availSkin = computed(() => availabilityClass(props.item.book));
+const links = computed(() => cardLinksOf(props.item.book));
+const meta = computed(() => metaLine(props.item.book));
 
-const LENGTH_LABEL: Record<number, string> = {
-  1: '8 万字内',
-  2: '8–20 万字',
-  3: '20–40 万字',
-  4: '40 万字以上',
-};
-
-const DIFFICULTY_LABEL: Record<number, string> = {
-  1: '很轻松',
-  2: '轻松',
-  3: '适中',
-  4: '有挑战',
-  5: '硬核',
-};
-
-const wereadHref = computed(
-  () => `https://weread.qq.com/web/search/books?keyword=${encodeURIComponent(props.item.book.title)}`,
-);
-const doubanHref = computed(
-  () => `https://search.douban.com/book/subject_search?search_text=${encodeURIComponent(props.item.book.title)}`,
-);
-const dangdangHref = computed(
-  () => `http://search.dangdang.com/?key=${encodeURIComponent(props.item.book.title)}`,
-);
+/**
+ * 详情页入口。整张卡不包成链接（卡内已有 4 个外链，嵌在链接里会变成"点哪都跳"），
+ * 只在书名上给一个，另外在底部给一个文字入口。
+ */
+const detailHref = computed(() => `#/book/${props.item.book.book_id}`);
 </script>
 
 <template>
@@ -70,24 +47,18 @@ const dangdangHref = computed(
       <span class="tier-label">{{ TIER_LABEL[judged.tier] }}</span>
     </div>
 
-    <h3 class="book-title">{{ item.book.title }}</h3>
+    <h3 class="book-title">
+      <a :href="detailHref">{{ item.book.title }}</a>
+    </h3>
     <p class="book-author">{{ item.book.author_display.join(' / ') }}</p>
 
     <p class="match-brief">{{ item.book.match_brief }}</p>
 
-    <span
-      class="avail-badge"
-      :class="item.book.availability === 'inline' ? 'avail-inline' : 'avail-byo'"
-    >
-      {{ AVAILABILITY_LABEL[item.book.availability] }}
-    </span>
+    <span class="avail-badge" :class="availSkin">{{ avail.label }}</span>
 
     <p class="structure-note">{{ item.book.structure_note }}</p>
 
-    <p class="meta-line">
-      约 {{ item.book.est_reading_hours }} 小时 · {{ LENGTH_LABEL[item.book.length_class] }} ·
-      {{ DIFFICULTY_LABEL[item.book.difficulty] }}
-    </p>
+    <p class="meta-line">{{ meta }}</p>
 
     <p v-if="item.book.boundary_hints" class="boundary">
       {{ item.book.boundary_hints.problem ?? item.book.boundary_hints.difficulty }}
@@ -105,10 +76,10 @@ const dangdangHref = computed(
 
     <div class="card-links">
       <span class="links-label">到哪读</span>
-      <a :href="wereadHref" target="_blank" rel="noopener noreferrer">微信读书</a>
-      <a :href="dangdangHref" target="_blank" rel="noopener noreferrer">买一本</a>
-      <a :href="doubanHref" target="_blank" rel="noopener noreferrer">豆瓣</a>
-      <a href="https://www.nlc.cn/" target="_blank" rel="noopener noreferrer">图书馆</a>
+      <a v-for="l in links" :key="l.href" :href="l.href" target="_blank" rel="noopener noreferrer">
+        {{ l.label }}
+      </a>
+      <a class="detail-link" :href="detailHref">为什么是这本</a>
     </div>
   </article>
 </template>
@@ -154,6 +125,15 @@ const dangdangHref = computed(
   margin: 0;
 }
 
+.book-title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.book-title a:hover {
+  color: var(--accent);
+}
+
 .book-author {
   color: var(--text-muted);
   font-size: 0.75rem;
@@ -182,6 +162,11 @@ const dangdangHref = computed(
 .avail-byo {
   background: var(--byo-bg);
   color: var(--byo-fg);
+}
+
+.avail-external {
+  background: var(--surface-sunken);
+  color: var(--text-muted);
 }
 
 .structure-note {
@@ -277,5 +262,10 @@ const dangdangHref = computed(
 
 .card-links a:hover {
   text-decoration: underline;
+}
+
+/* 详情入口与"到哪读"不同类：前四个是把书拿到手，这个是把理由讲透 */
+.detail-link {
+  margin-left: auto;
 }
 </style>

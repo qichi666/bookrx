@@ -17,6 +17,7 @@ import type { Tier } from '@/contracts/recommendation.js';
 import { tierOf } from '@/domain/scoring/tier.js';
 import { DOMAIN_OPTIONS } from '@/data/quiz.js';
 import { PHRASES } from '@/data/phrases.js';
+import { domainsWithoutInline } from '@/data/library-index.js';
 import { clearDiagnosis, loadDiagnosis } from '@/engine/session.js';
 import { recordResult } from '@/engine/telemetry.js';
 import { computeResult, echoPhrases, hasCrisisSignal, type ComputedResult } from '@/engine/result.js';
@@ -25,6 +26,8 @@ import WideResults from '@/components/WideResults.vue';
 import { useWidePool } from '@/composables/useWidePool.js';
 import { normalizeTitle } from '@/engine/wide-pool.js';
 import CrisisPanel from '@/components/CrisisPanel.vue';
+import CrisisBar from '@/components/CrisisBar.vue';
+import NoInlineNote from '@/components/NoInlineNote.vue';
 import ExternalCard from '@/components/ExternalCard.vue';
 import TuneBar from '@/components/TuneBar.vue';
 import ResultSummary from '@/components/ResultSummary.vue';
@@ -90,7 +93,21 @@ const { loading: wideLoading, pool, next } = useWidePool(diagnosis, usedTitles);
 
 const hasItems = computed(() => (result.value?.items.length ?? 0) > 0);
 const itemCount = computed(() => result.value?.items.length ?? 0);
-const noInline = computed(() => !(result.value?.items ?? []).some((i) => i.book.availability === 'inline'));
+
+/**
+ * P0-16：情绪与自我域的常驻资源条。命中危机信号时不显示 —— 那时 CrisisPanel 已经接管整页，
+ * 再叠一条等于同一件事说两遍。两者只有一个危机入口（data-crisis-entry 由外层决定挂谁）。
+ */
+const emotionBar = computed(() => diagnosis.value?.answers.domain === 'emotion' && !crisis.value);
+
+/**
+ * P0-17：这个域的书库里一本可直读正文都没有。
+ * 判断来自数据而不是写死域名单——书库变了说明条要自己消失。
+ */
+const noInlineDomain = computed(() => {
+  const d = diagnosis.value?.answers.domain;
+  return d !== undefined && domainsWithoutInline().has(d);
+});
 
 // 本地匿名计数（SPEC §10.2）：同一诊断只计一次；只记域与档位，自由文本不入计数
 watch(result, (r) => {
@@ -119,7 +136,9 @@ function onTune(key: string, value: string | null): void {
 
 <template>
   <section class="result">
-    <a class="result-crisis" data-crisis-entry href="#/crisis">需要现在就和人说说话</a>
+    <!-- 全项目 data-crisis-entry 配额恒为 2（结果页 + /about）；这里用条替代那行链接，不叠加 -->
+    <CrisisBar v-if="emotionBar" data-crisis-entry />
+    <a v-else class="result-crisis" data-crisis-entry href="#/crisis">需要现在就和人说说话</a>
 
     <template v-if="!diagnosis || !result">
       <h1>还没有诊断记录</h1>
@@ -130,7 +149,9 @@ function onTune(key: string, value: string | null): void {
     <template v-else>
       <ResultSummary :domain-label="domainLabel" :echoes="echoes" :judgment-line="judgmentLine" />
 
-      <!-- P0-17：危机资源条与推荐互斥 -->
+      <NoInlineNote v-if="!crisis && noInlineDomain" :domain-label="domainLabel" />
+
+      <!-- 危机信号与推荐互斥：命中即只给资源 -->
       <CrisisPanel v-if="crisis" />
 
       <!-- L4：库内 0 本，不凑数 -->
@@ -156,9 +177,6 @@ function onTune(key: string, value: string | null): void {
           符合你条件的书只有 {{ itemCount }} 本，下面几本不在库里，但方向是对的。
         </p>
 
-        <p v-if="noInline" class="no-inline-note">
-          这个领域暂时没有可直接开读的书——先把书找到手，读起来并不难。
-        </p>
       </template>
 
       <!-- 全库推荐池：同域轮转，标「未标注」，与核心库分开 -->
@@ -225,8 +243,7 @@ function onTune(key: string, value: string | null): void {
   margin: 0 0 12px;
 }
 
-.fewer-note,
-.no-inline-note {
+.fewer-note {
   color: var(--text-muted);
   font-size: 0.8125rem;
   margin: 16px 0;
