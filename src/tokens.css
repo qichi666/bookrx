@@ -4,116 +4,126 @@
  * 本文件是全项目唯一允许出现十六进制色值的源码文件（style-audit 只扫 .ts/.vue/.mjs，
  * 而色值真源是 design-tokens.json——这里必须与它逐值一致，改色先改那边）。
  * 组件与视图一律消费 var(--*)，不写兜底 hex：写了兜底，token 缺失时就看不出来。
+ *
+ * 色相方向（2026-10-21 调整）：**纸为底、墨为字、朱砂为记**。
+ * 原来的中性灰偏冷绿（#F4F6F4 / #1B1F1D），在中文阅读语境里像"后台系统"；
+ * 换成暖纸 + 墨色之后，同一套结构读起来更像书。朱砂只用在三处：
+ * 档位标记、理由来源徽章、"书方"印记——它是"记"的颜色，不是品牌色，
+ * 所以不用作按钮填充或大面积背景。
  */
 
 :root {
-  /* ── 面 ── */
-  --bg: #f4f6f4;               /* color.light.bg = neutral.50 */
-  --surface: #ffffff;          /* color.light.surface = neutral.0 */
-  --surface-sunken: #e8ebe8;   /* neutral.100：凹陷底 / 输入框底 */
-  --surface-brand: #f0f5f1;    /* brand.50：选中行底 / inline 徽标底 */
+  /* ── 面（纸） ── */
+  --bg: #faf8f4;               /* neutral.50 暖纸白：页面底 */
+  --surface: #fffdf9;          /* neutral.0 卡纸：卡片 / 面板 */
+  --surface-sunken: #f4ecdf;   /* neutral.100 凹陷底 / 输入框底 */
+  --surface-brand: #fbefe9;    /* brand.50 选中行底 / inline 徽标底 */
 
-  /* ── 字色 ── */
-  --text-primary: #1b1f1d;     /* neutral.950 */
-  --text-secondary: #3d4340;   /* neutral.800 */
-  --text-muted: #5f6660;       /* neutral.700 */
-  --text-disabled: #939a94;    /* neutral.400 */
+  /* ── 字色（墨） ── */
+  --text-primary: #251c19;     /* neutral.950 主墨 */
+  --text-secondary: #3a3027;   /* neutral.800 */
+  --text-muted: #6b5e4f;       /* neutral.700 6.19:1 on surface */
+  --text-disabled: #8f7f6b;    /* neutral.400 3.66:1 —— 看得见但点不动 */
 
   /* ── 线 ── */
-  --border: #b9bfba;           /* neutral.300：装饰描边 */
-  --border-soft: #d5d9d5;      /* neutral.200：卡内分割线 */
-  --border-control: #868d87;   /* neutral.500：控件边界（3:1） */
+  --border: #d4c4b0;           /* neutral.300：装饰描边 */
+  --border-soft: #e7dccb;      /* neutral.200：卡内分割线 */
+  --border-control: #8c7a66;   /* neutral.500：控件边界（4.06:1） */
 
-  /* ── 主色 ── */
-  --accent: #2f6449;           /* brand.600 */
-  --accent-hover: #255139;     /* brand.700 */
-  --accent-active: #1d402c;    /* brand.800 */
-  --accent-fg: #ffffff;        /* accent 底上的文字 */
-  --focus-ring-color: #2f6449;
+  /* ── 记（朱砂 / 暖赭） ── */
+  --accent: #a5503a;           /* brand.600 5.20:1 on bg */
+  --accent-hover: #8f4733;     /* brand.700 */
+  --accent-active: #723828;    /* brand.800 */
+  --accent-fg: #ffffff;        /* accent 底上的文字 5.51:1 */
+  --focus-ring-color: #a5503a;
 
   /* ── 三档符合度（必须同时输出方块数 + 文字标签，颜色不单独编码） ── */
-  --flag-strong: #2f6449;      /* brand.600 */
-  --flag-worth: #3d4340;       /* neutral.800 */
-  --flag-explore: #5f6660;     /* neutral.700 */
-  --tier-track: #d5d9d5;       /* neutral.200 */
+  --flag-strong: #a5503a;      /* brand.600 */
+  --flag-worth: #3a3027;       /* neutral.800 */
+  --flag-explore: #6b5e4f;     /* neutral.700 */
+  --tier-track: #e7dccb;       /* neutral.200 */
 
-  /* ── 语义色 ── */
+  /* ── 语义色（保持蓝/红/橙三族，不与朱砂抢识别） ── */
   --warn: #8a5a0b;             /* warn.600 */
   --danger: #992b23;           /* danger.600 */
   --info: #2b5c7d;             /* info.600 */
 
   /* ── 可获得性三态（底色有无 + 动词文案区分，不靠色相） ── */
-  --inline-bg: #f0f5f1;
-  --inline-fg: #255139;        /* brand.700 */
-  --byo-bg: #e8ebe8;
-  --byo-fg: #3d4340;
+  --inline-bg: #fbefe9;
+  --inline-fg: #8f4733;        /* brand.700 */
+  --byo-bg: #f4ecdf;
+  --byo-fg: #3a3027;
 
   /* ── 阅读器划线 ── */
-  --highlight: rgba(103, 153, 130, 0.14);
-  --highlight-rule: #4e7a65;
+  --highlight: rgba(165, 80, 58, 0.14);
+  --highlight-rule: #a5503a;
 
   /* ── 浮层 ──
      卡片/抽屉/浮条比页面底再高一档；不直接复用 --surface，
      因为暗色主题下两者会撞成同一个值，浮层就"浮"不起来了。 */
-  --surface-raised: #ffffff;
-  --shadow-pop: 0 6px 20px rgba(27, 31, 29, 0.16);
+  --surface-raised: #fffdf9;
+  --shadow-pop: 0 6px 20px rgba(37, 28, 25, 0.14);
 
   /* ── 夜间阅读 ──
      与界面主题**解耦**：白天用浅色界面的人，晚上照样要开夜间阅读。
      所以这组值不跟着 prefers-color-scheme 变，是固定的深底浅字。 */
-  --reader-dark-bg: #141715;
-  --reader-dark-fg: #e6eae7;
+  --reader-dark-bg: #17130f;
+  --reader-dark-fg: #ede4d8;
 
-  /* ── 字体栈（中文一律系统栈，不自带 webfont） ── */
+  /* ── 字体栈（中文一律系统栈，不自带 webfont） ──
+     衬线只做"书的部分"：书名、结果页标题、阅读正文。控件一律无衬线——
+     衬线泛滥会让人分不清"可点的"和"可读的"。 */
   --font-ui: 'Inter', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
   --font-read: 'Source Serif 4', 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+  --font-book: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'SimSun', Georgia, serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #121614;
-    --surface: #1a1f1d;
-    --surface-sunken: #222825;
-    --surface-brand: #1d402c33;
+    /* 纸在灯下的暗，不是屏幕的黑：暖黑底，不用纯黑也不用冷灰 */
+    --bg: #17130f;
+    --surface: #1f1a15;
+    --surface-sunken: #272119;
+    --surface-brand: #3a1f1633;
 
-    --text-primary: #e6eae7;
-    --text-secondary: #c2c8c3;
-    --text-muted: #9aa19b;
-    --text-disabled: #626a64;
+    --text-primary: #ede4d8;
+    --text-secondary: #cbbeb0;
+    --text-muted: #a2937f;
+    --text-disabled: #766a5b;
 
-    --border: #2e3532;
-    --border-soft: #2e3532;
-    --border-control: #6b736d;
+    --border: #332c24;
+    --border-soft: #2e2820;
+    --border-control: #7a6c5a;
 
     /* 暗底上主色必须提亮到 brand.300，600 会陷进背景 */
-    --accent: #93b7a4;
-    --accent-hover: #bcd4c6;
-    --accent-active: #dce8e0;
-    --accent-fg: #121614;
-    --focus-ring-color: #93b7a4;
+    --accent: #de9c7e;
+    --accent-hover: #edbfa9;
+    --accent-active: #f6dccf;
+    --accent-fg: #17130f;
+    --focus-ring-color: #de9c7e;
 
-    --flag-strong: #93b7a4;
-    --flag-worth: #c2c8c3;
-    --flag-explore: #868d87;
-    --tier-track: #2e3532;
+    --flag-strong: #de9c7e;
+    --flag-worth: #cbbeb0;
+    --flag-explore: #9a8b78;
+    --tier-track: #332c24;
 
     --warn: #dca95c;
     --danger: #f0968a;
     --info: #86b6d2;
 
-    --inline-bg: #1d402c33;
-    --inline-fg: #bcd4c6;
-    --byo-bg: #222825;
-    --byo-fg: #c2c8c3;
+    --inline-bg: #3a1f1633;
+    --inline-fg: #edbfa9;
+    --byo-bg: #272119;
+    --byo-fg: #cbbeb0;
 
-    --highlight: rgba(103, 153, 130, 0.2);
-    --highlight-rule: #93b7a4;
+    --highlight: rgba(222, 156, 126, 0.2);
+    --highlight-rule: #de9c7e;
 
-    --surface-raised: #222825;
-    --shadow-pop: 0 6px 20px rgba(0, 0, 0, 0.5);
-    --reader-dark-bg: #0f1211;
-    --reader-dark-fg: #e6eae7;
+    --surface-raised: #272119;
+    --shadow-pop: 0 6px 20px rgba(0, 0, 0, 0.55);
+    --reader-dark-bg: #12100d;
+    --reader-dark-fg: #ede4d8;
   }
 }
 

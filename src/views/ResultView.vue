@@ -53,6 +53,13 @@ const domainLabel = computed(() => {
 
 const echoes = computed(() => (diagnosis.value ? echoPhrases(diagnosis.value) : []));
 
+/** 页眉日期：只用于"这张方子是哪天开的"这件事，不参与任何计算或排序 */
+const today = new Date().toLocaleDateString('zh-CN', {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
 const judgmentLine = computed(() => {
   const primary = diagnosis.value?.answers.primary_tag;
   return (primary && PHRASES.judgment[primary]) ?? '';
@@ -150,6 +157,15 @@ function onTune(key: string, value: string | null): void {
     <template v-else>
       <ResultSummary :domain-label="domainLabel" :echoes="echoes" :judgment-line="judgmentLine" />
 
+      <!-- 处方笺页眉：印记 + 日期。装饰不承担信息，故 aria-hidden -->
+      <div class="rx-head">
+        <span class="rx-seal" aria-hidden="true">书方</span>
+        <div class="rx-meta">
+          <p class="rx-date">{{ today }}</p>
+          <p class="rx-caption">这张方子照你刚才的原话开，不替你做假设。</p>
+        </div>
+      </div>
+
       <NoInlineNote v-if="!crisis && noInlineDomain" :domain-label="domainLabel" />
 
       <!-- 危机信号与推荐互斥：命中即只给资源 -->
@@ -186,8 +202,6 @@ function onTune(key: string, value: string | null): void {
         :picks="pool.picks"
         :size="pool.size"
         :loading="wideLoading"
-        :evidence="pool.evidence"
-        :weak-ids="pool.weak_ids"
         @next="next"
       />
 

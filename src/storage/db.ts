@@ -204,6 +204,14 @@ export async function deleteAnnotation(id: string): Promise<void> {
   db.close();
 }
 
+/** 全量读取（导出笔记用）：不按书过滤，因为删掉的书留下的划线也要能带走。 */
+export async function listAllAnnotations(): Promise<Annotation[]> {
+  const db = await open();
+  const out = await getAll<Annotation>(db, 'annotations');
+  db.close();
+  return out;
+}
+
 export async function putNote(n: Note): Promise<void> {
   const db = await open();
   await tx(db, 'notes', 'readwrite', (t) => t.objectStore('notes').put(plainValue(n)));
@@ -218,6 +226,13 @@ export async function listNotes(bookId: string): Promise<Note[]> {
     req.onsuccess = () => resolve(req.result as Note[]);
     req.onerror = () => reject(req.error ?? new Error('读取笔记失败'));
   });
+  db.close();
+  return out;
+}
+
+export async function listAllNotes(): Promise<Note[]> {
+  const db = await open();
+  const out = await getAll<Note>(db, 'notes');
   db.close();
   return out;
 }

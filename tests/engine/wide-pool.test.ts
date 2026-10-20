@@ -6,6 +6,7 @@ import type { CandidateBook } from '@/data/candidates.js';
 import type { ProblemTagWeight } from '@/contracts/book.js';
 import type { ProblemDomain, ProblemTagId } from '@/contracts/enums.js';
 import { inDomainPool } from '@/data/domain-map.js';
+import { toRuntimeTags, type DerivedEntry } from '@/data/enriched.js';
 import { normalizeTitle, pickWide } from '@/engine/wide-pool.js';
 
 /**
@@ -126,11 +127,15 @@ describe('真实书目层：按需求取书（enriched 派生标签）', () => {
   const candidates: CandidateBook[] = existsSync(join(process.cwd(), 'public', 'catalog', 'candidates', 'all.json'))
     ? (JSON.parse(readFileSync(join(process.cwd(), 'public', 'catalog', 'candidates', 'all.json'), 'utf-8')) as CandidateBook[])
     : [];
+  /**
+   * 走**运行时同一个折叠函数**，而不是自己再写一遍 `pt.map`。
+   *
+   * 自己写的时候漏了证据等级，于是这条测试断言的池子里混着豆瓣大类兜底的书——
+   * 一个用户永远看不到的池子。测试和实现各写一份解析，是这类"绿灯假象"的固定来源。
+   */
   const derived = new Map<string, ProblemTagWeight[]>(
     existsSync(DERIVED)
-      ? (JSON.parse(readFileSync(DERIVED, 'utf-8')) as Array<{ id: string; pt: [string, number][] }>).map(
-          (r) => [r.id, r.pt.map(([tag, weight]) => ({ tag: tag as ProblemTagId, weight }))],
-        )
+      ? toRuntimeTags(JSON.parse(readFileSync(DERIVED, 'utf-8')) as DerivedEntry[])
       : [],
   );
 
@@ -143,7 +148,15 @@ describe('真实书目层：按需求取书（enriched 派生标签）', () => {
       ]);
       const d = dx();
       const first = pickWide(candidates, d, { epoch: 0, limit: 5, demand, derived });
-      expect(first.size).toBeGreaterThan(20);
+      /**
+       * 这个数字从 686 掉到 15，是本轮最该被记住的一条。
+       *
+       * 686 里绝大部分是靠豆瓣大类兜底进来的（「心理学」→ 5 个标签、「职场」→ 6 个，
+       * 一本书只留 3 个、留哪 3 个由散列决定）。也就是说原来这条断言证明的是
+       * "池子够大"，而池子是被**抽签**撑大的。现在剩下的 15 本是书名里真的写着
+       * 「发言」「演讲」「怯场」「评价」这类词的书——小，但每本都对得上。
+       */
+      expect(first.size).toBeGreaterThan(10);
       expect(first.picks.length).toBe(5);
 
       // 每一本都必须真的沾题（命中率 ≥ 0.2），而不是"同领域随便给"

@@ -10,6 +10,7 @@
     "tag": 4679,
     "none": 0
   },
+  "strong_only": 1872,
   "by_tag": {
     "low-mood": 836,
     "anxiety": 821,
@@ -44,6 +45,173 @@
     "age-anxiety": 257,
     "info-overload": 239,
     "speaking-block": 236
+  },
+  "by_tag_source": {
+    "big-choice": {
+      "title": 2,
+      "category": 604,
+      "category_ratio": 1
+    },
+    "emptiness": {
+      "title": 2,
+      "category": 569,
+      "category_ratio": 1
+    },
+    "self-doubt": {
+      "title": 6,
+      "category": 491,
+      "category_ratio": 0.99
+    },
+    "rumination": {
+      "title": 11,
+      "category": 519,
+      "category_ratio": 0.98
+    },
+    "promotion-stuck": {
+      "title": 16,
+      "category": 598,
+      "category_ratio": 0.97
+    },
+    "evaluation-anxiety": {
+      "title": 21,
+      "category": 588,
+      "category_ratio": 0.97
+    },
+    "burnout": {
+      "title": 11,
+      "category": 364,
+      "category_ratio": 0.97
+    },
+    "people-pleasing": {
+      "title": 18,
+      "category": 431,
+      "category_ratio": 0.96
+    },
+    "procrastination": {
+      "title": 20,
+      "category": 449,
+      "category_ratio": 0.96
+    },
+    "family-origin": {
+      "title": 36,
+      "category": 682,
+      "category_ratio": 0.95
+    },
+    "low-mood": {
+      "title": 42,
+      "category": 794,
+      "category_ratio": 0.95
+    },
+    "loss-and-farewell": {
+      "title": 29,
+      "category": 536,
+      "category_ratio": 0.95
+    },
+    "attention-scatter": {
+      "title": 27,
+      "category": 497,
+      "category_ratio": 0.95
+    },
+    "action-paralysis": {
+      "title": 27,
+      "category": 487,
+      "category_ratio": 0.95
+    },
+    "frequent-conflict": {
+      "title": 36,
+      "category": 578,
+      "category_ratio": 0.94
+    },
+    "anxiety": {
+      "title": 54,
+      "category": 767,
+      "category_ratio": 0.93
+    },
+    "age-anxiety": {
+      "title": 21,
+      "category": 236,
+      "category_ratio": 0.92
+    },
+    "meaning-loss": {
+      "title": 56,
+      "category": 567,
+      "category_ratio": 0.91
+    },
+    "info-overload": {
+      "title": 21,
+      "category": 218,
+      "category_ratio": 0.91
+    },
+    "career-confusion": {
+      "title": 72,
+      "category": 571,
+      "category_ratio": 0.89
+    },
+    "emotional-outburst": {
+      "title": 34,
+      "category": 276,
+      "category_ratio": 0.89
+    },
+    "speaking-block": {
+      "title": 31,
+      "category": 205,
+      "category_ratio": 0.87
+    },
+    "loneliness": {
+      "title": 40,
+      "category": 237,
+      "category_ratio": 0.86
+    },
+    "identity-rebuild": {
+      "title": 114,
+      "category": 509,
+      "category_ratio": 0.82
+    },
+    "cant-see-whole": {
+      "title": 51,
+      "category": 227,
+      "category_ratio": 0.82
+    },
+    "time-losing": {
+      "title": 113,
+      "category": 487,
+      "category_ratio": 0.81
+    },
+    "judgment-distortion": {
+      "title": 143,
+      "category": 578,
+      "category_ratio": 0.8
+    },
+    "cognitive-bias": {
+      "title": 82,
+      "category": 235,
+      "category_ratio": 0.74
+    },
+    "decision-difficulty": {
+      "title": 197,
+      "category": 495,
+      "category_ratio": 0.72
+    },
+    "communication-block": {
+      "title": 211,
+      "category": 478,
+      "category_ratio": 0.69
+    },
+    "intimacy-distance": {
+      "title": 211,
+      "category": 452,
+      "category_ratio": 0.68
+    },
+    "management-delegation": {
+      "title": 289,
+      "category": 517,
+      "category_ratio": 0.64
+    },
+    "cant-persist": {
+      "title": 230,
+      "category": 349,
+      "category_ratio": 0.6
+    }
   },
   "by_domain": {
     "career": {

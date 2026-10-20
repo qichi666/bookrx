@@ -1,6 +1,7 @@
 import type { Book } from '@/contracts/book.js';
 import type { BookId, ContentWarning, ProblemDomain } from '@/contracts/enums.js';
 import type { AxisTargets } from './targets.js';
+import { rulesFor } from './sensitive.js';
 
 /**
  * 过滤码表（SPEC §6.3 ①）。**规则一律用名字引用，不要用 F1/F2 编号** ——
@@ -30,16 +31,12 @@ export interface FilterContext {
   excluded: ReadonlySet<BookId>;
 }
 
-const TRAUMA_WARNINGS: ReadonlySet<ContentWarning> = new Set<ContentWarning>(['suicide', 'sexual_abuse']);
-const TERMINAL_WARNINGS: ReadonlySet<ContentWarning> = new Set<ContentWarning>(['grief', 'terminal_illness']);
-/** 只有这个域里的「越轻松」才意味着低状态。人生转折必须排除在外 */
-const GUARDED_DOMAIN: ProblemDomain = 'emotion';
 const EASY_LOAD = 25;
 
-function hits(book: Book, set: ReadonlySet<ContentWarning>): boolean {
-  const warnings = book.content_warning ?? [];
-  for (const w of warnings) {
-    if (set.has(w)) return true;
+function hits(book: Book, warnings: readonly ContentWarning[]): boolean {
+  const own = book.content_warning ?? [];
+  for (const w of own) {
+    if (warnings.includes(w)) return true;
   }
   return false;
 }
@@ -60,13 +57,17 @@ export function hardFilter(book: Book, ctx: FilterContext): FilterRuleCode | nul
   const { targets } = ctx;
   // 跳答（未选"越轻松"）时不剔除：只凭标签剔除会把所有丧亲题材书从所有域里清空
   const isEasy = targets.load === EASY_LOAD;
-  const inGuardedDomain = ctx.domain === GUARDED_DOMAIN;
 
   if (book.difficulty > targets.difficulty_cap) return 'EX-difficulty';
   if (book.entry_level >= 4 && targets.load < 40) return 'EX-load';
-  if (inGuardedDomain && isEasy) {
-    if (hits(book, TRAUMA_WARNINGS)) return 'EX-trauma';
-    if (hits(book, TERMINAL_WARNINGS) && !ctx.include_heavy) return 'EX-terminal';
+  if (isEasy) {
+    // 敏感内容规则**从数据读**：哪个域、哪种警告、能不能被开关豁免，都在 `sensitive.ts` 的
+    // 表里。这里只负责执行，不负责判断该保护谁——那条判断属于产品，不属于这一行代码。
+    for (const rule of rulesFor(ctx.domain)) {
+      if (!hits(book, rule.warnings)) continue;
+      if (rule.waivable && ctx.include_heavy) continue;
+      return rule.code;
+    }
   }
   return null;
 }

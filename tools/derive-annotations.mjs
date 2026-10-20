@@ -68,7 +68,15 @@ function hash32(s) {
 
 /**
  * 单本书的派生。
- * 返回 `{ pt: [[tag, weight], ...], how: 'title' | 'tag' }` —— 没有任何命中时 `pt` 为空数组。
+ * 返回 `{ pt: [[tag, weight, source], ...], how: 'title' | 'tag' }` —— 没有任何命中时 `pt` 为空数组。
+ *
+ * `source` 是**逐标签**的证据等级，不是在书这一层记一个：
+ *   - `title`    ：书名/副标题里真的出现了该标签的关键词（强证据）
+ *   - `category` ：只靠豆瓣大类兜底（弱证据）
+ *
+ * 为什么必须逐标签记：一本书可能书名命中「焦虑」（0.85），同时因为豆瓣标签
+ * 「心理学」顺带被塞进 `low-mood` / `rumination`（0.4）。书级字段只能表达
+ * 「第一强证据来自哪」，会把后面两个弱证据一起洗成强证据。
  *
  * 权重从词表读（`lexicon.weights`），不在这里写死：写死过一次，
  * JSON 里写着 `tag: 0.35`、代码里用着 `0.4`，两边都没错、只是不一样，
@@ -106,7 +114,7 @@ export function deriveBook(book, lexicon) {
 
   if (ordered.length === 0) return { pt: [], how: 'none' };
   return {
-    pt: ordered.map(([t, v]) => [t, round1(v.w)]),
+    pt: ordered.map(([t, v]) => [t, round1(v.w), v.how === 'title' ? 'title' : 'category']),
     how: ordered[0][1].how,
   };
 }
@@ -138,13 +146,23 @@ function main() {
   const out = [];
   const bySource = { title: 0, tag: 0, none: 0 };
   const tagCount = new Map();
+  /** 逐标签的强弱证据构成：tag → { title, category } */
+  const tagSource = new Map();
+  /** 运行时只认 title 证据的书数（category-only 的书在界面上不会出现） */
+  let strongOnly = 0;
   const byDomain = new Map();
 
   for (const b of books) {
     const r = deriveBook(b, lexicon);
     out.push({ id: b.id, pt: r.pt, how: r.how });
     bySource[r.how] += 1;
-    for (const [t] of r.pt) tagCount.set(t, (tagCount.get(t) ?? 0) + 1);
+    if (r.pt.some(([, , src]) => src === 'title')) strongOnly += 1;
+    for (const [t, , src] of r.pt) {
+      tagCount.set(t, (tagCount.get(t) ?? 0) + 1);
+      const cur = tagSource.get(t) ?? { title: 0, category: 0 };
+      cur[src] += 1;
+      tagSource.set(t, cur);
+    }
     for (const d of b.domains ?? []) {
       const cur = byDomain.get(d) ?? { total: 0, with_tags: 0 };
       cur.total += 1;
@@ -164,7 +182,14 @@ function main() {
     with_tags: bySource.title + bySource.tag,
     without_tags: bySource.none,
     by_source: bySource,
+    /** 只认书名证据（runtime 可见范围）的书数 —— 与 with_tags 并列报，差距就是被挡掉的噪声 */
+    strong_only: strongOnly,
     by_tag: Object.fromEntries([...tagCount.entries()].sort((a, b) => b[1] - a[1])),
+    by_tag_source: Object.fromEntries(
+      [...tagSource.entries()]
+        .map(([t, v]) => [t, { ...v, category_ratio: Math.round((v.category / (v.title + v.category)) * 100) / 100 }])
+        .sort((a, b) => b[1].category_ratio - a[1].category_ratio),
+    ),
     by_domain: Object.fromEntries([...byDomain.entries()].sort()),
     weights: { ...(lexicon.weights ?? {}), top_n: lexicon.top_n ?? 3 },
   };

@@ -90,6 +90,7 @@ const avail = computed(() => availabilityOf(props.book));
 }
 
 .detail-title {
+  font-family: var(--font-book);
   font-size: 1.75rem;
   margin: 0 0 4px;
 }

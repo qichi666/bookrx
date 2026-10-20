@@ -121,6 +121,7 @@ const detailHref = computed(() => `#/book/${props.item.book.book_id}`);
 }
 
 .book-title {
+  font-family: var(--font-book);
   font-size: 1.125rem;
   margin: 0;
 }

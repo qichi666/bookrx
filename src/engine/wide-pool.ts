@@ -58,13 +58,6 @@ export interface WidePool {
   /** 当前域下可用的候选总数（不受 epoch 影响） */
   size: number;
   picks: CandidateBook[];
-  /**
-   * 只有「按需匹配」路径会填。`title` = 整池都是书名证据（默认）；
-   * `fallback` = 书名证据不足 20 本，整池降级把豆瓣大类兜底的书也放了进来。
-   */
-  evidence?: 'title' | 'fallback';
-  /** 整池降级时，仅靠兜底证据进来的书 id —— UI 必须逐本标「相关性较弱」 */
-  weak_ids?: ReadonlySet<string>;
 }
 
 /**

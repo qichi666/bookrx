@@ -11,31 +11,27 @@ import { normalizeTitle, type WidePool } from './wide-pool.js';
  * 匹配口径与核心库的 `problemFit` 完全一致（覆盖率，不是 Jaccard）：
  * `Σ min(用户权重, 书权重) / Σ 用户权重`。口径一致才能让两边的话可比。
  *
- * 为什么门槛设 0.2：只有 0.35 权重的兜底标签、且只命中第三需求时，
- * 命中率 = min(0.15, 0.35)/1.0 = 0.15 < 0.2 —— 这种书属于「同领域但不沾题」，
- * 留在池子里只会把真正相关的书挤到后面。
+ * 为什么门槛设 0.2：只命中第三需求时命中率 ≈ 0.15 < 0.2 —— 这种书属于
+ * 「同领域但不沾题」，留在池子里只会把真正相关的书挤到后面。
  */
 export const MIN_DEMAND_FIT = 0.2;
 
 /**
- * 书名证据的下限（与 `catalog/problem-lexicon.json` 的 title 权重对齐）。
+ * 弱证据（豆瓣大类兜底）**不进这个函数**。
  *
- * **证据强度和权重是两件事**，这轮把它们拆开了：书名里写着「倦怠」是强证据，
- * 豆瓣把它归到「职场」大类是弱证据，而两者原来被压成同一个 0.4–0.9 的连续数，
- * 于是「调权重」同时在做「调相关度」和「调可信度」两件事，怎么调都是跷跷板。
+ * 这一条改过一版，值得写清为什么。原先是「强证据不足 20 本时整池降级，
+ * 把兜底证据的书也放进来，逐本标『相关性较弱』」。听起来诚实，实际是把
+ * 一个系统性错误包装成一句免责说明：豆瓣标签 → 困境标签是 **1 对多** 的
+ * （「心理学」同时映射到 5 个标签，「人生」映射到 6 个），而一本书只留 3 个标签，
+ * 留下的那 3 个由书 id 散列决定——**等于随机抽签**。
  *
- * 现在的规则：默认只用强证据；强证据书不足 `MIN_POOL_FOR_STRONG` 本时才降级启用弱证据，
- * 且降级状态下逐本标「相关性较弱」。
+ * 实测后果：33 个标签里 27 个的兜底证据占比 ≥80%，16 个标签的强证据书不到 20 本，
+ * 也就是说「降级」不是例外而是这些标签的常态路径。《嫌疑人X的献身》以「心理学」
+ * 大类出现在焦虑标签下，就是这条路径的产物。
+ *
+ * 现在：`loadDerivedTags()` 只返回书名证据（`source === 'title'`），池子小就如实小。
+ * 少给几本，比给一堆不对题的书更符合「不凑数」这条底线。
  */
-export const TITLE_EVIDENCE_MIN = 0.85;
-
-/** 强证据池低于这个数，就允许把弱证据放进来凑（否则"换一批"没意义）。 */
-export const MIN_POOL_FOR_STRONG = 20;
-
-export function isTitleEvidence(weight: number): boolean {
-  return weight >= TITLE_EVIDENCE_MIN;
-}
-
 export function needFit(
   tags: readonly ProblemTagWeight[],
   demand: ReadonlyMap<ProblemTagId, number>,
@@ -55,21 +51,9 @@ export function needFit(
   return total <= 0 ? 0 : Math.round((covered / total) * 1000) / 1000;
 }
 
-/** 只保留书名证据再算一次命中率（弱证据书在这里会掉到 0）。 */
-export function needFitStrong(
-  tags: readonly ProblemTagWeight[],
-  demand: ReadonlyMap<ProblemTagId, number>,
-): number {
-  return needFit(
-    tags.filter((t) => isTitleEvidence(t.weight)),
-    demand,
-  );
-}
-
 interface Row {
   book: CandidateBook;
   hit: number;
-  weak: boolean;
 }
 
 function compareRows(a: Row, b: Row): number {
@@ -87,8 +71,6 @@ export interface NeedSelectOptions {
   epoch: number;
   limit: number;
   excludeTitles?: readonly string[];
-  /** 强证据池的放行下限，默认 `MIN_POOL_FOR_STRONG`（测试里可调小） */
-  minStrongPool?: number;
 }
 
 /**
@@ -105,10 +87,7 @@ export function selectByNeed(
   opts: NeedSelectOptions,
 ): WidePool {
   const seen = new Set((opts.excludeTitles ?? []).map(normalizeTitle));
-  const minStrong = opts.minStrongPool ?? MIN_POOL_FOR_STRONG;
-
-  const strong: Row[] = [];
-  const all: Row[] = [];
+  const rows: Row[] = [];
 
   for (const book of candidates) {
     if (!inDomainPool(book.domains, domain)) continue;
@@ -117,28 +96,15 @@ export function selectByNeed(
     const tags = derived.get(book.id);
     if (tags === undefined) continue;
 
-    const hitAll = needFit(tags, demand);
-    if (hitAll < MIN_DEMAND_FIT) continue;
-
-    const hitStrong = needFitStrong(tags, demand);
-    all.push({ book, hit: hitAll, weak: hitStrong < MIN_DEMAND_FIT });
-    // 强证据排序也用 hitAll：同一本书里强证据和弱证据都可能命中，弱证据不该被抹掉，
-    // 它只决定「这本书能不能在默认状态下进池」。
-    if (hitStrong >= MIN_DEMAND_FIT) strong.push({ book, hit: hitAll, weak: false });
+    const hit = needFit(tags, demand);
+    if (hit < MIN_DEMAND_FIT) continue;
+    rows.push({ book, hit });
   }
 
-  // 强证据够用就只用强证据；不够才整池降级，并逐本记下谁是靠兜底进来的
-  const useFallback = strong.length < minStrong;
-  const rows = useFallback ? all : strong;
   rows.sort(compareRows);
 
   const size = rows.length;
-  if (size === 0) {
-    return { size: 0, picks: [], evidence: useFallback ? 'fallback' : 'title', weak_ids: new Set() };
-  }
-
-  const weakIds = new Set<string>();
-  if (useFallback) for (const r of rows) if (r.weak) weakIds.add(r.book.id);
+  if (size === 0) return { size: 0, picks: [] };
 
   const limit = Math.max(1, Math.min(opts.limit, size));
   const start = ((opts.epoch % Math.ceil(size / limit)) * limit) % size;
@@ -147,10 +113,5 @@ export function selectByNeed(
     const row = rows[(start + i) % size];
     if (row !== undefined) picks.push(row.book);
   }
-  return {
-    size,
-    picks,
-    evidence: useFallback ? 'fallback' : 'title',
-    weak_ids: weakIds,
-  };
+  return { size, picks };
 }

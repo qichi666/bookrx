@@ -1,0 +1,78 @@
+/**
+ * 处方笺式的呈现（结果页专属 + 打印）。
+ *
+ * 为什么值得单独一个文件：产品名自带「方」的隐喻，而这张页面的默认形态是
+ * **商品列表**——分组标题、卡片、按钮，和电商没有区别。把页眉换成一枚印记 +
+ * 日期 + 你当时的原话，读者第一眼看到的是「一张开给你的方子」，不是「一堆推荐」。
+ *
+ * 三条边界：
+ *  ① 只用 token，不写色值（style-audit 只放过 tokens.css）。
+ *  ② 印记是**装饰**，不承担信息：屏幕阅读器读不到它也不损失内容，所以 aria-hidden。
+ *  ③ 打印样式必须隐藏导航与所有操作按钮——一张能贴在书架旁的纸，不该带「换一批」。
+ */
+
+/* ── 页眉：印记 + 日期 ── */
+.rx-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0 12px;
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 16px;
+}
+
+.rx-seal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  color: var(--accent);
+  font-family: var(--font-book);
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+  text-align: center;
+  /* 印章的朱砂是"记"的颜色，不填充：填充会把整页重心拉到一个装饰上 */
+  background: transparent;
+}
+
+.rx-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.rx-date {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.rx-caption {
+  margin: 2px 0 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* ── 打印：只留方子本身 ── */
+@media print {
+  .rx-head {
+    border-bottom-color: var(--text-primary);
+  }
+
+  /* 导航、按钮、抽屉、提示条一律不进纸面 */
+  header,
+  nav,
+  button,
+  .no-print {
+    display: none !important;
+  }
+
+  a[href^='http']::after {
+    content: '';
+  }
+}

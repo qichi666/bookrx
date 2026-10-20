@@ -39,6 +39,7 @@ defineProps<{ suggestion: ExternalSuggestion }>();
 }
 
 .book-title {
+  font-family: var(--font-book);
   font-size: 1.125rem;
   margin: 0;
 }

@@ -53,7 +53,7 @@ export function useWidePool(diagnosis: Ref<Diagnosis | null>, excludeTitles: Ref
 
   const pool = computed<WidePool>(() => {
     if (!diagnosis.value || !books.value) {
-      return { size: 0, picks: [] as CandidateBook[], evidence: 'title', weak_ids: new Set<string>() };
+      return { size: 0, picks: [] as CandidateBook[] };
     }
     return pickWide(books.value, diagnosis.value, {
       epoch: epoch.value,

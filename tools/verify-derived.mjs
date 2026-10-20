@@ -36,6 +36,9 @@ function hash32(s) {
 /**
  * 按规范重算「这本书应该保留哪几个标签」的顺序。
  * 权重降序 → 同权时按 (词表序号 - offset + n) % n 的轮转窗口。
+ *
+ * 入参与出参都是三元组 `[tag, weight, source]`：`source` 必须跟着标签走，
+ * 否则校验脚本只能证明「权重对」，证明不了「证据等级对」。
  */
 function expectedOrder(tagEntries, bookId, tagOrder, topN) {
   const idx = new Map(tagOrder.map((t, i) => [t, i]));
@@ -104,6 +107,7 @@ function main() {
   let badOrder = 0;
   let badLen = 0;
   let untraceable = 0;
+  let srcMismatch = 0;
   let badHow = 0;
   // 逐标签统计「应得」与「实得」，用于保留率公平性断言
   const eligible = new Map();
@@ -113,11 +117,13 @@ function main() {
     if (d.pt.length > topN) badLen += 1;
     if (d.pt.some(([t]) => !allowedTags.has(t))) badTag += 1;
 
-    for (const [, w] of d.pt) {
-      // 只允许两级证据权重：标签兜底（wTag）或书名命中（title 起，封顶 title_max）
+    for (const [, w, src] of d.pt) {
+      // 只允许两级证据权重，且**权重必须与证据等级自洽**：
+      // 兜底证据（豆瓣大类）恒为 wTag，书名证据恒落在 [wTitle, wMax]。
+      // 只查权重不查等级，等于允许「0.4 的兜底标签自称书名证据」蒙混过关。
       const ok =
-        w === wTag ||
-        (w >= wTitle && w <= wMax && Math.abs(w * 10 - Math.round(w * 10)) < 1e-9);
+        (src === 'category' && w === wTag) ||
+        (src === 'title' && w >= wTitle && w <= wMax && Math.abs(w * 10 - Math.round(w * 10)) < 1e-9);
       if (!ok) badWeight += 1;
     }
 
@@ -128,28 +134,30 @@ function main() {
     const text = norm(`${book.title} ${book.subtitle ?? ''}`);
     const bookTags = new Set(book.tags ?? []);
 
-    // 逐个标签溯源，不看整体命中率
-    for (const [t] of d.pt) {
+    // 逐个标签溯源，不看整体命中率；并按自称的证据等级分别核对
+    for (const [t, , src] of d.pt) {
       const def = lexicon.tags[t];
       const byTitle = (def.keywords ?? []).some((k) => text.includes(norm(k)));
       const byTag = (def.from_tags ?? []).some((x) => bookTags.has(x));
       if (!byTitle && !byTag) untraceable += 1;
+      if (src === 'title' && !byTitle) srcMismatch += 1;
+      if (src === 'category' && byTitle) srcMismatch += 1;
       got.set(t, (got.get(t) ?? 0) + 1);
     }
 
-    // 全量重算：应得标签 + 应得顺序。不是"顺序看起来对"，是逐位相等。
-    const elig = new Map();
+    // 全量重算：应得标签 + 应得顺序 + 应得证据等级。不是"顺序看起来对"，是逐位相等。
+    const elig = [];
     for (const [t, def] of Object.entries(lexicon.tags)) {
       const hits = (def.keywords ?? []).filter((k) => text.includes(norm(k))).length;
       if (hits > 0) {
-        elig.set(t, Math.round(Math.min(wMax, wTitle + wExtra * (hits - 1)) * 10) / 10);
+        elig.push([t, Math.round(Math.min(wMax, wTitle + wExtra * (hits - 1)) * 10) / 10, 'title']);
         eligible.set(t, (eligible.get(t) ?? 0) + 1);
       } else if ((def.from_tags ?? []).some((x) => bookTags.has(x))) {
-        elig.set(t, wTag);
+        elig.push([t, wTag, 'category']);
         eligible.set(t, (eligible.get(t) ?? 0) + 1);
       }
     }
-    const exp = expectedOrder([...elig.entries()], d.id, tagOrder, topN);
+    const exp = expectedOrder(elig, d.id, tagOrder, topN);
     if (JSON.stringify(d.pt) !== JSON.stringify(exp)) badOrder += 1;
   }
 
@@ -163,6 +171,11 @@ function main() {
   chk(`每个标签最多 ${topN} 个`, badLen === 0, `${badLen} 条超长`);
   chk('how 与 pt 长度自洽', badHow === 0, `${badHow} 条不自洽`);
   chk('每个派生标签都能溯源（书名命中或豆瓣标签映射）', untraceable === 0, `${untraceable} 处无据`);
+  chk(
+    '证据等级与事实一致（自称 title 的必须真在书名里，自称 category 的不得是书名命中）',
+    srcMismatch === 0,
+    `${srcMismatch} 处对不上`,
+  );
 
   /**
    * 保留率公平性：这条断言是「不许用字符串序决定截断」的可观测后果。

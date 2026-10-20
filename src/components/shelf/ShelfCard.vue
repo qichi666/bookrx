@@ -91,6 +91,7 @@ const canRead = computed(() => props.book.group !== 'finished');
 }
 
 .item-title {
+  font-family: var(--font-book);
   font-size: 0.9375rem;
   color: var(--text-primary);
 }

@@ -5,6 +5,7 @@ import { registerOffline } from './lib/offline.js';
 import './tokens.css';
 import './styles/controls.css';
 import './styles/sections.css';
+import './styles/rx.css';
 
 /**
  * hash 路由：纯静态托管（GitHub Pages 等）无需服务端重写规则。

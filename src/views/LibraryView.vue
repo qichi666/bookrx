@@ -12,6 +12,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import ShelfCard from '@/components/shelf/ShelfCard.vue';
+import NotesTransfer from '@/components/shelf/NotesTransfer.vue';
 import { buildShelf, shelfStats, type ShelfGroups } from '@/domain/shelf.js';
 import { humanSize } from '@/lib/file-io.js';
 import { listBooks, listProgress, listShelf, quota } from '@/storage/db.js';
@@ -161,8 +162,9 @@ onMounted(refresh);
         </button>
       </div>
       <p v-if="usageText" class="usage">{{ usageText }}</p>
+      <NotesTransfer />
       <p class="privacy">
-        阅读进度、划线与笔记都记在本机。清掉站点数据 = 全部消失，且无法恢复。
+        清掉站点数据 = 本机副本消失。书要重新导入；划线与笔记可以用上面的导出留一份。
       </p>
     </template>
   </section>

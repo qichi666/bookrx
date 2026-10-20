@@ -17,119 +17,119 @@
   "color": {
     "brand": {
       "50": {
-        "$value": "#F0F5F1",
+        "$value": "#FBEFE9",
         "$type": "color",
         "$description": "品牌浅底：inline 徽标底、选中行底"
       },
       "100": {
-        "$value": "#DCE8E0",
+        "$value": "#F6DCCF",
         "$type": "color",
         "$description": "书脊卡 tone-1、次级品牌底"
       },
       "200": {
-        "$value": "#BCD4C6",
+        "$value": "#EDBFA9",
         "$type": "color",
         "$description": "装饰边框、进度条轨道"
       },
       "300": {
-        "$value": "#93B7A4",
+        "$value": "#DE9C7E",
         "$type": "color",
         "$description": "暗色主题主色 / 暗色焦点环"
       },
       "400": {
-        "$value": "#679982",
+        "$value": "#C97A5C",
         "$type": "color",
         "$description": "划线底色源、最对症卡描边、暗色次品牌"
       },
       "500": {
-        "$value": "#477C63",
+        "$value": "#B9674C",
         "$type": "color",
         "$description": "暗色按钮 hover"
       },
       "600": {
-        "$value": "#2F6449",
+        "$value": "#A5503A",
         "$type": "color",
         "$description": "主色：主按钮 / 链接 / 焦点环 / 高契合档"
       },
       "700": {
-        "$value": "#255139",
+        "$value": "#8F4733",
         "$type": "color",
         "$description": "hover 态；浅底上的品牌深字"
       },
       "800": {
-        "$value": "#1D402C",
+        "$value": "#723828",
         "$type": "color",
         "$description": "active 态"
       },
       "900": {
-        "$value": "#153120",
+        "$value": "#55291D",
         "$type": "color",
         "$description": "极少使用"
       }
     },
     "neutral": {
       "0": {
-        "$value": "#FFFFFF",
+        "$value": "#FFFDF9",
         "$type": "color",
         "$description": "白卡 surface（浅色主题）"
       },
       "25": {
-        "$value": "#FAFBFA",
+        "$value": "#FCF8F2",
         "$type": "color",
         "$description": "阅读纸色（默认）"
       },
       "50": {
-        "$value": "#F4F6F4",
+        "$value": "#FAF8F4",
         "$type": "color",
         "$description": "页面底 bg（浅色主题）"
       },
       "100": {
-        "$value": "#E8EBE8",
+        "$value": "#F4ECDF",
         "$type": "color",
         "$description": "凹陷底 / 输入框底 / 书脊卡 tone-2。禁止承载正文"
       },
       "200": {
-        "$value": "#D5D9D5",
+        "$value": "#E7DCCB",
         "$type": "color",
         "$description": "卡内分割线 / 轨道。禁止用于控件识别"
       },
       "300": {
-        "$value": "#B9BFBA",
+        "$value": "#D4C4B0",
         "$type": "color",
         "$description": "装饰描边（卡片边框）。禁止用于控件识别"
       },
       "400": {
-        "$value": "#939A94",
+        "$value": "#8F7F6B",
         "$type": "color",
         "$description": "仅禁用态文字与图标"
       },
       "500": {
-        "$value": "#868D87",
+        "$value": "#8C7A66",
         "$type": "color",
         "$description": "控件描边（3:1 来源）/ 装饰图标。禁止承载正文"
       },
       "600": {
-        "$value": "#6F766F",
+        "$value": "#6F6050",
         "$type": "color",
         "$description": "仅图形（白底 4.67:1、页底 4.30:1 不达标）。禁止承载正文"
       },
       "700": {
-        "$value": "#5F6660",
+        "$value": "#6B5E4F",
         "$type": "color",
         "$description": "次要文本 / 元数据 / 徽标字（5.44:1 on bg）"
       },
       "800": {
-        "$value": "#3D4340",
+        "$value": "#3A3027",
         "$type": "color",
         "$description": "次级正文 / 卡片标题"
       },
       "900": {
-        "$value": "#2A2F2C",
+        "$value": "#2A221B",
         "$type": "color",
         "$description": "阅读区正文"
       },
       "950": {
-        "$value": "#1B1F1D",
+        "$value": "#251C19",
         "$type": "color",
         "$description": "界面主标题 / UI 主文本"
       }
@@ -263,50 +263,50 @@
     },
     "dark": {
       "bg": {
-        "$value": "#121614",
+        "$value": "#17130F",
         "$type": "color",
         "$description": "绿调炭黑，非纯黑"
       },
       "surface": {
-        "$value": "#1A1F1D",
+        "$value": "#1F1A15",
         "$type": "color"
       },
       "surface-raised": {
-        "$value": "#222825",
+        "$value": "#272119",
         "$type": "color"
       },
       "fg": {
-        "$value": "#E6EAE7",
+        "$value": "#EDE4D8",
         "$type": "color",
-        "$description": "13.75:1 on surface"
+        "$description": "暖墨纸色，14.69:1 on bg"
       },
       "fg-secondary": {
-        "$value": "#C2C8C3",
+        "$value": "#CBBEB0",
         "$type": "color",
         "$description": "9.81:1"
       },
       "fg-muted": {
-        "$value": "#9AA19B",
+        "$value": "#A2937F",
         "$type": "color",
         "$description": "6.32:1"
       },
       "fg-meta": {
-        "$value": "#868D87",
+        "$value": "#A2937F",
         "$type": "color",
         "$description": "4.91:1 on surface"
       },
       "fg-disabled": {
-        "$value": "#626A64",
+        "$value": "#766A5B",
         "$type": "color",
         "$description": "2.99:1 on surface —— 禁用态豁免 4.5:1，但保持约 3:1 以确保仍可见"
       },
       "border": {
-        "$value": "#2E3532",
+        "$value": "#332C24",
         "$type": "color",
         "$description": "装饰性（1.33:1，仅分隔）"
       },
       "border-control": {
-        "$value": "#6B736D",
+        "$value": "#7A6C5A",
         "$type": "color",
         "$description": "3.42:1 达标"
       },
@@ -324,7 +324,7 @@
         "$type": "color"
       },
       "accent-fg": {
-        "$value": "#121614",
+        "$value": "#17130F",
         "$type": "color",
         "$description": "浅绿底 + 深字：8.30:1"
       },
@@ -355,7 +355,7 @@
         "$description": "可选"
       },
       "paper-dark": {
-        "$value": "#16191A",
+        "$value": "#12100D",
         "$type": "color",
         "$description": "可选"
       },
@@ -365,7 +365,7 @@
         "$description": "11.75–13.13:1"
       },
       "text-on-dark": {
-        "$value": "#E6EAE7",
+        "$value": "#EDE4D8",
         "$type": "color",
         "$description": "14.55:1"
       },
@@ -410,7 +410,7 @@
       },
       "dark": {
         "track": {
-          "$value": "#2E3532",
+          "$value": "#332C24",
           "$type": "color"
         },
         "strong": {
@@ -419,12 +419,12 @@
           "$description": "高度契合（Tier = strong）8.30:1"
         },
         "worth": {
-          "$value": "#C2C8C3",
+          "$value": "#CBBEB0",
           "$type": "color",
           "$description": "较为契合 9.81:1"
         },
         "explore": {
-          "$value": "#868D87",
+          "$value": "#9A8B78",
           "$type": "color",
           "$description": "换个角度 4.91:1"
         }
@@ -499,12 +499,12 @@
         "$description": "源色 #679982，只用于生成叠加底与下边线，不直接上屏"
       },
       "tint-light": {
-        "$value": "rgba(103, 153, 130, 0.14)",
+        "$value": "rgba(165, 80, 58, 0.14)",
         "$type": "color",
         "$description": "浅色纸叠加底 #EAF1EE。在 #FFFFFF / #FAFBFA / #F3EEDF / #E9F0E9 上正文(neutral-900)对比 11.88 / 11.43 / 10.35 / 10.39:1"
       },
       "tint-dark": {
-        "$value": "rgba(103, 153, 130, 0.20)",
+        "$value": "rgba(222, 156, 126, 0.20)",
         "$type": "color",
         "$description": "暗色纸 #16191A 叠加底 #26332F，正文对比 10.83:1"
       },
