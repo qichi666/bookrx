@@ -101,6 +101,19 @@ const TEXT_EXT = new Set([
 // ── 规则表 ──────────────────────────────────────────────────────────────────
 // `files` 收窄到文件名/相对路径命中某个模式的文件；不给则全量扫。
 // 每条都必须能指回一句文档，指不回去的规则不许进这张表。
+//
+// `rel` 是**相对 CWD** 的路径（`src/components/CrisisBar.vue` / `dist/assets/crisis-x.js`），
+// 所以按段收窄写成 `rel.startsWith('dist/')` 是安全的。
+
+/**
+ * 数据文件不是界面文案。
+ *
+ * 书目 JSON 里出现「解锁」「探索」「备选」是**书名和豆瓣标签**，不是我们写的推荐语；
+ * 拿 copy 规则去扫 6551 条书目只会得到一条永远修不掉的命中，最后逼人把规则关掉。
+ * `src/` 除外——`src/data/*.ts` 里的字是我们自己写的，必须扫。
+ */
+const isDataFile = (rel) => !rel.startsWith('src/') && /(^|\/)(catalog|data|fixtures|seeds)\//.test(rel);
+
 const RULES = [
   {
     id: 'crisis/verdict',
@@ -122,17 +135,35 @@ const RULES = [
   {
     id: 'crisis/analytics',
     files: (rel) => /crisis/i.test(rel),
-    pattern: /analytics|gtag|posthog|plausible|umami|sendBeacon|utm_source|track\(/,
+    pattern: /analytics|gtag|posthog|plausible|umami|sendBeacon|utm_source/,
     why: 'P8 四禁止之④：/crisis 是全站唯一零观测页面，该路由产物不得含任何埋点代码（UIUX 验收 27）。',
+  },
+  {
+    /**
+     * `track(` 单独一条、**只扫 src**。
+     *
+     * 2026-10-21 实测：`dist/assets/crisis-*.js` 里有 4 处 `track(`，全部来自 Vue 运行时
+     * （`Dep#track` 与 `ref.value` 里的 `this.dep.track()`）——危机 chunk 必然打包 Vue，
+     * 所以这条规则若扫 dist 就**永远红**。永远红的规则只有一个下场：被人注释掉，
+     * 连同上面那条真正管用的埋点包名规则一起失守。
+     *
+     * 收窄的是扫描范围（手写的危机页源码），不是判定意图。
+     */
+    id: 'crisis/track-call',
+    files: (rel) => !rel.startsWith('dist/') && /crisis/i.test(rel),
+    pattern: /track\(/,
+    why: 'P8 四禁止之④：危机页不得主动上报任何行为（UIUX 验收 27）。',
   },
   {
     id: 'copy/promo',
     pattern: /强烈推荐|你可能喜欢|猜你喜欢|猜你想读|备选|探索档/,
+    skip: isDataFile,
     why: '档位只允许「高度契合 / 较为契合 / 换个角度」三词，推荐语不许营销化（UIUX 验收 21）。',
   },
   {
     id: 'copy/byo-fault',
     pattern: /暂不可读|资源缺失|暂不支持在线阅读/,
+    skip: isDataFile,
     why: '需自备文件不是故障。措辞含糊等于欺骗（UIUX §9.2 硬规则四条）。',
   },
   {
@@ -144,6 +175,7 @@ const RULES = [
   {
     id: 'copy/filler',
     pattern: /Welcome to|Lorem ipsum|开始你的阅读之旅|解锁|Elevate your|Seamless|Unleash|Next-Gen/,
+    skip: isDataFile,
     why: '空洞占位文案 = 没写。空状态必须含「发生了什么 + 为什么 + 下一步」三件套（UIUX 验收 3）。',
   },
   {

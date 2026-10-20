@@ -10,6 +10,7 @@
 
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { hasEmoji } from './emoji-scan.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname.replace(/^\//, '');
 const TARGETS = ['src', 'tools'];
@@ -38,13 +39,10 @@ if (files.length === 0) {
 }
 
 /**
- * emoji 的**真**范围：象形符号区 + 变体选择符 + 杂项符号 + 装饰符号。
- * 不含箭头区（U+2190–21FF）与对勾叉号（U+2713/2717）：`→` `↑` `✓` `✗`
- * 是排版标记，注释和 CLI 输出里一直在用，把它们判成 emoji 会得到一批假警报，
- * 而假警报的下场一定是"被人删掉这条规则"——连同真 emoji 一起失守。
+ * emoji 的**真**范围已收进 `tools/emoji-scan.mjs`（三处门禁共用一份，免得口径分叉）。
+ * 那里写清了为什么排除箭头区与 `✓` `✗`：它们是排版标记，
+ * 把它们判成 emoji 会得到一批假警报，而假警报的下场一定是"被人删掉这条规则"。
  */
-const EMOJI = /[\u{1F000}-\u{1FAFF}\u{FE0F}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{2B00}-\u{2BFF}]/u;
-const TYPOGRAPHIC_MARKS = /[\u{2190}-\u{21FF}\u{2713}\u{2714}\u{2717}\u{2718}]/gu;
 const HEX = /#[0-9a-fA-F]{3,8}\b/g;
 const ALLOWED_HEX = new Set(['#fff', '#000', '#ffffff', '#000000', '#FFFFFF', '#000000']);
 
@@ -79,7 +77,7 @@ for (const f of files) {
   }
 
   lines.forEach((l, i) => {
-    if (EMOJI.test(l.replace(TYPOGRAPHIC_MARKS, ''))) {
+    if (hasEmoji(l)) {
       errors.push(`${rel}:${i + 1}：出现 emoji —— 无 emoji 是硬约束`);
     }
   });

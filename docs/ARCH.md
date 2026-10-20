@@ -809,7 +809,7 @@ B《非暴力沟通》
 | depth | 6000（`howto` 相邻 `howto_why`） | 1200 | 720 |
 | form | 6000（`story` 相邻 `method`） | 1000 | 600 |
 | length | 6000（档差 1：3 vs 2） | 1000 | 600 |
-| readability | 10000 − bp(\|2 − 4\|/4) | 5000 | 700 | 350 |
+| readability | 10000 − bp(\|2 − 4\|/4) = 5000 | 700 | 350 |
 | availability | 5500（bring_your_own） | 500 | 275 |
 | **score_bp** | | | **7575** → `worth`（差 425 bp 到 `strong`） |
 
@@ -822,7 +822,7 @@ C《关键对话》
 | depth | 6000 | 1200 | 720 |
 | form | 6000 | 1000 | 600 |
 | length | 6000 | 1000 | 600 |
-| readability | 10000 − bp(\|2 − 4\|/4) | 5000 | 700 | 350 |
+| readability | 10000 − bp(\|2 − 4\|/4) = 5000 | 700 | 350 |
 | availability | 5500 | 500 | 275 |
 | **score_bp** | | | **6625** → `worth` |
 
@@ -835,7 +835,7 @@ F《正念的奇迹》
 | depth | 10000（`howto_why` 同档） | 1200 | 1200 |
 | form | 10000（`method` 同档） | 1000 | 1000 |
 | length | 10000（档差 0：2 vs 2） | 1000 | 1000 |
-| readability | 10000 − bp(\|2 − 4\|/4) | 5000 | 700 | 350 |
+| readability | 10000 − bp(\|2 − 4\|/4) = 5000 | 700 | 350 |
 | availability | 5500（bring_your_own） | 500 | 275 |
 | **score_bp** | | | **6195** → 按分数是 `worth`，但 `primary_hit = 0` → **封顶 `explore`** |
 

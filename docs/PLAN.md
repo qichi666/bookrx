@@ -167,11 +167,20 @@
 
 | 门禁 | 结果 |
 |---|---|
-| `npm run check` | **33 文件 / 217 条测试全绿**（新增 `crisis-bar` 6 + `no-inline-note` 7 + `book-detail` 7）；style-audit **96 文件**；crisis-audit / 书目层校验全过 |
-| `npm run build` | 通过；危机页仍为独立 chunk |
-| `python tools/smoke-browser.py` | 通过，**新增 9 条断言**：结果页危机入口恰好 1、详情页书名与卡片一致、可用性区块在书名之后且在理由段之前（实测 avail 426 / reason 637）、外链 ≥2 且都带 `rel=noopener`、详情页不挂危机入口、详情页来源只在三档内、能退回推荐、关于页危机入口恰好 1 |
+| `npm run check` | **35 文件 / 229 条测试全绿**（新增 `crisis-bar` 6 + `no-inline-note` 7 + `book-detail` 7 + `copy-audit` 8 + `doc-audit` 5）；style-audit **97 文件**；crisis-audit / 书目层校验全过 |
+| `npm run build` | 通过；危机页仍为独立 chunk；**postbuild 现在同时扫 dist 段文案** |
+| `python tools/smoke-browser.py` | 通过，**30 条断言全绿**，其中 9 条是这轮新加的：结果页危机入口恰好 1、详情页书名与卡片一致、可用性区块在书名之后且在理由段之前（实测 avail 426 / reason 637）、外链 ≥2 且都带 `rel=noopener`、详情页不挂危机入口、详情页来源只在三档内、能退回推荐、关于页危机入口恰好 1 |
+
+**顺带把两条僵尸门禁接上了线**（详见 SPEC v2.8）：
+
+| 门禁 | 接线前 | 接线后 |
+|---|---|---|
+| `tools/copy-audit.mjs` | 从未进过 `check`；一跑 5 处命中，其中 4 处是规则扫错目标 | `audit:copy`（src 段）进 `check`，dist 段进 `postbuild`；**0 命中** |
+| `tools/doc-audit.mjs` | 从未进过 `check`；一跑 18 处命中，15 处是 `✓` `✗` 被当 emoji | `audit:doc` 进 `check`；修掉 8 处真 emoji + 3 处表格列数；**0 命中** |
+| 两条脚本的自测 | 没有——改坏了也没人知道 | `tests/tools/copy-audit.test.ts` 8 条 + `doc-audit.test.ts` 5 条，**既测能红、也测不误红** |
 
 ---
+
 
 
 ## 数据生产的两种成本（M0.5 前必须选定）

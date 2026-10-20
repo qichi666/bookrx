@@ -56,6 +56,7 @@
 
 import { readdir, readFile } from 'node:fs/promises';
 import { join, relative, extname, basename } from 'node:path';
+import { findEmoji } from './emoji-scan.mjs';
 
 const CWD = process.cwd();
 const argv = process.argv.slice(2);
@@ -70,7 +71,6 @@ const ROOTS = argv.reduce((acc, a, i) => {
 
 const SCAN_ROOTS = ROOTS.length ? ROOTS : ['docs'];
 const IGNORE_MARK = '<!-- doc-audit:ignore';
-const EMOJI = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu;
 
 // ── 工具 ────────────────────────────────────────────────────────────────────
 
@@ -239,12 +239,12 @@ for (const root of SCAN_ROOTS) {
     }
 
     // ③ emoji（不剥代码：文档里的 emoji 多半就写在示例文案的引号或反引号里，
-    //    那正是最该抓的位置；本文件里的 emoji 正则不含字面量，不会自我命中）
+    //    那正是最该抓的位置；定义来自 tools/emoji-scan.mjs，与 style-audit 同一份，
+    //    因此 `✓` `✗` 这类表格排版标记不会在这里变成红灯）
     for (let i = 0; i < lines.length; i += 1) {
       if (ignored(i)) continue;
-      EMOJI.lastIndex = 0;
-      const found = lines[i].match(EMOJI);
-      if (!found) continue;
+      const found = findEmoji(lines[i]);
+      if (found.length === 0) continue;
       hits.push({
         check: 'emoji',
         file: rel,
