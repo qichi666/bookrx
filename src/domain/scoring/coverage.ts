@@ -60,7 +60,7 @@ export const PROBLEM_ONLY_COVERAGE: FieldCoverage = Object.freeze({
 });
 
 /**
- * 进 `strong` 所需的最低覆盖率：6000（= 至少 problem + 难度 + 深度 = 6100）。
+ * 进 `strong` 所需的最低覆盖率：6000（= 至少 problem + 难度 + 深度 = 3800+1800+1200 = 6800）。
  * 只有 4300 覆盖率时，"高度契合"这句话没有依据——它只有 43% 的信息支撑。
  */
 export const STRONG_MIN_COVERAGE_BP = 6000;
