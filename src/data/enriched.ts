@@ -4,9 +4,11 @@ import type { ProblemTagId } from '@/contracts/enums.js';
 /**
  * 派生标注（enriched 层）加载器。
  *
- * 这些标签是**规则推出来的**，不是人工核对的。数据里逐标签带证据等级
- * （`title` = 书名命中词表 0.85–0.9；`category` = 豆瓣大类兜底 0.4），
- * **这里只放行 `title` 那一种**。
+ * 这些标签来自两条通道，数据里逐标签带证据等级：
+ *   - `annotation`：读过简介与目录后的逐本判定（0.95，见 `tools/annotate-books.mjs`）
+ *   - `title`     ：书名命中词表（0.85–0.9）
+ *   - `category`  ：豆瓣大类兜底（0.4）
+ * **这里只放行前两种。**
  *
  * 为什么把兜底整类挡在门外，而不是"标一下相关性较弱"：豆瓣标签到困境标签是
  * 1 对多映射（「人生」对应 6 个困境标签），而一本书只保留 3 个——留下哪 3 个
@@ -20,9 +22,9 @@ import type { ProblemTagId } from '@/contracts/enums.js';
  */
 export interface DerivedEntry {
   id: string;
-  /** `[标签, 权重, 证据等级]`：三元组，第三位是 `title` 或 `category` */
-  pt: ReadonlyArray<readonly [string, number, 'title' | 'category']>;
-  how: 'title' | 'tag' | 'none';
+  /** `[标签, 权重, 证据等级]`：三元组，第三位是 `annotation` / `title` / `category` */
+  pt: ReadonlyArray<readonly [string, number, 'annotation' | 'title' | 'category']>;
+  how: 'annotation' | 'title' | 'tag' | 'none';
 }
 
 const FILE = 'catalog/enriched/derived.json';
@@ -51,7 +53,8 @@ export function toRuntimeTags(
 ): Map<string, ProblemTagWeight[]> {
   const map = new Map<string, ProblemTagWeight[]>();
   for (const r of rows) {
-    const strong = r.pt.filter(([, , src]) => src === 'title');
+    // 只剩一种被挡：category。annotation 与 title 都是可以指着原文说话的强证据。
+    const strong = r.pt.filter(([, , src]) => src === 'annotation' || src === 'title');
     // 只有兜底证据的书直接不进 map：它在本产品里没有可以展示的用途，
     // 留着只会诱使下游再写一次"降级放行"。
     if (strong.length === 0) continue;

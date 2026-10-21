@@ -40,13 +40,13 @@ const derived = new Map<string, ProblemTagWeight[]>();
 if (existsSync(DERIVED)) {
   const rows = JSON.parse(readFileSync(DERIVED, 'utf-8')) as Array<{
     id: string;
-    pt: [string, number, 'title' | 'category'][];
+    pt: [string, number, 'annotation' | 'title' | 'category'][];
   }>;
   for (const r of rows) {
-    // 与运行时同口径：只认书名证据。兜底证据在 `enriched.ts` 就被挡住了，
-    // 测试若把它算进来，就是在用一个用户永远看不到的池子做断言。
+    // 与运行时同口径：认「逐本标注」和「书名命中」，只挡兜底。兜底证据在 `enriched.ts`
+    // 就被挡住了，测试若把它算进来，就是在用一个用户永远看不到的池子做断言。
     const strong: ProblemTagWeight[] = r.pt
-      .filter(([, , src]) => src === 'title')
+      .filter(([, , src]) => src === 'annotation' || src === 'title')
       .map(([tag, weight]) => ({ tag: tag as ProblemTagId, weight }));
     if (strong.length > 0) derived.set(r.id, strong);
   }

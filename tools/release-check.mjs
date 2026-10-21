@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
@@ -62,8 +62,47 @@ for (const rel of ['node_modules', 'dist']) {
   if (existsSync(join(ROOT, rel, '.git'))) bad(`${rel} 里出现了 .git —— 产物不该是独立仓库`);
 }
 
+/**
+ * ④ 简介原文不许进仓库。
+ *
+ * 标注通道靠读豆瓣简介工作，那批文本存在 `.cache/intros/`（本机缓存）。
+ * 出版社文案不许跟着仓库发出去，只有派生标签和 ≤40 字的证据引文可以。
+ * 这条边界**必须由脚本守**：`.gitignore` 漏一行，`git add -A` 就会把 6000 段原文
+ * 一起提交，而那时没有任何东西会报错。
+ */
+const gitignore = existsSync(join(ROOT, '.gitignore')) ? readFileSync(join(ROOT, '.gitignore'), 'utf-8') : '';
+for (const need of ['.cache/', '.env']) {
+  if (!gitignore.split('\n').map((s) => s.trim()).includes(need)) {
+    bad(`.gitignore 缺少 ${need} —— 简介原文或密钥可能被提交`);
+  }
+}
+const ANN_DIR = join(ROOT, 'catalog', 'annotations');
+if (existsSync(ANN_DIR)) {
+  let n = 0;
+  for (const f of readdirSync(ANN_DIR).filter((x) => x.endsWith('.json'))) {
+    const raw = readFileSync(join(ANN_DIR, f), 'utf-8');
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      bad(`${f} 不是合法 JSON`);
+      continue;
+    }
+    const items = Array.isArray(parsed) ? parsed : [];
+    for (const r of items) {
+      for (const t of r.tags ?? []) {
+        if (String(t.evidence ?? '').length > 40) {
+          n += 1;
+          if (n <= 3) bad(`${f} ${r.id}:${t.tag} 的证据超过 40 字，可能是整段原文`);
+        }
+      }
+    }
+  }
+  if (n > 3) bad(`共 ${n} 条证据超长`);
+}
+
 if (failed > 0) {
   console.error(`\n发布检查未通过：${failed} 项。`);
   process.exit(1);
 }
-console.log(`发布检查通过：物料齐全，${scanned} 份文档无占位符残留。`);
+console.log(`发布检查通过：物料齐全，${scanned} 份文档无占位符残留，标注产物无原文泄漏。`);

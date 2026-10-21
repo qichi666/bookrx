@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -22,6 +22,17 @@ const ALL = join(ROOT, 'public', 'catalog', 'candidates', 'all.json');
 const LEX = join(ROOT, 'catalog', 'problem-lexicon.json');
 const DERIVED = join(ROOT, 'public', 'catalog', 'enriched', 'derived.json');
 const INDEX = join(ROOT, 'public', 'catalog', 'enriched', 'index.json');
+const ANN_DIR = join(ROOT, 'catalog', 'annotations');
+
+/** 读逐本标注。自己实现一遍（不 import 派生脚本），复用就等于用同一套逻辑自证。 */
+function loadAnnotations() {
+  const map = new Map();
+  if (!existsSync(ANN_DIR)) return map;
+  for (const f of readdirSync(ANN_DIR).filter((x) => /^shard-\d+\.json$/.test(x)).sort()) {
+    for (const r of JSON.parse(readFileSync(join(ANN_DIR, f), 'utf-8'))) map.set(String(r.id), r);
+  }
+  return map;
+}
 
 /** FNV-1a 32 位：与派生脚本同一套散列，但这里自己实现一遍（不 import）。 */
 function hash32(s) {
@@ -97,10 +108,12 @@ function main() {
   const topN = lexicon.top_n ?? 3;
   const tagOrder = Object.keys(lexicon.tags);
   const cfg = lexicon.weights ?? {};
+  const wAnn = cfg.annotation ?? 0.95;
   const wTitle = cfg.title ?? 0.85;
   const wExtra = cfg.title_extra ?? 0.05;
   const wMax = cfg.title_max ?? 0.9;
   const wTag = cfg.tag ?? 0.4;
+  const annotations = loadAnnotations();
 
   let badTag = 0;
   let badWeight = 0;
@@ -109,6 +122,7 @@ function main() {
   let untraceable = 0;
   let srcMismatch = 0;
   let badHow = 0;
+  let annMismatch = 0;
   // 逐标签统计「应得」与「实得」，用于保留率公平性断言
   const eligible = new Map();
   const got = new Map();
@@ -118,28 +132,37 @@ function main() {
     if (d.pt.some(([t]) => !allowedTags.has(t))) badTag += 1;
 
     for (const [, w, src] of d.pt) {
-      // 只允许两级证据权重，且**权重必须与证据等级自洽**：
-      // 兜底证据（豆瓣大类）恒为 wTag，书名证据恒落在 [wTitle, wMax]。
+      // 三档证据各自对应一个权重，且**权重必须与证据等级自洽**：
+      // 兜底恒为 wTag，书名恒落在 [wTitle, wMax]，逐本标注恒为 wAnn。
       // 只查权重不查等级，等于允许「0.4 的兜底标签自称书名证据」蒙混过关。
       const ok =
         (src === 'category' && w === wTag) ||
+        (src === 'annotation' && w === wAnn) ||
         (src === 'title' && w >= wTitle && w <= wMax && Math.abs(w * 10 - Math.round(w * 10)) < 1e-9);
       if (!ok) badWeight += 1;
     }
 
-    const howOk = d.pt.length === 0 ? d.how === 'none' : d.how === 'title' || d.how === 'tag';
+    const howOk =
+      d.pt.length === 0
+        ? d.how === 'none'
+        : d.how === 'annotation' || d.how === 'title' || d.how === 'tag';
     if (!howOk) badHow += 1;
 
     const book = byId.get(d.id);
     const text = norm(`${book.title} ${book.subtitle ?? ''}`);
     const bookTags = new Set(book.tags ?? []);
+    const annTags = new Set((annotations.get(String(d.id))?.tags ?? []).map((x) => x.tag));
 
     // 逐个标签溯源，不看整体命中率；并按自称的证据等级分别核对
     for (const [t, , src] of d.pt) {
       const def = lexicon.tags[t];
       const byTitle = (def.keywords ?? []).some((k) => text.includes(norm(k)));
       const byTag = (def.from_tags ?? []).some((x) => bookTags.has(x));
-      if (!byTitle && !byTag) untraceable += 1;
+      const byAnn = annTags.has(t);
+      if (!byTitle && !byTag && !byAnn) untraceable += 1;
+      // 标注证据必须真的出现在标注记录里——这一条把"产物自称读过书"堵死。
+      // 证据文本是否逐字出自简介，由 verify-annotations 负责（那需要本机缓存）。
+      if (src === 'annotation' && !byAnn) annMismatch += 1;
       if (src === 'title' && !byTitle) srcMismatch += 1;
       if (src === 'category' && byTitle) srcMismatch += 1;
       got.set(t, (got.get(t) ?? 0) + 1);
@@ -147,7 +170,13 @@ function main() {
 
     // 全量重算：应得标签 + 应得顺序 + 应得证据等级。不是"顺序看起来对"，是逐位相等。
     const elig = [];
+    for (const t of annTags) {
+      if (!allowedTags.has(t)) continue;
+      elig.push([t, wAnn, 'annotation']);
+      eligible.set(t, (eligible.get(t) ?? 0) + 1);
+    }
     for (const [t, def] of Object.entries(lexicon.tags)) {
+      if (annTags.has(t)) continue; // 标注占位，弱证据不得覆盖
       const hits = (def.keywords ?? []).filter((k) => text.includes(norm(k))).length;
       if (hits > 0) {
         elig.push([t, Math.round(Math.min(wMax, wTitle + wExtra * (hits - 1)) * 10) / 10, 'title']);
@@ -162,7 +191,11 @@ function main() {
   }
 
   chk('标签全部来自词表', badTag === 0, `${badTag} 条越界`);
-  chk(`权重落在允许集合内（${wTag} / ${wTitle}–${wMax} 一位小数）`, badWeight === 0, `${badWeight} 处`);
+  chk(
+    `权重落在允许集合内（${wTag} / ${wTitle}–${wMax} 一位小数 / 标注 ${wAnn}）`,
+    badWeight === 0,
+    `${badWeight} 处`,
+  );
   chk(
     '派生结果与规范逐位一致（权重降序 → 同权按书 id 散列轮转，不用字母序）',
     badOrder === 0,
@@ -170,11 +203,16 @@ function main() {
   );
   chk(`每个标签最多 ${topN} 个`, badLen === 0, `${badLen} 条超长`);
   chk('how 与 pt 长度自洽', badHow === 0, `${badHow} 条不自洽`);
-  chk('每个派生标签都能溯源（书名命中或豆瓣标签映射）', untraceable === 0, `${untraceable} 处无据`);
+  chk('每个派生标签都能溯源（标注记录 / 书名命中 / 豆瓣标签映射）', untraceable === 0, `${untraceable} 处无据`);
   chk(
     '证据等级与事实一致（自称 title 的必须真在书名里，自称 category 的不得是书名命中）',
     srcMismatch === 0,
     `${srcMismatch} 处对不上`,
+  );
+  chk(
+    '自称 annotation 的标签必须真在标注记录里（不许产物单方面声称"读过书"）',
+    annMismatch === 0,
+    `${annMismatch} 处`,
   );
 
   /**
@@ -203,7 +241,7 @@ function main() {
   );
 
   // index 独立重算
-  const recount = { title: 0, tag: 0, none: 0 };
+  const recount = { annotation: 0, title: 0, tag: 0, none: 0 };
   const recTag = new Map();
   const recDomain = new Map();
   for (const d of derived) {

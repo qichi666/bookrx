@@ -1,15 +1,17 @@
 {
-  "generated_at": "2026-10-20",
+  "generated_at": "2026-10-21",
   "lexicon_version": "2026.10.20",
   "source_sha256": "09bcfd80edefcadeaf00e34186bc4a9a3f77ee40038e771c112951b94b7431d6",
   "total": 6551,
   "with_tags": 6551,
   "without_tags": 0,
   "by_source": {
+    "annotation": 0,
     "title": 1872,
     "tag": 4679,
     "none": 0
   },
+  "annotated_total": 0,
   "strong_only": 1872,
   "by_tag": {
     "low-mood": 836,
@@ -48,166 +50,199 @@
   },
   "by_tag_source": {
     "big-choice": {
+      "annotation": 0,
       "title": 2,
       "category": 604,
       "category_ratio": 1
     },
     "emptiness": {
+      "annotation": 0,
       "title": 2,
       "category": 569,
       "category_ratio": 1
     },
     "self-doubt": {
+      "annotation": 0,
       "title": 6,
       "category": 491,
       "category_ratio": 0.99
     },
     "rumination": {
+      "annotation": 0,
       "title": 11,
       "category": 519,
       "category_ratio": 0.98
     },
     "promotion-stuck": {
+      "annotation": 0,
       "title": 16,
       "category": 598,
       "category_ratio": 0.97
     },
     "evaluation-anxiety": {
+      "annotation": 0,
       "title": 21,
       "category": 588,
       "category_ratio": 0.97
     },
     "burnout": {
+      "annotation": 0,
       "title": 11,
       "category": 364,
       "category_ratio": 0.97
     },
     "people-pleasing": {
+      "annotation": 0,
       "title": 18,
       "category": 431,
       "category_ratio": 0.96
     },
     "procrastination": {
+      "annotation": 0,
       "title": 20,
       "category": 449,
       "category_ratio": 0.96
     },
     "family-origin": {
+      "annotation": 0,
       "title": 36,
       "category": 682,
       "category_ratio": 0.95
     },
     "low-mood": {
+      "annotation": 0,
       "title": 42,
       "category": 794,
       "category_ratio": 0.95
     },
     "loss-and-farewell": {
+      "annotation": 0,
       "title": 29,
       "category": 536,
       "category_ratio": 0.95
     },
     "attention-scatter": {
+      "annotation": 0,
       "title": 27,
       "category": 497,
       "category_ratio": 0.95
     },
     "action-paralysis": {
+      "annotation": 0,
       "title": 27,
       "category": 487,
       "category_ratio": 0.95
     },
     "frequent-conflict": {
+      "annotation": 0,
       "title": 36,
       "category": 578,
       "category_ratio": 0.94
     },
     "anxiety": {
+      "annotation": 0,
       "title": 54,
       "category": 767,
       "category_ratio": 0.93
     },
     "age-anxiety": {
+      "annotation": 0,
       "title": 21,
       "category": 236,
       "category_ratio": 0.92
     },
     "meaning-loss": {
+      "annotation": 0,
       "title": 56,
       "category": 567,
       "category_ratio": 0.91
     },
     "info-overload": {
+      "annotation": 0,
       "title": 21,
       "category": 218,
       "category_ratio": 0.91
     },
     "career-confusion": {
+      "annotation": 0,
       "title": 72,
       "category": 571,
       "category_ratio": 0.89
     },
     "emotional-outburst": {
+      "annotation": 0,
       "title": 34,
       "category": 276,
       "category_ratio": 0.89
     },
     "speaking-block": {
+      "annotation": 0,
       "title": 31,
       "category": 205,
       "category_ratio": 0.87
     },
     "loneliness": {
+      "annotation": 0,
       "title": 40,
       "category": 237,
       "category_ratio": 0.86
     },
     "identity-rebuild": {
+      "annotation": 0,
       "title": 114,
       "category": 509,
       "category_ratio": 0.82
     },
     "cant-see-whole": {
+      "annotation": 0,
       "title": 51,
       "category": 227,
       "category_ratio": 0.82
     },
     "time-losing": {
+      "annotation": 0,
       "title": 113,
       "category": 487,
       "category_ratio": 0.81
     },
     "judgment-distortion": {
+      "annotation": 0,
       "title": 143,
       "category": 578,
       "category_ratio": 0.8
     },
     "cognitive-bias": {
+      "annotation": 0,
       "title": 82,
       "category": 235,
       "category_ratio": 0.74
     },
     "decision-difficulty": {
+      "annotation": 0,
       "title": 197,
       "category": 495,
       "category_ratio": 0.72
     },
     "communication-block": {
+      "annotation": 0,
       "title": 211,
       "category": 478,
       "category_ratio": 0.69
     },
     "intimacy-distance": {
+      "annotation": 0,
       "title": 211,
       "category": 452,
       "category_ratio": 0.68
     },
     "management-delegation": {
+      "annotation": 0,
       "title": 289,
       "category": 517,
       "category_ratio": 0.64
     },
     "cant-persist": {
+      "annotation": 0,
       "title": 230,
       "category": 349,
       "category_ratio": 0.6
@@ -244,6 +279,7 @@
     }
   },
   "weights": {
+    "annotation": 0.95,
     "title": 0.85,
     "title_extra": 0.05,
     "title_max": 0.9,

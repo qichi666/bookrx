@@ -33,7 +33,12 @@
     "audit:crisis": "node tools/crisis-audit.mjs",
     "audit:token": "node tools/token-audit.mjs",
     "audit:input": "node tools/input-safety.mjs",
-    "check:release": "node tools/release-check.mjs"
+    "check:release": "node tools/release-check.mjs && node tools/verify-annotations.mjs --strict",
+    "data:intros": "node tools/fetch-intros.mjs",
+    "data:annotate": "node tools/annotate-books.mjs --all",
+    "data:annotate-gold": "node tools/annotate-books.mjs --gold",
+    "audit:annotations": "node tools/verify-annotations.mjs",
+    "audit:annotations:strict": "node tools/verify-annotations.mjs --strict"
   },
   "dependencies": {
     "vue": "^3.5.13",

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -10,12 +10,14 @@ import { fileURLToPath } from 'node:url';
  * 人工投入改成**维护一张 33 个标签的词表**（`catalog/problem-lexicon.json`），
  * 一本书用规则判一次，可复算、可回滚、可解释。
  *
- * 两条来源，权重不同（都写进产物，便于事后追责）：
+ * 三条来源，权重不同（都写进产物，便于事后追责）：
+ *   - `annotation`：读过简介/目录后的逐本判定 → 0.95（最强；见 `tools/annotate-books.mjs`）
  *   - `title`：书名/副标题命中词表 → 0.85 起，多命中一次 +0.05（上限 0.9，避免四舍五入成 1.0）
  *   - `tag`  ：只从豆瓣大类标签粗分 → 0.4（"心理学"只能说明它沾情绪，说明不了哪一类）
  *
- * 这两级权重同时也是**证据分级**的依据：≥0.85 是书名证据，0.4 是分类兜底。
- * `src/engine/wide-need.ts` 默认只用书名证据，兜底只在池子不足 20 本时降级启用。
+ * 这三档权重同时也是**证据分级**的依据。运行时只放行 `annotation` 与 `title`。
+ * 兜底证据整类不展示（`src/data/enriched.ts` 的 `toRuntimeTags`）：豆瓣标签到困境标签是
+ * 1 对多映射，一本书只留 3 个、留哪 3 个由书 id 散列决定，实质是抽签。
  *
  * 产物是 **enriched 层**，不是核心库：覆盖率只有 4300（problem + availability），
  * 所以这些书进打分时只有 problem 一个因子在场，档位封顶 worth。
@@ -23,9 +25,26 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const ALL = join(ROOT, 'public', 'catalog', 'candidates', 'all.json');
 const LEX = join(ROOT, 'catalog', 'problem-lexicon.json');
+const ANN_DIR = join(ROOT, 'catalog', 'annotations');
 const OUT_DIR = join(ROOT, 'public', 'catalog', 'enriched');
 const OUT = join(OUT_DIR, 'derived.json');
 const INDEX = join(OUT_DIR, 'index.json');
+
+/**
+ * 读逐本标注（`catalog/annotations/`）。目录不存在或为空时返回空 Map——
+ * **通道没跑过时，派生结果必须与引入通道之前逐字节相同**，否则无法判断
+ * 数字变化是标注带来的还是接入改动带来的。
+ */
+function loadAnnotations() {
+  const map = new Map();
+  if (!existsSync(ANN_DIR)) return map;
+  for (const f of readdirSync(ANN_DIR).filter((x) => /^shard-\d+\.json$/.test(x)).sort()) {
+    for (const r of JSON.parse(readFileSync(join(ANN_DIR, f), 'utf-8'))) {
+      map.set(String(r.id), r);
+    }
+  }
+  return map;
+}
 
 // 权重不在这里写死 —— 从 `catalog/problem-lexicon.json` 的 `weights` 读（见 deriveBook）。
 // 曾经两边各写一份（JSON 0.35 / 代码 0.4），谁也不报错，只是谁也对不上。
@@ -68,11 +87,12 @@ function hash32(s) {
 
 /**
  * 单本书的派生。
- * 返回 `{ pt: [[tag, weight, source], ...], how: 'title' | 'tag' }` —— 没有任何命中时 `pt` 为空数组。
+ * 返回 `{ pt: [[tag, weight, source], ...], how }` —— 没有任何命中时 `pt` 为空数组。
  *
  * `source` 是**逐标签**的证据等级，不是在书这一层记一个：
- *   - `title`    ：书名/副标题里真的出现了该标签的关键词（强证据）
- *   - `category` ：只靠豆瓣大类兜底（弱证据）
+ *   - `annotation`：读过简介与目录后的逐本判定（强证据，0.95）
+ *   - `title`     ：书名/副标题里真的出现了该标签的关键词（强证据，0.85–0.9）
+ *   - `category`  ：只靠豆瓣大类兜底（弱证据，0.4）
  *
  * 为什么必须逐标签记：一本书可能书名命中「焦虑」（0.85），同时因为豆瓣标签
  * 「心理学」顺带被塞进 `low-mood` / `rumination`（0.4）。书级字段只能表达
@@ -81,9 +101,15 @@ function hash32(s) {
  * 权重从词表读（`lexicon.weights`），不在这里写死：写死过一次，
  * JSON 里写着 `tag: 0.35`、代码里用着 `0.4`，两边都没错、只是不一样，
  * 而唯一的后果是校验脚本按 0.4 卡、运营按 0.35 理解——谁也没发现。
+ *
+ * 标注优先于任何规则命中：规则只能证明"书名/大类里出现了这个词"，
+ * 标注证明的是"读过简介，这本书确实解决这个"。两者冲突时以标注为准，
+ * 但**标注没给的标签，书名命中仍然算**——标注可能只覆盖最贴题的一个，
+ * 不该因此把书名里明写的另一个也删掉。
  */
-export function deriveBook(book, lexicon) {
+export function deriveBook(book, lexicon, annotation) {
   const cfg = lexicon.weights ?? {};
+  const wAnn = cfg.annotation ?? 0.95;
   const wTitle = cfg.title ?? 0.85;
   const wExtra = cfg.title_extra ?? 0.05;
   const wMax = cfg.title_max ?? 0.9;
@@ -93,7 +119,15 @@ export function deriveBook(book, lexicon) {
   const bookTags = new Set(book.tags ?? []);
   const best = new Map();
 
+  for (const a of annotation?.tags ?? []) {
+    // 词表里没有的标签一律不收：标注产物自身的校验（verify-annotations）也会拦，
+    // 但派生这一层不能依赖上游守规矩。
+    if (!Object.hasOwn(lexicon.tags, String(a?.tag))) continue;
+    best.set(String(a.tag), { w: wAnn, how: 'annotation' });
+  }
+
   for (const [tagId, def] of Object.entries(lexicon.tags)) {
+    if (best.has(tagId)) continue; // 已有标注，弱证据不得覆盖
     const hits = (def.keywords ?? []).filter((k) => text.includes(norm(k))).length;
     if (hits > 0) {
       // 先取整再排序：`0.85 + 0.05` 在浮点里是 0.9000000000000001，
@@ -113,8 +147,16 @@ export function deriveBook(book, lexicon) {
   const ordered = pickTop(best, book.id, Object.keys(lexicon.tags), lexicon.top_n ?? 3);
 
   if (ordered.length === 0) return { pt: [], how: 'none' };
+  // 注意这里**不再做 round1**：书名证据在 `best.set` 时已经取整过，而
+  // `round1(0.95)` = Math.round(9.5)/10 = **1.0** —— 标注权重会被四舍五入成满分，
+  // 而 verify-derived 按 `w === 0.95` 卡，两边谁也没错、只是对不上。
+  // 这个 bug 是被 tests/domain/derive-annotation.test.ts 抓到的。
   return {
-    pt: ordered.map(([t, v]) => [t, round1(v.w), v.how === 'title' ? 'title' : 'category']),
+    pt: ordered.map(([t, v]) => [
+      t,
+      v.w,
+      v.how === 'annotation' ? 'annotation' : v.how === 'title' ? 'title' : 'category',
+    ]),
     how: ordered[0][1].how,
   };
 }
@@ -142,24 +184,30 @@ function main() {
   const allBuf = readFileSync(ALL);
   const books = JSON.parse(allBuf.toString('utf-8'));
   const lexicon = JSON.parse(readFileSync(LEX, 'utf-8'));
+  const annotations = loadAnnotations();
 
   const out = [];
-  const bySource = { title: 0, tag: 0, none: 0 };
+  // 键序固定（annotation → title → tag → none）：verify-derived 用 JSON.stringify 对账，
+  // 两边键序不一致会把"没错"判成"错了"。
+  const bySource = { annotation: 0, title: 0, tag: 0, none: 0 };
   const tagCount = new Map();
-  /** 逐标签的强弱证据构成：tag → { title, category } */
+  /** 逐标签的强弱证据构成：tag → { annotation, title, category } */
   const tagSource = new Map();
-  /** 运行时只认 title 证据的书数（category-only 的书在界面上不会出现） */
+  /** 运行时可见（annotation 或 title 证据）的书数；category-only 的书界面上不会出现 */
   let strongOnly = 0;
+  let annotated = 0;
   const byDomain = new Map();
 
   for (const b of books) {
-    const r = deriveBook(b, lexicon);
+    const ann = annotations.get(String(b.id));
+    if (ann) annotated += 1;
+    const r = deriveBook(b, lexicon, ann);
     out.push({ id: b.id, pt: r.pt, how: r.how });
     bySource[r.how] += 1;
-    if (r.pt.some(([, , src]) => src === 'title')) strongOnly += 1;
+    if (r.pt.some(([, , src]) => src === 'annotation' || src === 'title')) strongOnly += 1;
     for (const [t, , src] of r.pt) {
       tagCount.set(t, (tagCount.get(t) ?? 0) + 1);
-      const cur = tagSource.get(t) ?? { title: 0, category: 0 };
+      const cur = tagSource.get(t) ?? { annotation: 0, title: 0, category: 0 };
       cur[src] += 1;
       tagSource.set(t, cur);
     }
@@ -179,15 +227,20 @@ function main() {
     lexicon_version: lexicon.version,
     source_sha256: sha256(allBuf),
     total: out.length,
-    with_tags: bySource.title + bySource.tag,
+    with_tags: bySource.annotation + bySource.title + bySource.tag,
     without_tags: bySource.none,
     by_source: bySource,
-    /** 只认书名证据（runtime 可见范围）的书数 —— 与 with_tags 并列报，差距就是被挡掉的噪声 */
+    /** 标注通道覆盖到几本（0 表示通道没跑过，产物与接入前应当逐字节相同） */
+    annotated_total: annotated,
+    /** 运行时可见范围（annotation 或 title 证据）的书数 —— 差距就是被挡掉的噪声 */
     strong_only: strongOnly,
     by_tag: Object.fromEntries([...tagCount.entries()].sort((a, b) => b[1] - a[1])),
     by_tag_source: Object.fromEntries(
       [...tagSource.entries()]
-        .map(([t, v]) => [t, { ...v, category_ratio: Math.round((v.category / (v.title + v.category)) * 100) / 100 }])
+        .map(([t, v]) => {
+          const total = v.annotation + v.title + v.category;
+          return [t, { ...v, category_ratio: total === 0 ? 0 : Math.round((v.category / total) * 100) / 100 }];
+        })
         .sort((a, b) => b[1].category_ratio - a[1].category_ratio),
     ),
     by_domain: Object.fromEntries([...byDomain.entries()].sort()),
@@ -196,7 +249,9 @@ function main() {
   writeFileSync(INDEX, JSON.stringify(index, null, 2), 'utf-8');
 
   console.log(`[派生] ${out.length} 本 → 有标签 ${index.with_tags} / 无标签 ${index.without_tags}`);
-  console.log(`[派生] 来源：书名命中 ${bySource.title} ｜ 标签兜底 ${bySource.tag} ｜ 未命中 ${bySource.none}`);
+  console.log(
+    `[派生] 来源：逐本标注 ${bySource.annotation} ｜ 书名命中 ${bySource.title} ｜ 标签兜底 ${bySource.tag} ｜ 未命中 ${bySource.none}`,
+  );
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();
