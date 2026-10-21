@@ -32,6 +32,11 @@ jobs:
       - run: npm run check
       - run: npm run build
       - uses: actions/configure-pages@v5
+        with:
+          # 自动开通 Pages（source = GitHub Actions）。不开这个参数时
+          # configure-pages 会报 "Get Pages site failed ... Please verify that the
+          # repository has Pages enabled"——仓库新建后 Pages 默认是关闭的。
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
