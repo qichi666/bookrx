@@ -77,19 +77,45 @@ function clip(s, max) {
 /**
  * 解析详情页。
  *
- * 豆瓣把「内容简介」放两处：短版在前、全文在后（`<div class="intro">` 出现两次），
- * 目录在 `<div id="dir_XXXXX_full">`。取最长的那段简介——
- * 只取第一段会稳定拿到 390 字的截断版（带「展开全部」字样），信息量差一半。
+ * 有两个坑，都踩过：
+ *
+ * ① **`class="intro"` 不是内容简介的专属类名。** 作者简介也用同一个类，结构是
+ *    `内容简介`（在 `id="link-report"` 里）→ `作者简介`（在 `span.short` / `span.all` 里）。
+ *    按"取最长的一段"去挑，作者生平常常更长，于是《被讨厌的勇气》拿到的"简介"
+ *    是岸见一郎的学历和著作列表——脚本不报错，模型读到一段作者简历。
+ *    现在按区块定位：`link-report` 之后、`span.short` 之前。
+ *
+ * ② 内容简介本身有短版和全文两段（全文在 `style="display:none"` 之类里）。
+ *    只取第一段会稳定拿到 390 字截断版，末尾带「展开全部」，信息量差一半。
+ *    所以在区块内取最长的那段。
+ *
+ * 定位不到区块时退回全局取最长，并记 `intro_source: 'fallback'`——
+ * 让"有多少本走了退路"成为可统计的数字，而不是一个看不见的降级。
  */
 export function parseDetail(html) {
-  // `[^>]*` 是为了容忍豆瓣给全文块加 `style="display:none"` 之类的属性。
-  // 若写死成 `<div class="intro">`，一旦它加个属性，这里就**静默变成只拿到短版**——
-  // 不报错、不报警，只是简介少一半。
-  const intros = [...html.matchAll(/<div class="intro"[^>]*>([\s\S]*?)<\/div>/g)]
-    .map((m) => text(m[1]))
-    .map((s) => s.replace(/\s*\(展开全部\)\s*$/, ''))
-    .filter((s) => s.length > 20);
-  const intro = intros.sort((a, b) => b.length - a.length)[0] ?? '';
+  const pick = (section) =>
+    [...section.matchAll(/<div class="intro"[^>]*>([\s\S]*?)<\/div>/g)]
+      .map((m) => text(m[1]))
+      .map((s) => s.replace(/\s*\(展开全部\)\s*$/, ''))
+      .filter((s) => s.length > 20)
+      .sort((a, b) => b.length - a.length)[0] ?? '';
+
+  const lr = html.indexOf('id="link-report"');
+  let intro = '';
+  let introSource = 'link-report';
+  if (lr >= 0) {
+    // 区块边界用「作者简介」这个标题，**不能用 `span.short`**：
+    // 内容简介自己也有 `span.short`（短版/全文就是靠它切换的），
+    // 拿它当边界会把内容块整个切没，然后静默走进 fallback。
+    let section = html.slice(lr);
+    const authorAt = section.indexOf('作者简介');
+    if (authorAt > 0) section = section.slice(0, authorAt);
+    intro = pick(section);
+  }
+  if (intro === '') {
+    intro = pick(html);
+    introSource = intro === '' ? 'none' : 'fallback';
+  }
 
   // 目录在 `<div class="indent" id="dir_XXXXX_full">` 里，内容只有 `<br/>`、没有嵌套 div，
   // 所以第一个 `</div>` 就是块尾。**别写成要求 `<div class="bd">` 子块**——
@@ -101,7 +127,12 @@ export function parseDetail(html) {
   const titleM = html.match(/<span property="v:itemreviewed">([\s\S]*?)<\/span>/);
   const pageTitle = titleM ? text(titleM[1]) : '';
 
-  return { intro: clip(intro, MAX_INTRO), toc: clip(toc, MAX_TOC), page_title: pageTitle };
+  return {
+    intro: clip(intro, MAX_INTRO),
+    toc: clip(toc, MAX_TOC),
+    page_title: pageTitle,
+    intro_source: introSource,
+  };
 }
 
 async function fetchDetail(subjectId) {
@@ -173,6 +204,7 @@ async function main() {
             title: b.title,
             intro: parsed.intro,
             toc: parsed.toc,
+            intro_source: parsed.intro_source,
             fetched_at: new Date().toISOString().slice(0, 10),
           }),
           'utf8',

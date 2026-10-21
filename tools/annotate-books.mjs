@@ -54,13 +54,14 @@ const PROMPT_VERSION = 'v1';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function parseArgs(argv) {
-  const out = { all: false, limit: 0, gold: false, dry: 0, ids: null };
+  const out = { all: false, limit: 0, gold: false, dry: 0, ids: null, showPrompt: false };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
     if (a === '--all') out.all = true;
     else if (a === '--limit') out.limit = Number(argv[(i += 1)]);
     else if (a === '--gold') out.gold = true;
     else if (a === '--dry') out.dry = Number(argv[(i += 1)] ?? 1);
+    else if (a === '--show-prompt') out.showPrompt = true;
     else if (a === '--ids') out.ids = String(argv[(i += 1)]).split(',').filter(Boolean);
   }
   return out;
@@ -250,7 +251,10 @@ async function main() {
   const goldIds = new Set();
   for (const f of ['seed-core-01.json', 'seed-core-02.json']) {
     const p = join(ROOT, 'catalog', 'shards', f);
-    if (existsSync(p)) for (const b of JSON.parse(readFileSync(p, 'utf8'))) goldIds.add(String(b.id).replace(/^core:/, ''));
+    // 人标书用的是 `book_id`（core:000001），候选层用的是 `id`（豆瓣 subject_id）——
+    // 两个字段名不一样，写成 `b.id` 会得到一堆 "undefined"，而过滤结果只是"0 本待标"，
+    // 看起来像"已经全标完了"。
+    if (existsSync(p)) for (const b of JSON.parse(readFileSync(p, 'utf8'))) goldIds.add(String(b.book_id));
   }
   const coreIdMap = join(ROOT, 'catalog', 'core-id-map.json');
   const coreToSubject = new Map();
@@ -265,7 +269,12 @@ async function main() {
 
   let targets;
   if (args.gold) {
-    targets = books.filter((b) => coreToSubject.has(String(b.id)) && haveIntro(String(b.id)));
+    // 只标**真有人标标签**的那几本：core-id-map 里有 67 条，但人工标注只有 30 本，
+    // 拿没有人工标签的书去"校准"等于拿空集合算精确率。
+    targets = books.filter((b) => {
+      const coreId = coreToSubject.get(String(b.id));
+      return coreId !== undefined && goldIds.has(coreId) && haveIntro(String(b.id));
+    });
   } else {
     const done = new Set(loadShards().map((r) => String(r.id)));
     targets = books.filter((b) => haveIntro(String(b.id)) && !done.has(String(b.id)) && !coreToSubject.has(String(b.id)));
@@ -281,6 +290,15 @@ async function main() {
   console.log(`简介缓存 ${cached} 本；本次待标 ${targets.length} 本（模型 ${MODEL}，prompt ${PROMPT_VERSION}/${promptSha}）`);
   if (targets.length === 0) {
     console.log('没有待标书目。先跑 tools/fetch-intros.mjs 取简介。');
+    return;
+  }
+
+  // 不开模型也能核对提示词——prompt 是这条通道里最该被人读一遍的东西。
+  if (args.showPrompt) {
+    const b = targets[0];
+    const c = readIntro(String(b.id));
+    console.log('\n===== SYSTEM =====\n' + SYSTEM);
+    console.log('\n===== USER（示例：' + b.title + '）=====\n' + buildUser(b, c.intro, c.toc, lexicon));
     return;
   }
 
