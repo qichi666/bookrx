@@ -29,7 +29,14 @@ const { default: BookDetailView } = await import('@/views/BookDetailView.vue');
 
 function mountDetail(id: string) {
   currentId = id;
-  return mount(BookDetailView);
+  // 本文件把 vue-router 整个 mock 掉了（要固定 route.params.id），
+  // 所以 RouterLink 不会由 app.use(router) 注册——不 stub 就只有控制台警告、
+  // 而渲染出来的是空元素，任何依赖链接的断言都会静默失效。
+  return mount(BookDetailView, {
+    global: {
+      stubs: { RouterLink: { props: ['to'], template: '<a><slot /></a>' } },
+    },
+  });
 }
 
 function workDiagnosis(): Diagnosis {

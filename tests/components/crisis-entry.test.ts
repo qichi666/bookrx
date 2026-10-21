@@ -4,6 +4,7 @@ import { mount } from '@vue/test-utils';
 import { defineComponent, h } from 'vue';
 import ResultView from '@/views/ResultView.vue';
 import AboutView from '@/views/AboutView.vue';
+import { makeTestRouter } from '../router-helper.js';
 
 /**
  * 危机入口门禁 · 层 1（PLAN M0-14）。
@@ -16,7 +17,7 @@ import AboutView from '@/views/AboutView.vue';
  */
 
 function countEntries(component: Parameters<typeof mount>[0]): number {
-  const w = mount(component);
+  const w = mount(component, { global: { plugins: [makeTestRouter()] } });
   try {
     return w.element.querySelectorAll('[data-crisis-entry]').length;
   } finally {

@@ -4,6 +4,7 @@ import { mount } from '@vue/test-utils';
 import type { Diagnosis } from '@/contracts/diagnosis.js';
 import { buildDiagnosis } from '@/engine/diagnose.js';
 import ResultView from '@/views/ResultView.vue';
+import { makeTestRouter } from '../router-helper.js';
 
 /**
  * P0-16「情绪与自我」域的危机资源条。
@@ -29,7 +30,7 @@ function dx(domain: 'emotion' | 'work', freeText?: string): Diagnosis {
 
 function mountWith(d: Diagnosis) {
   sessionStorage.setItem(KEY, JSON.stringify(d));
-  return mount(ResultView);
+  return mount(ResultView, { global: { plugins: [makeTestRouter()] } });
 }
 
 function findBar(w: ReturnType<typeof mount>) {

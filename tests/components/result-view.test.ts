@@ -6,6 +6,7 @@ import type { BookId } from '@/contracts/enums.js';
 import { SEED_BOOKS } from '@/data/catalog.js';
 import { buildDiagnosis } from '@/engine/diagnose.js';
 import ResultView from '@/views/ResultView.vue';
+import { makeTestRouter } from '../router-helper.js';
 
 /**
  * 结果页三条不可妥协的呈现规则（真实 DOM）：
@@ -27,7 +28,7 @@ function workDiagnosis(): Diagnosis {
 function mountWith(d: Diagnosis | null) {
   if (d) sessionStorage.setItem(KEY, JSON.stringify(d));
   else sessionStorage.removeItem(KEY);
-  return mount(ResultView);
+  return mount(ResultView, { global: { plugins: [makeTestRouter()] } });
 }
 
 function findBtn(w: ReturnType<typeof mount>, text: string) {

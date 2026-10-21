@@ -1,8 +1,8 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
-import { createMemoryHistory, createRouter } from 'vue-router';
 import AppHeader from '@/components/AppHeader.vue';
+import { makeTestRouter } from '../router-helper.js';
 
 /**
  * 全局导航头：任何页面都有出口（用户实测两次被困后立的规矩）。
@@ -10,15 +10,9 @@ import AppHeader from '@/components/AppHeader.vue';
  */
 
 async function mountWith() {
-  const router = createRouter({
-    history: createMemoryHistory(),
-    routes: [
-      { path: '/', component: { template: '<div>home</div>' } },
-      { path: '/about', component: { template: '<div>about</div>' } },
-      { path: '/result', component: { template: '<div>result</div>' } },
-      { path: '/framework', component: { template: '<div>framework</div>' } },
-    ],
-  });
+  // 用全量路径表：头部同时链到 /framework、/library、/about，
+  // 少配一条就会刷 `No match found`，href 退化成兜底值而断言照样绿。
+  const router = makeTestRouter();
   // 先 mount（install 触发初始导航），再等导航落定——顺序反了 isReady 永远挂起
   const w = mount(AppHeader, { global: { plugins: [router] } });
   await router.isReady();

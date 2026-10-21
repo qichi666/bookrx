@@ -8,6 +8,7 @@ import { SEED_BOOKS } from '@/data/catalog.js';
 import { TAG_OPTIONS } from '@/data/quiz.js';
 import { READER_AVAILABLE } from '@/data/capabilities.js';
 import ResultView from '@/views/ResultView.vue';
+import { makeTestRouter } from '../router-helper.js';
 
 /**
  * P0-17「结构性没有可直读正文」的域说明条。
@@ -35,7 +36,7 @@ function dx(domain: 'emotion' | 'work' | 'habits' | 'thinking'): Diagnosis {
 
 function mountWith(d: Diagnosis) {
   sessionStorage.setItem(KEY, JSON.stringify(d));
-  return mount(ResultView);
+  return mount(ResultView, { global: { plugins: [makeTestRouter()] } });
 }
 
 function findNote(w: ReturnType<typeof mount>) {
