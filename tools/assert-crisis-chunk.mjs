@@ -11,8 +11,9 @@
 
 import { readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = new URL('..', import.meta.url).pathname.replace(/^\//, '');
+const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const ASSETS = join(ROOT, 'dist/assets');
 
 if (!existsSync(ASSETS)) {

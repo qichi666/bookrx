@@ -9,8 +9,9 @@
 import { gzipSync } from 'node:zlib';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = new URL('..', import.meta.url).pathname.replace(/^\//, '');
+const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const CATALOG = join(ROOT, 'catalog');
 
 const FIRST_SCREEN = ['boot-columns.json', 'titles.json', 'taxonomy.json', 'phrases.json'];

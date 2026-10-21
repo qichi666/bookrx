@@ -1,8 +1,9 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { fileURLToPath } from 'node:url';
 
-const DOMAIN_DIR = new URL('../../src/domain/', import.meta.url).pathname.replace(/^\//, '');
+const DOMAIN_DIR = fileURLToPath(new URL('../../src/domain/', import.meta.url));
 
 function tsFiles(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((e) =>

@@ -1,0 +1,15 @@
+# 统一 LF。
+#
+# 为什么必须显式写：`catalog/` 的数据校验是 **sha256 逐位比对**（`index.source_sha256`
+# 必须等于原始文件实际哈希）。行尾一变，哈希就变，门禁会报"数据不一致"——
+# 而这个失败跟代码对错无关，纯粹取决于 checkout 时用的行尾策略。
+# Windows 默认 core.autocrlf=true，会把 LF 转成 CRLF，于是同一份代码在
+# Windows 上绿、在 CI（Linux）上红，或者反过来。两边都变成"看运气"。
+#
+# `text=auto` 让 git 自己判断：文本按 eol=lf 存与取，二进制一个字节都不动。
+* text=auto eol=lf
+
+# 下面两个是大体量 JSON 派生产物，git 的启发式判成二进制了；显式声明，
+# 免得判定策略变化后突然开始转换内容（那会改掉 sha256）。
+public/catalog/candidates/all.json binary
+public/catalog/enriched/derived.json binary
