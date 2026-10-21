@@ -16,6 +16,27 @@
       content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'"
     />
     <title>BookRx</title>
+    <!--
+      分享卡片：微信 / X / Slack / Discord / Telegram 抓的是这一组，不是页面正文。
+      社交预览图必须是**绝对 URL**——抓取端不会按页面的相对 base 去解析图片路径。
+      换域名或 fork 部署时，改下面 og:image 与 og:url 两行即可（其余与域名无关）。
+      图就是仓库里那张 social-preview.png（1280×640，与 Settings → Social preview 同一张）。
+    -->
+    <meta
+      name="description"
+      content="说清此刻的困境，得到 5 本确实对味的书，每本说清为什么是它，能读的直接在页面里读。纯前端、无账号、无上报。"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="BookRx（书方）" />
+    <meta
+      property="og:description"
+      content="说清此刻的困境，得到 5 本确实对味的书，每本说清为什么是它，能读的直接在页面里读。纯前端、无账号、无上报。"
+    />
+    <meta property="og:image" content="https://qichi666.github.io/bookrx/social-preview.png" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:url" content="https://qichi666.github.io/bookrx/" />
+    <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
     <div id="app"></div>
