@@ -218,4 +218,28 @@ describe('searchCandidates（外围书库）', () => {
     const hits = searchCandidates('勇气', books);
     expect(hits[0]?.snippet).toBe('笑声，激活孩子天性中的合作与勇气');
   });
+
+  it('有严格命中时不混入「差一个字」的结果', () => {
+    const books = [
+      mk({ id: 'exact', title: '被讨厌的勇气', bucket: 'high', q: 0.9 }),
+      mk({ id: 'typo', title: '被讨厌勇气' }), // 少一个「的」：近似，不该与精确结果并列
+    ];
+    const hits = searchCandidates('被讨厌的勇气', books);
+    expect(hits.map((h) => h.book.id)).toEqual(['exact']);
+  });
+
+  it('一本都没严格命中时才走近似，并把它标出来', () => {
+    const books = [
+      mk({ id: 'typo', title: '被讨厌勇气' }),
+      mk({ id: 'other', title: '完全无关' }),
+    ];
+    const hits = searchCandidates('被讨厌的勇气', books);
+    expect(hits.map((h) => h.book.id)).toEqual(['typo']);
+    expect(hits[0]?.fuzzy).toBe(true);
+  });
+
+  it('严格命中不带 fuzzy 标记', () => {
+    const hits = searchCandidates('勇气', [mk({ id: 'a', title: '被讨厌的勇气' })]);
+    expect(hits[0]?.fuzzy).toBeUndefined();
+  });
 });

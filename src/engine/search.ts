@@ -107,7 +107,8 @@ export function searchBooks(query: string, books: readonly Book[]): BookHit[] {
   return hits;
 }
 
-const TAG_DOMAIN = new Map<ProblemTagId, ProblemDomain>();for (const [domain, opts] of Object.entries(TAG_OPTIONS)) {
+const TAG_DOMAIN = new Map<ProblemTagId, ProblemDomain>();
+for (const [domain, opts] of Object.entries(TAG_OPTIONS)) {
   for (const o of opts) TAG_DOMAIN.set(o.tag, domain as ProblemDomain);
 }
 
@@ -157,6 +158,8 @@ export interface CandidateHit {
   snippet: string;
   /** 同书名同作者的其他版本数（合并后才知道「一本书占了 3 条」） */
   editions: number;
+  /** 书名「差一个字」兜底命中：与核心库同一口径，界面必须如实说明 */
+  fuzzy?: boolean;
 }
 
 const BUCKET_RANK: Record<CandidateBook['bucket'], number> = {
@@ -173,10 +176,41 @@ function editionKey(b: CandidateBook): string {
   return `${normalize(b.title)}|${authorKey(b.authors.join(''))}`;
 }
 
-function candidateField(b: CandidateBook, q: string): CandidateHit['field'] | null {
-  if (normalize(b.title).includes(q)) return 'title';
-  if (normalize(b.subtitle || '').includes(q)) return 'subtitle';
-  if (b.authors.some((a) => normalize(a).includes(q))) return 'author';
+/**
+ * 归一化索引。
+ *
+ * `normalize` 是 `toLowerCase()` + 正则替换空白，每本书每次检索要跑 3～4 遍；
+ * 6551 本的书目层一轮就是两万多次字符串分配，全部是重复劳动——同一份书单
+ * 归一化的结果永远不会变。按数组身份缓存（WeakMap，数组换了自动失效）。
+ */
+interface NormBook {
+  title: string;
+  subtitle: string;
+  authors: string[];
+}
+
+const NORM_CACHE = new WeakMap<readonly CandidateBook[], Map<CandidateBook, NormBook>>();
+
+function normIndex(books: readonly CandidateBook[]): Map<CandidateBook, NormBook> {
+  let index = NORM_CACHE.get(books);
+  if (index === undefined) {
+    index = new Map<CandidateBook, NormBook>();
+    for (const b of books) {
+      index.set(b, {
+        title: normalize(b.title),
+        subtitle: normalize(b.subtitle || ''),
+        authors: b.authors.map((a) => normalize(a)),
+      });
+    }
+    NORM_CACHE.set(books, index);
+  }
+  return index;
+}
+
+function candidateField(n: NormBook, q: string): CandidateHit['field'] | null {
+  if (n.title.includes(q)) return 'title';
+  if (n.subtitle.includes(q)) return 'subtitle';
+  if (n.authors.some((a) => a.includes(q))) return 'author';
   return null;
 }
 
@@ -188,13 +222,28 @@ export function searchCandidates(
   const q = normalize(query);
   if (q.length === 0) return [];
 
-  const matched: { book: CandidateBook; field: CandidateHit['field'] }[] = [];
+  const norm = normIndex(books);
+  const matched: { book: CandidateBook; field: CandidateHit['field']; fuzzy?: boolean }[] = [];
+  const misses: CandidateBook[] = [];
   for (const b of books) {
-    let field = candidateField(b, q);
-    if (field === null && q.length >= FUZZY_MIN_QUERY && fuzzyContains(normalize(b.title), q)) {
-      field = 'title'; // 书名差一个字的兜底，与核心库同一口径
-    }
+    const n = norm.get(b);
+    if (n === undefined) continue;
+    const field = candidateField(n, q);
     if (field !== null) matched.push({ book: b, field });
+    else misses.push(b);
+  }
+
+  // 兜底：书名差一个字。**只在严格匹配一本都没有时启用**——与核心库同一口径。
+  // 旧实现在每一本未严格命中的书上单独跑近似匹配，于是严格命中与近似命中混在一起
+  // （且没有标记），用户看到的「书名命中」可能根本不是这个书名；
+  // 顺带把全表 6551 本 × 三个窗口的编辑距离都算了一遍。
+  if (matched.length === 0 && q.length >= FUZZY_MIN_QUERY) {
+    for (const b of misses) {
+      const n = norm.get(b);
+      if (n !== undefined && fuzzyContains(n.title, q)) {
+        matched.push({ book: b, field: 'title', fuzzy: true });
+      }
+    }
   }
 
   matched.sort((x, y) => {
@@ -225,6 +274,7 @@ export function searchCandidates(
       field: m.field,
       snippet: m.field === 'subtitle' ? snippetAround(m.book.subtitle || '', q) : '',
       editions: 0,
+      ...(m.fuzzy === true ? { fuzzy: true } : {}),
     };
     seen.set(key, hit);
     out.push(hit);

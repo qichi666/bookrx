@@ -65,21 +65,28 @@ onMounted(async () => {
   hasOuter.value = (await loadCandidateIndex()) !== null;
 });
 
-async function outerSearch(q: string): Promise<void> {
+/**
+ * 提交序号。手快连按两次「搜一下」时，两次检索会同时在跑：
+ * 先发的那次若返回更慢，会把后发那次的候选结果整段盖掉——
+ * 用户看到的结果与输入框里的词对不上。序号对不上的一律丢弃。
+ */
+let searchSeq = 0;
+
+async function outerSearch(q: string, seq: number): Promise<void> {
   candidateHits.value = [];
   // 不依赖 onMounted 的预取：索引 promise 有缓存，这里等一次即可（避免"手快过预取"）
   hasOuter.value = (await loadCandidateIndex()) !== null;
-  if (!hasOuter.value) return;
+  if (seq !== searchSeq || !hasOuter.value) return;
   outerLoading.value = true;
   try {
     const books = await loadCandidateBooks();
-    if (!books) return;
+    if (books === null || seq !== searchSeq) return;
     const inCore = new Set(bookHits.value.map((h) => h.book.title.replace(/\s+/g, '')));
     candidateHits.value = searchCandidates(q, books).filter(
       (h) => !inCore.has(h.book.title.replace(/\s+/g, '')),
     );
   } finally {
-    outerLoading.value = false;
+    if (seq === searchSeq) outerLoading.value = false;
   }
 }
 
@@ -87,11 +94,13 @@ async function submit(): Promise<void> {
   const q = query.value.trim();
   // 空输入直接不响应：既不清空上一次的结果，也不假装搜过（按钮同时置灰）
   if (q.length === 0) return;
+  const seq = (searchSeq += 1);
   lastQuery.value = q;
   searched.value = true;
   bookHits.value = searchBooks(q, SEED_BOOKS);
   questionDiagnosis.value = searchQuestion(q);
-  await outerSearch(q);
+  await outerSearch(q, seq);
+  if (seq !== searchSeq) return; // 已被后一次提交取代，不许按旧结果跳转
   // 核心库与外围库都没有书，但问句命中困境 → 直接跳结果页
   if (
     bookHits.value.length === 0 &&

@@ -27,6 +27,7 @@ const FIELD_TEXT: Record<CandidateHit['field'], string> = {
  * 让人自己判断这条要不要点。命中片段不参与任何推荐语义，只是证据。
  */
 function why(hit: CandidateHit): string {
+  if (hit.fuzzy === true) return '书名差一个字';
   return hit.snippet ? `${FIELD_TEXT[hit.field]}：${hit.snippet}` : `${FIELD_TEXT[hit.field]}命中`;
 }
 </script>
