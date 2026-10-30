@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ParsedChapter } from '@/engine/import/types.js';
 import {
   chapterOffsetOf,
+  furthestOf,
   paragraphOfChapterOffset,
   posFromSelection,
   rangeOf,
@@ -145,5 +146,38 @@ describe('posFromSelection 用段落文本兜底', () => {
   it('end 小于 start 时收成空区间，不产生负长度', () => {
     const pos = posFromSelection(0, 0, '一二三四五', 4, 2);
     expect(pos.end).toBe(4);
+  });
+});
+
+/**
+ * 最远位置（`furthest_locator`）。
+ *
+ * 缺陷背景：旧写法是 `prev ?? 当前位置`，第一次写入之后就再也不变，
+ * 读到第 10 章时「最远」还停在第 1 章；首次写入时还把段落序号当字符偏移塞进 offset。
+ */
+describe('furthestOf', () => {
+  it('没有旧值 → 用当前位置', () => {
+    expect(furthestOf(null, 2, 120)).toEqual({ scheme: 'txt-offset', chapter: 2, offset: 120 });
+  });
+
+  it('往后读 → 前进', () => {
+    const prev = { scheme: 'txt-offset' as const, chapter: 2, offset: 120 };
+    expect(furthestOf(prev, 5, 10)).toEqual({ scheme: 'txt-offset', chapter: 5, offset: 10 });
+  });
+
+  it('同章更靠后 → 前进', () => {
+    const prev = { scheme: 'txt-offset' as const, chapter: 2, offset: 120 };
+    expect(furthestOf(prev, 2, 400)).toEqual({ scheme: 'txt-offset', chapter: 2, offset: 400 });
+  });
+
+  it('往回翻 → 不倒退（最远的语义是单调前进）', () => {
+    const prev = { scheme: 'txt-offset' as const, chapter: 5, offset: 90 };
+    expect(furthestOf(prev, 1, 3)).toEqual(prev);
+    expect(furthestOf(prev, 5, 0)).toEqual(prev);
+  });
+
+  it('旧值是别的 scheme（引文锚点）→ 改写成偏移锚点', () => {
+    const prev = { scheme: 'quote' as const, chapter_ref: {}, quote: '一句话', occurrence: 1 };
+    expect(furthestOf(prev, 3, 30)).toEqual({ scheme: 'txt-offset', chapter: 3, offset: 30 });
   });
 });

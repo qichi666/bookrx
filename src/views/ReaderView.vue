@@ -23,6 +23,7 @@ import ReaderMarkTip from '@/components/reader/ReaderMarkTip.vue';
 import { useReaderSession } from '@/composables/useReaderSession.js';
 import { useReaderPrefs } from '@/composables/useReaderPrefs.js';
 import { chapterPercent, pageCapacity, pageOfParagraph, paginate } from '@/engine/paginate.js';
+import { selectionSpan } from '@/lib/selection.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -97,20 +98,20 @@ function onSelect(): void {
   pending.value = null;
   tip.value = '';
   if (!sel || sel.isCollapsed) return;
-  const quote = sel.toString().trim();
-  if (!quote) return;
   const anchor = sel.anchorNode;
   const el = (anchor?.nodeType === 3 ? anchor.parentElement : (anchor as HTMLElement | null))?.closest('[data-p]');
   if (!el) return;
   const p = Number(el.getAttribute('data-p'));
   const text = paragraphs.value[p];
   if (!text) return;
-  const at = text.indexOf(quote);
-  if (at < 0) {
+  // 用 Range 算真实偏移，不用 indexOf：同一段里重复出现的句子，
+  // indexOf 永远给第一处，划第二处会静默落到第一处
+  const span = selectionSpan(el, text);
+  if (span === null) {
     tip.value = '一次只能划同一段里的文字。跨段请分两次划。';
     return;
   }
-  pending.value = { p, start: at, end: at + quote.length, quote };
+  pending.value = { p, ...span };
 }
 
 async function createMark(): Promise<void> {
@@ -142,8 +143,13 @@ function onKey(e: KeyboardEvent): void {
 }
 
 function onVisibility(): void {
-  if (document.hidden) session.pauseClock();
-  else session.resumeClock();
+  if (document.hidden) {
+    // 契约里的 close 事件要求「立即落库」。只 pauseClock 是不够的：
+    // 关标签页时 unmount 里的异步写常常还没提交就被页面卸载掐断，
+    // 症状就是「最后读的那几页没记住」。切走时就写，不赌卸载时机。
+    flushProgress();
+    session.pauseClock();
+  } else session.resumeClock();
 }
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
@@ -179,12 +185,14 @@ onMounted(async () => {
   session.resumeClock();
   window.addEventListener('resize', remeasureKeepPlace);
   window.addEventListener('keydown', onKey);
+  window.addEventListener('pagehide', flushProgress);
   document.addEventListener('visibilitychange', onVisibility);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', remeasureKeepPlace);
   window.removeEventListener('keydown', onKey);
+  window.removeEventListener('pagehide', flushProgress);
   document.removeEventListener('visibilitychange', onVisibility);
   session.pauseClock();
   flushProgress();

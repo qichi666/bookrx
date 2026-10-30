@@ -4,6 +4,7 @@ import type { Annotation, Note, ReadingProgress } from '@/contracts/reader.js';
 import type { ParsedChapter } from '@/engine/import/types.js';
 import {
   chapterOffsetOf,
+  furthestOf,
   paragraphOfChapterOffset,
   posFromSelection,
   rangeOf,
@@ -21,6 +22,7 @@ import {
   putNote,
   putProgress,
   putShelf,
+  type ShelfEntry,
 } from '@/storage/db.js';
 
 /**
@@ -57,16 +59,23 @@ export function useReaderSession(bookId: Ref<string>) {
   const progress = ref<ReadingProgress | null>(null);
   const loading = ref(true);
   const notFound = ref(false);
+  /** 书架状态缓存：落盘时不再回读（见 saveProgress） */
+  const shelf = ref<ShelfEntry | null>(null);
   /** 续读位置：进度里记的是「章节 + 章节内字符偏移」，落成段落序号才知道翻到第几页 */
   const resumeChapter = ref(0);
   const resumeParagraph = ref(0);
 
   /** 标注 → 可渲染形态。定位失败也保留（level 4），只是带 warning。 */
-  const marks = computed<MarkView[]>(() =>
-    annotations.value.map((a) => {
+  const marks = computed<MarkView[]>(() => {
+    // 笔记按划线 id 建一次索引：逐条 find 是 O(标注数 × 笔记数)，
+    // 读了几百条划线之后每次翻页都会重复扫一遍全量笔记
+    const noteOf = new Map<string, string>();
+    for (const n of notes.value) {
+      if (n.annotation_id !== undefined && n.annotation_id !== '') noteOf.set(n.annotation_id, n.body_markdown);
+    }
+    return annotations.value.map((a) => {
       const r = resolveRange(chapters.value, a.locator);
       const pos = r.pos ?? { chapter: 0, paragraph: 0, start: 0, end: 0 };
-      const note = notes.value.find((n) => n.annotation_id === a.annotation_id);
       return {
         id: a.annotation_id,
         quote: a.quote,
@@ -75,16 +84,17 @@ export function useReaderSession(bookId: Ref<string>) {
         start: pos.start,
         end: pos.end,
         chapterLabel: chapters.value[pos.chapter]?.title ?? '未知章节',
-        note: note?.body_markdown ?? '',
+        note: noteOf.get(a.annotation_id) ?? '',
         ...(r.note ? { warning: r.note } : {}),
         level: r.level,
       };
-    }),
-  );
+    });
+  });
 
   async function load(): Promise<void> {
     loading.value = true;
     notFound.value = false;
+    shelf.value = null;
     try {
       const [b, ch, ann, nt, pg] = await Promise.all([
         getBook(bookId.value),
@@ -108,9 +118,12 @@ export function useReaderSession(bookId: Ref<string>) {
       }
       // 首次打开：放进"在读"组；导入时是"想读"的，也在第一次打开时转成"在读"。
       // 已经手动标成"读完"的不动——用户对自己的判断优先于我们的推断。
-      const shelf = await getShelf(bookId.value);
-      if (!shelf || shelf.group === 'want') {
-        await putShelf({ book_id: bookId.value, group: 'reading', updated_at: Date.now() });
+      const s = await getShelf(bookId.value);
+      if (!s || s.group === 'want') {
+        shelf.value = { book_id: bookId.value, group: 'reading', updated_at: Date.now() };
+        await putShelf(shelf.value);
+      } else {
+        shelf.value = s;
       }
     } finally {
       loading.value = false;
@@ -140,8 +153,9 @@ export function useReaderSession(bookId: Ref<string>) {
   async function removeMark(id: string): Promise<void> {
     await deleteAnnotation(id);
     annotations.value = annotations.value.filter((a) => a.annotation_id !== id);
-    // 笔记保留：位置没了，内容还在
-    notes.value = notes.value.filter((n) => n.annotation_id !== id);
+    // 笔记**不删**：库里留着，导出的笔记文件仍带得走（`buildNotesFile` 把没有划线的
+    // 笔记当独立笔记导出）。内存里也不删——旧实现在这里过滤掉 notes，
+    // 于是同一条笔记"本次会话看不见、刷新后又回来"，同一份数据两副面孔。
   }
 
   async function saveNote(annotationId: string, body: string): Promise<void> {
@@ -192,7 +206,7 @@ export function useReaderSession(bookId: Ref<string>) {
     const next: ReadingProgress = {
       book_id: bookId.value as ReadingProgress['book_id'],
       locator: { scheme: 'txt-offset', chapter, offset },
-      furthest_locator: progress.value?.furthest_locator ?? { scheme: 'txt-offset', chapter, offset: paragraph },
+      furthest_locator: furthestOf(progress.value?.furthest_locator ?? null, chapter, offset),
       percent: Math.round(percent * 1000) / 1000,
       total_reading_ms: totalReadingMs(),
       last_opened_at: Date.now(),
@@ -200,9 +214,12 @@ export function useReaderSession(bookId: Ref<string>) {
     };
     await putProgress(next);
     progress.value = next;
-    const shelf = await getShelf(bookId.value);
-    if (shelf && shelf.group !== 'finished') {
-      await putShelf({ ...shelf, updated_at: Date.now() });
+    // 书架状态在 load() 里已经读过：每次落盘再读一遍，等于每 500ms 多一次事务。
+    // updated_at 只影响「最近在读」的排序，一分钟刷一次就够——不必跟着每次翻页写。
+    const now = Date.now();
+    if (shelf.value && shelf.value.group !== 'finished' && now - shelf.value.updated_at > 60_000) {
+      shelf.value = { ...shelf.value, updated_at: now };
+      await putShelf(shelf.value);
     }
   }
 

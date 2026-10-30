@@ -1,4 +1,4 @@
-import type { RangeLocator, ResolvedLocator } from '@/contracts/reader.js';
+import type { Locator, RangeLocator, ResolvedLocator } from '@/contracts/reader.js';
 import type { ParsedChapter } from '@/engine/import/types.js';
 
 /**
@@ -132,6 +132,23 @@ export function paragraphOfChapterOffset(chapters: readonly ParsedChapter[], cha
   const ch = chapters[Math.min(Math.max(chapter, 0), chapters.length - 1)];
   if (!ch || ch.paragraphs.length === 0) return 0;
   return paragraphAt(indexChapter(ch), Math.max(0, offset));
+}
+
+/**
+ * 「最远读到哪」。
+ *
+ * 契约里这个字段用于"读完"判定与回跳选择，语义就是**单调前进**。
+ * 旧写法是 `prev ?? 当前位置`——第一次写入之后就再也不会变，
+ * 于是读到第 10 章时「最远」还停在第 1 章；而首次写入时又把段落序号
+ * 当成字符偏移塞进 `offset`（契约明确写的是章节内字符偏移）。
+ * 两处都不会抛错，只会让下游拿到一个看起来正常的错数字。
+ */
+export function furthestOf(prev: Locator | null, chapter: number, offset: number): Locator {
+  const here: Locator = { scheme: 'txt-offset', chapter, offset };
+  if (prev === null || prev.scheme !== 'txt-offset') return here;
+  if (chapter > prev.chapter) return here;
+  if (chapter === prev.chapter && offset > prev.offset) return here;
+  return prev;
 }
 
 export interface ResolveResult {
