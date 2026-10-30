@@ -249,10 +249,26 @@ export function parseNotesFile(text: string): NotesParseResult {
  * 锚点**逐字段拼**，不用 `JSON.stringify(locator)`：对象序列化的结果依赖键的插入顺序，
  * 同一个锚点从两个来源来（旧版本导出的、新导出再导入的）就可能拼出两个不同的键，
  * 于是「重复导入」会静默变成翻倍的划线。
+ *
+ * 但键里必须带**位置**：旧实现只拼 `scheme + chapter_ref + quote`，
+ * 于是同一章里同一句话划了两处（不同 offset / 不同 occurrence）会被判成同一条，
+ * 导入时第二次被静默丢掉。引文相同、位置不同，是两条划线，不是重复。
  */
+function anchorKey(range: NotesHighlight['locator']): string {
+  if (range === undefined || range === null) return 'none';
+  const l = range.start;
+  if (l.scheme === 'txt-offset') return `txt:${l.chapter}:${l.offset}`;
+  if (l.scheme === 'quote') {
+    const ref = `${range.chapter_ref.href ?? ''}#${range.chapter_ref.spine_index ?? ''}`;
+    return `quote:${ref}:${l.occurrence}`;
+  }
+  return `cfi:${l.cfi}`;
+}
+
 export function highlightKey(bookId: string, h: NotesHighlight): string {
-  const l = h.locator;
-  const ref = l === undefined ? '' : `${l.chapter_ref.href ?? ''}#${l.chapter_ref.spine_index ?? ''}`;
-  const at = l === undefined ? 'none' : `${l.start.scheme}:${ref}:${l.quote}`;
-  return `${bookId}|${at}|${h.quote}`;
+  const anchor = anchorKey(h.locator);
+  // 没有锚点的「纯笔记」只能靠正文区分。不带正文的话，同一本书里的每一条纯笔记
+  // 都会算出同一个键（`book|none|`），导入时第二条起全被当成重复静默丢掉。
+  const body = h.locator === undefined || h.locator === null ? `|${h.note ?? ''}` : '';
+  return `${bookId}|${anchor}|${h.quote}${body}`;
 }

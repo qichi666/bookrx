@@ -160,4 +160,35 @@ describe('去重键', () => {
     const b = highlightKey('user:a', { quote: '另一句', locator: loc, created_at: 1 });
     expect(a).not.toBe(b);
   });
+
+  it('同章同句但位置不同 → 不同键（划了两处是两条，不是重复）', () => {
+    const at = (offset: number): RangeLocator => ({
+      ...loc,
+      start: { scheme: 'txt-offset', chapter: 0, offset },
+      end: { scheme: 'txt-offset', chapter: 0, offset: offset + 4 },
+    });
+    const a = highlightKey('user:a', { quote: '一句', locator: at(10), created_at: 1 });
+    const b = highlightKey('user:a', { quote: '一句', locator: at(180), created_at: 1 });
+    expect(a).not.toBe(b);
+  });
+
+  it('引文锚点按 occurrence 区分：第 1 次与第 2 次出现不是同一条', () => {
+    const occ = (n: number): RangeLocator => ({
+      ...loc,
+      start: { scheme: 'quote', chapter_ref: CH, quote: '一句', occurrence: n },
+    });
+    const a = highlightKey('user:a', { quote: '一句', locator: occ(1), created_at: 1 });
+    const b = highlightKey('user:a', { quote: '一句', locator: occ(2), created_at: 1 });
+    expect(a).not.toBe(b);
+  });
+
+  it('纯笔记（没有锚点）也能算出键', () => {
+    expect(highlightKey('user:a', { quote: '一句', created_at: 1 })).toBe('user:a|none|一句|');
+  });
+
+  it('同一本书的两条纯笔记不撞键（否则导入只进第一条）', () => {
+    const a = highlightKey('user:a', { quote: '', note: '第一段想法', created_at: 1 });
+    const b = highlightKey('user:a', { quote: '', note: '第二段想法', created_at: 2 });
+    expect(a).not.toBe(b);
+  });
 });

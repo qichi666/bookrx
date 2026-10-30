@@ -35,8 +35,20 @@ export interface ChapterRecord {
   cover?: ParsedCover;
 }
 
+/**
+ * 连接复用。
+ *
+ * 旧实现是每次操作 `indexedDB.open(...)` 再 `db.close()`：一次翻页要开三次连接
+ * （进度 / 书架读 / 书架写），而且**只要事务抛错就跳过了 close**——异常路径上
+ * 句柄一个都收不回来。复用一个连接同时解决两件事。
+ *
+ * `onversionchange` 必须让路：别的标签页要升级版本时，我们这条旧连接不关，
+ * 它就会被永久挡住。
+ */
+let conn: Promise<IDBDatabase> | null = null;
+
 function open(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
+  conn ??= new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = () => {
       const db = req.result;
@@ -54,9 +66,20 @@ function open(): Promise<IDBDatabase> {
         s.createIndex('by_book', 'book_id');
       }
     };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error ?? new Error('indexedDB.open 失败'));
+    req.onsuccess = () => {
+      const db = req.result;
+      db.onversionchange = () => {
+        db.close();
+        conn = null;
+      };
+      resolve(db);
+    };
+    req.onerror = () => {
+      conn = null; // 失败不要缓存，否则这个会话再也打不开
+      reject(req.error ?? new Error('indexedDB.open 失败'));
+    };
   });
+  return conn;
 }
 
 function tx<T>(
@@ -89,20 +112,17 @@ function getAll<T>(db: IDBDatabase, store: string, query?: IDBKeyRange | IDBVali
 export async function putBook(book: UserBook): Promise<void> {
   const db = await open();
   await tx(db, 'books', 'readwrite', (t) => t.objectStore('books').put(plainValue(book)));
-  db.close();
 }
 
 export async function getBook(bookId: string): Promise<UserBook | undefined> {
   const db = await open();
   const out = await tx<UserBook>(db, 'books', 'readonly', (t) => t.objectStore('books').get(bookId) as IDBRequest<UserBook>);
-  db.close();
   return out;
 }
 
 export async function listBooks(): Promise<UserBook[]> {
   const db = await open();
   const out = await getAll<UserBook>(db, 'books');
-  db.close();
   return out;
 }
 
@@ -111,7 +131,6 @@ export async function listBooks(): Promise<UserBook[]> {
 export async function putChapters(rec: ChapterRecord): Promise<void> {
   const db = await open();
   await tx(db, 'chapters', 'readwrite', (t) => t.objectStore('chapters').put(rec));
-  db.close();
 }
 
 export async function getChapters(bookId: string): Promise<ChapterRecord | undefined> {
@@ -119,14 +138,12 @@ export async function getChapters(bookId: string): Promise<ChapterRecord | undef
   const out = await tx<ChapterRecord>(db, 'chapters', 'readonly', (t) =>
     t.objectStore('chapters').get(bookId) as IDBRequest<ChapterRecord>,
   );
-  db.close();
   return out;
 }
 
 export async function putFile(bookId: string, bytes: ArrayBuffer): Promise<void> {
   const db = await open();
   await tx(db, 'files', 'readwrite', (t) => t.objectStore('files').put({ book_id: bookId, bytes }));
-  db.close();
 }
 
 /* ── 进度 ───────────────────────────────────────────────────────────── */
@@ -135,7 +152,6 @@ export async function putProgress(p: ReadingProgress): Promise<void> {
   const db = await open();
   // 进度最容易踩到响应式 Proxy（它由视图层拼装），所以这里必定过一遍 plainValue
   await tx(db, 'progress', 'readwrite', (t) => t.objectStore('progress').put(plainValue(p)));
-  db.close();
 }
 
 export async function getProgress(bookId: string): Promise<ReadingProgress | undefined> {
@@ -143,14 +159,12 @@ export async function getProgress(bookId: string): Promise<ReadingProgress | und
   const out = await tx<ReadingProgress>(db, 'progress', 'readonly', (t) =>
     t.objectStore('progress').get(bookId) as IDBRequest<ReadingProgress>,
   );
-  db.close();
   return out;
 }
 
 export async function listProgress(): Promise<ReadingProgress[]> {
   const db = await open();
   const out = await getAll<ReadingProgress>(db, 'progress');
-  db.close();
   return out;
 }
 
@@ -159,13 +173,11 @@ export async function listProgress(): Promise<ReadingProgress[]> {
 export async function putShelf(entry: ShelfEntry): Promise<void> {
   const db = await open();
   await tx(db, 'shelf', 'readwrite', (t) => t.objectStore('shelf').put(plainValue(entry)));
-  db.close();
 }
 
 export async function listShelf(): Promise<ShelfEntry[]> {
   const db = await open();
   const out = await getAll<ShelfEntry>(db, 'shelf');
-  db.close();
   return out;
 }
 
@@ -174,7 +186,6 @@ export async function getShelf(bookId: string): Promise<ShelfEntry | undefined> 
   const out = await tx<ShelfEntry>(db, 'shelf', 'readonly', (t) =>
     t.objectStore('shelf').get(bookId) as IDBRequest<ShelfEntry>,
   );
-  db.close();
   return out;
 }
 
@@ -183,7 +194,6 @@ export async function getShelf(bookId: string): Promise<ShelfEntry | undefined> 
 export async function putAnnotation(a: Annotation): Promise<void> {
   const db = await open();
   await tx(db, 'annotations', 'readwrite', (t) => t.objectStore('annotations').put(plainValue(a)));
-  db.close();
 }
 
 export async function listAnnotations(bookId: string): Promise<Annotation[]> {
@@ -194,28 +204,24 @@ export async function listAnnotations(bookId: string): Promise<Annotation[]> {
     req.onsuccess = () => resolve(req.result as Annotation[]);
     req.onerror = () => reject(req.error ?? new Error('读取标注失败'));
   });
-  db.close();
   return out;
 }
 
 export async function deleteAnnotation(id: string): Promise<void> {
   const db = await open();
   await tx(db, 'annotations', 'readwrite', (t) => t.objectStore('annotations').delete(id));
-  db.close();
 }
 
 /** 全量读取（导出笔记用）：不按书过滤，因为删掉的书留下的划线也要能带走。 */
 export async function listAllAnnotations(): Promise<Annotation[]> {
   const db = await open();
   const out = await getAll<Annotation>(db, 'annotations');
-  db.close();
   return out;
 }
 
 export async function putNote(n: Note): Promise<void> {
   const db = await open();
   await tx(db, 'notes', 'readwrite', (t) => t.objectStore('notes').put(plainValue(n)));
-  db.close();
 }
 
 export async function listNotes(bookId: string): Promise<Note[]> {
@@ -226,14 +232,12 @@ export async function listNotes(bookId: string): Promise<Note[]> {
     req.onsuccess = () => resolve(req.result as Note[]);
     req.onerror = () => reject(req.error ?? new Error('读取笔记失败'));
   });
-  db.close();
   return out;
 }
 
 export async function listAllNotes(): Promise<Note[]> {
   const db = await open();
   const out = await getAll<Note>(db, 'notes');
-  db.close();
   return out;
 }
 
@@ -249,7 +253,6 @@ export async function deleteBookData(bookId: string): Promise<void> {
     t.objectStore('progress').delete(bookId);
     t.objectStore('shelf').delete(bookId);
   });
-  db.close();
 }
 
 export interface QuotaInfo {

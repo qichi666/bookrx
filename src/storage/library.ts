@@ -65,6 +65,14 @@ export async function importAndStore(
       warnings: parsed.value.imported.warnings,
     };
   } catch (e) {
+    // 半本书不能留在库里：`putBook` 已经成功、正文写失败时，书架上会多出一条
+    // 打不开的记录（元数据在、章节不在），而且重新导入前一直占着配额。
+    // 回滚本身也可能失败（配额满时连删除都可能报错），所以只做尽力而为，不覆盖原始错误。
+    try {
+      await deleteBookData(book.book_id);
+    } catch {
+      /* 回滚失败就保留原始错误，如实报给用户 */
+    }
     const detail = e instanceof Error ? e.message : String(e);
     if (isQuotaError(e)) {
       return fail('E_STORAGE_QUOTA', `IndexedDB 写入时配额超限：${detail}`);

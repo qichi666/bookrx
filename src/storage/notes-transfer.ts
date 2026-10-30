@@ -63,11 +63,17 @@ export interface NotesImportReport {
 export async function importNotes(file: NotesFile): Promise<NotesImportReport> {
   const books = await listBooks();
   const known = new Set<string>(books.map((b) => b.book_id));
-  const existing = await listAllAnnotations();
+  const [existing, existingNotes] = await Promise.all([listAllAnnotations(), listAllNotes()]);
 
   const seen = new Set(
     existing.map((a) => highlightKey(a.book_id, { quote: a.quote, locator: a.locator, created_at: 0 })),
   );
+  // 纯笔记不在 annotations 表里，只按划线算 seen 的话，同一个文件导入第二次会把
+  // 没有锚点的笔记全部再写一遍（越导越多）。这里把它们也放进去重集合。
+  for (const n of existingNotes) {
+    if (n.annotation_id !== undefined && n.annotation_id !== '') continue;
+    seen.add(highlightKey(n.book_id, { quote: '', note: n.body_markdown, created_at: 0 }));
+  }
   let added = 0;
   let skipped = 0;
   const missing: string[] = [];
