@@ -501,7 +501,7 @@ catalog/shards/seed-core-*.json（68 本核心库）
 
 **验收**：`npm run check` 43 文件 / 306 条测试全绿；`token-audit` 新增（42 文件 362 处引用 0 未定义）；`smoke-browser.py` 42 条断言全绿，新增"示例试读 → 翻章 → 选区划线 → 划线抽屉 → 回书架"。
 
-> **2026-10-21 更新**：全量门禁现为 **49 文件 / 376 条测试**全绿；`token-audit` 扫 44 文件 / 379 处引用 / 0 未定义；`smoke-browser.py` **45 条**断言全绿。阅读器已上线（`READER_AVAILABLE = true`），本节描述的那条「P2-4 冻结路线」已作废，见 ADR-009。
+> **2026-10-21 更新**：全量门禁现为 **49 文件 / 376 条测试**全绿（2026-10-30 已增至 54 / 412，见 §7.10）；`token-audit` 扫 44 文件 / 379 处引用 / 0 未定义；`smoke-browser.py` **45 条**断言全绿。阅读器已上线（`READER_AVAILABLE = true`），本节描述的那条「P2-4 冻结路线」已作废，见 ADR-009。
 
 **这一轮的教训**：`--surface-raised` 这类令牌从未定义过，而类型检查、样式门禁、构建**全绿**——CSS 变量拼错不报错，只是那条声明被丢掉，在浅色底上甚至看不出异常。凡是"错了也不响"的地方，都值得一条门禁。
 
@@ -544,6 +544,38 @@ catalog/shards/seed-core-*.json（68 本核心库）
 **为什么这次没改**：现在这张表同时承担「检索」和「结果卡片展示」两件事——卡片要 publisher / year / subtitle / url。要瘦身得拆成两层：检索用轻索引（id + 书名 + 作者，估计能压到 300 KB 以内），详情按命中 id 现取。这动的是 `tools/build-candidates.mjs` → `verify-candidates.mjs` → `index.source_sha256` 这条校验链，属数据层改动，得整条链一起改，不能只改前端。
 
 **不做的代价**：可接受。加载有提示、失败静默降级只搜核心库，不会白屏。
+
+---
+
+### 7.10 第九步（2026-10-30）：缺陷清扫——门禁全绿时还剩什么错
+
+**为什么会有这一步**：`npm run check` 全绿（当时 49 文件 / 376 条）、`npm run build` 通过，但用户报的四个搜索问题都是真的。说明**门禁覆盖的是"已经想到的规则"，不是"所有会错的地方"**。这一轮按「读代码 → 造最小复现 → 先写测试 → 再改」的顺序做了一遍，结论是门禁绿≠没 bug，缺的是**边界处的形状假设**。
+
+**已修（每条都有回归测试；括号里是测试文件）**：
+
+| 缺陷 | 位置 | 触发条件 | 原因 |
+|---|---|---|---|
+| 划线落到同段第一处 | `views/ReaderView.vue` `onSelect` | 同一段里同一句话出现两次，划第二处 | 用 `text.indexOf(quote)` 定位，永远取首次出现 |
+| 「最远进度」永不前进 | `composables/useReaderSession.ts` `saveProgress` | 读到第 2 章以后 | `prev ?? 当前位置`，首次写入后不再更新；且首次写入把段落序号当字符偏移 |
+| 切走标签页不落盘 | `views/ReaderView.vue` `onVisibility` | 切后台 / 关页面前最后几页 | 只 `pauseClock()` 不 flush；`onBeforeUnmount` 里的异步事务常被卸载掐断 |
+| 删划线后笔记"两副面孔" | `useReaderSession.removeMark` | 删一条带笔记的划线 | 内存里过滤掉了 notes，库里没删，刷新后又回来 |
+| 导入失败留半本书 | `storage/library.ts` | 写章节/原文件时配额超限 | `putBook` 已成功，异常路径没有回滚 |
+| 外围结果混入近似命中 | `engine/search.ts` `searchCandidates` | 有严格命中且存在差一个字的书名 | 逐本跑 fuzzy，与核心库「0 命中才兜底」的口径不一致，且不带标记 |
+| 纯笔记导入被吞 | `domain/notes-file.ts` `highlightKey` | 同一本书≥2 条无锚点笔记 | 键里没有正文，全部算成 `book\|none\|` |
+| 重复导入笔记翻倍 | `storage/notes-transfer.ts` | 同一文件导入两次 | 去重集合只装了 annotations，没装无锚点笔记 |
+| 坏诊断白屏 | `engine/session.ts` `loadDiagnosis` | sessionStorage 里是本版本读不懂的形状 | `as Diagnosis` 直接放行，`new Set(undefined)` 抛在渲染里 |
+| IndexedDB 连接泄漏 | `storage/db.ts` | 任一事务抛错 | 异常路径跳过 `db.close()`；顺带每次都新开连接 |
+| 复制粘贴事故 | `engine/search.ts` | — | `}();for (...)` 两条语句挤一行，行数纪律留下的后遗症 |
+
+**顺手做的优化（都量过）**：
+
+- `searchCandidates` 的 `normalize` 结果按数组身份缓存（WeakMap）：6551 本的重复字符串处理从**单次 6.21 ms 降到 1.72 ms**（10 个词 × 20 轮实测）。
+- IndexedDB 连接复用 + 进度落盘不再回读书架 + 书架 `updated_at` 一分钟刷一次：一次翻页从 3 个事务降到 1～2 个。
+- `marks` 的笔记查找从 `O(标注×笔记)` 改成建一次 Map。
+
+**刻意没改的（连同理由）**：`all.json` 瘦身（见 7.9，要动整条数据校验链）；`pickWide` 每次「换一批」重建桶 + 排序 + 交错（实测约 19 ms，用户点一下的代价可以忽略）。
+
+**验收**：`npm run check` **54 文件 / 412 条**全绿；`npm run build` 47 条断言通过、文案审计 0 命中；真实浏览器（dev + 生产构建各一轮）18 条端到端断言全过、console error/warning **0**。其中「划线落在第二处」是靠**偏移量**断言的（第二处 9、第一处 0），不是靠"看起来对"。
 
 ---
 
