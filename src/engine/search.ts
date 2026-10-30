@@ -5,6 +5,7 @@ import type { CandidateBook } from '@/data/candidates.js';
 import titlesJson from '../../catalog/titles.json';
 import { TAG_OPTIONS } from '@/data/quiz.js';
 import { buildDiagnosis, matchFreeText } from './diagnose.js';
+import { FUZZY_MIN_QUERY, authorKey, fuzzyContains, normalize, snippetAround } from './text-match.js';
 
 /**
  * 首页通用检索（两种输入，一个框，确定性分流）：
@@ -19,6 +20,8 @@ import { buildDiagnosis, matchFreeText } from './diagnose.js';
 export interface BookHit {
   book: Book;
   field: 'title' | 'pinyin' | 'author' | 'keyword';
+  /** 命中来自「差一个字」兜底而非严格子串；界面必须如实说明，不能冒充精确命中 */
+  fuzzy?: boolean;
 }
 
 const FIELD_PRIORITY: Record<BookHit['field'], number> = {
@@ -40,9 +43,23 @@ const TITLES = new Map(
   (titlesJson as TitleRow[]).map((t) => [t.book_id, t]),
 );
 
-/** 统一小写并去掉空白，中文不受影响。 */
-function normalize(s: string): string {
-  return s.toLowerCase().replace(/\s+/g, '');
+/**
+ * 拼音首字母命中规则（v1.1 收紧）。
+ *
+ * 旧实现是 `initials.includes(q)`，任意位置子串都算命中——
+ * 于是 `yq` 会命中《慢慢来，一切都来得**及**》（mmlyqdldj 里恰好有 yq），
+ * 用户搜两三个字母时结果里混进一堆不相关的书，看起来像乱搜。
+ *
+ * 现在的口径：**首字母只认「开头」和「结尾」，长度 ≥3 才允许中间**。
+ * 理由是中文书名的语义中心词几乎总在末尾（勇气 / 沟通 / 时间），
+ * 而开头对应首字缩写（gjdh → 关键对话），这两个位置截断式命中是用户真想要的；
+ * 中间撞车基本都是巧合。
+ */
+function initialsHit(initials: string, q: string): boolean {
+  if (q.length < 2 || initials.length === 0) return false;
+  if (initials.startsWith(q)) return true;
+  if (initials.endsWith(q)) return true;
+  return q.length >= 3 && initials.includes(q);
 }
 
 export function searchBooks(query: string, books: readonly Book[]): BookHit[] {
@@ -50,6 +67,7 @@ export function searchBooks(query: string, books: readonly Book[]): BookHit[] {
   if (q.length === 0) return [];
 
   const hits: BookHit[] = [];
+  const misses: Book[] = [];
   for (const b of books) {
     const t = TITLES.get(b.book_id);
     let field: BookHit['field'] | null = null;
@@ -57,7 +75,8 @@ export function searchBooks(query: string, books: readonly Book[]): BookHit[] {
       field = 'title';
     } else if (
       t &&
-      (normalize(t.pinyin_full).includes(q) || (t.pinyin_initials.length > 0 && t.pinyin_initials.includes(q)))
+      // 全拼至少两个字母才认：单字母匹配等于把大半个书库倒出来
+      ((q.length >= 2 && normalize(t.pinyin_full).includes(q)) || initialsHit(t.pinyin_initials, q))
     ) {
       field = 'pinyin';
     } else if (b.author_display.some((a) => normalize(a).includes(q))) {
@@ -66,6 +85,18 @@ export function searchBooks(query: string, books: readonly Book[]): BookHit[] {
       field = 'keyword';
     }
     if (field) hits.push({ book: b, field });
+    else misses.push(b);
+  }
+
+  // 兜底：书名少打 / 打错一个字（「被讨厌勇气」→「被讨厌的勇气」）。
+  // 只在一本都没命中时启用，且查询至少 3 个字——短串做近似匹配全是噪声。
+  // 命中后标记 fuzzy，界面据此说明「不是完全对上」，不冒充精确结果。
+  if (hits.length === 0) {
+    for (const b of misses) {
+      if (fuzzyContains(normalize(b.title), q)) {
+        hits.push({ book: b, field: 'title', fuzzy: true });
+      }
+    }
   }
 
   hits.sort((a, b) => {
@@ -118,6 +149,16 @@ export function searchQuestion(query: string): Diagnosis | null {
  * 不参与打分、不显示契合度；排序只按公开信号（质量档 → 收缩分 → 评价人数），
  * 同分按 id 升序，保证同输入同输出。
  */
+
+export interface CandidateHit {
+  book: CandidateBook;
+  field: 'title' | 'subtitle' | 'author';
+  /** 命中处的原文片段：副标题命中时界面要把它显出来，否则用户看不出这本书为什么出现 */
+  snippet: string;
+  /** 同书名同作者的其他版本数（合并后才知道「一本书占了 3 条」） */
+  editions: number;
+}
+
 const BUCKET_RANK: Record<CandidateBook['bucket'], number> = {
   high: 3,
   mid: 2,
@@ -125,32 +166,68 @@ const BUCKET_RANK: Record<CandidateBook['bucket'], number> = {
   unknown: 0,
 };
 
+/** 版本归并键：同名同作者视为同一本书的不同版本（豆瓣多次收录）。 */
+function editionKey(b: CandidateBook): string {
+  // 作者整体拼起来再归一：有人把「甲、乙」放进一个数组元素，有人拆成两个元素，
+  // 逐元素比较会漏掉这种同书异写。
+  return `${normalize(b.title)}|${authorKey(b.authors.join(''))}`;
+}
+
+function candidateField(b: CandidateBook, q: string): CandidateHit['field'] | null {
+  if (normalize(b.title).includes(q)) return 'title';
+  if (normalize(b.subtitle || '').includes(q)) return 'subtitle';
+  if (b.authors.some((a) => normalize(a).includes(q))) return 'author';
+  return null;
+}
+
 export function searchCandidates(
   query: string,
   books: readonly CandidateBook[],
   limit = 12,
-): CandidateBook[] {
+): CandidateHit[] {
   const q = normalize(query);
   if (q.length === 0) return [];
 
-  const hits = books.filter(
-    (b) =>
-      normalize(b.title).includes(q) ||
-      normalize(b.subtitle || '').includes(q) ||
-      b.authors.some((a) => normalize(a).includes(q)),
-  );
+  const matched: { book: CandidateBook; field: CandidateHit['field'] }[] = [];
+  for (const b of books) {
+    let field = candidateField(b, q);
+    if (field === null && q.length >= FUZZY_MIN_QUERY && fuzzyContains(normalize(b.title), q)) {
+      field = 'title'; // 书名差一个字的兜底，与核心库同一口径
+    }
+    if (field !== null) matched.push({ book: b, field });
+  }
 
-  hits.sort((a, b) => {
-    const rank = BUCKET_RANK[b.bucket] - BUCKET_RANK[a.bucket];
+  matched.sort((x, y) => {
+    const rank = BUCKET_RANK[y.book.bucket] - BUCKET_RANK[x.book.bucket];
     if (rank !== 0) return rank;
-    const qa = a.q ?? -1;
-    const qb = b.q ?? -1;
+    const qa = x.book.q ?? -1;
+    const qb = y.book.q ?? -1;
     if (qb !== qa) return qb - qa;
-    const va = a.votes ?? -1;
-    const vb = b.votes ?? -1;
+    const va = x.book.votes ?? -1;
+    const vb = y.book.votes ?? -1;
     if (vb !== va) return vb - va;
-    return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+    return x.book.id < y.book.id ? -1 : x.book.id > y.book.id ? 1 : 0;
   });
 
-  return hits.slice(0, limit);
+  // 合并同书多版本：排序后只留排最前的那条，其余记成「另有 N 个版本」。
+  // 不合并的话，一本书占 3 张卡，看起来像搜出了三本书。
+  const out: CandidateHit[] = [];
+  const seen = new Map<string, CandidateHit>();
+  for (const m of matched) {
+    const key = editionKey(m.book);
+    const existed = seen.get(key);
+    if (existed) {
+      existed.editions += 1;
+      continue;
+    }
+    const hit: CandidateHit = {
+      book: m.book,
+      field: m.field,
+      snippet: m.field === 'subtitle' ? snippetAround(m.book.subtitle || '', q) : '',
+      editions: 0,
+    };
+    seen.set(key, hit);
+    out.push(hit);
+  }
+  return out.slice(0, limit);
 }

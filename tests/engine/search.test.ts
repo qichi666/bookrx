@@ -60,6 +60,30 @@ describe('searchBooks', () => {
     expect(searchBooks('  ', SEED_BOOKS)).toEqual([]);
     expect(searchBooks('zzzz不存在zzzz', SEED_BOOKS)).toEqual([]);
   });
+
+  it('书名少打一个字也能找到，并标记 fuzzy（不许冒充精确命中）', () => {
+    const hits = searchBooks('被讨厌勇气', SEED_BOOKS);
+    expect(hits[0]?.book.book_id).toBe('core:000001');
+    expect(hits[0]?.fuzzy).toBe(true);
+  });
+
+  it('有精确命中时不混入近似结果', () => {
+    const hits = searchBooks('非暴力沟通', SEED_BOOKS);
+    expect(hits.length).toBeGreaterThan(0);
+    expect(hits.every((h) => h.fuzzy !== true)).toBe(true);
+  });
+
+  it('拼音首字母只认开头与结尾：yq 不再命中《慢慢来，一切都来得及》', () => {
+    const titles = searchBooks('yq', SEED_BOOKS).map((h) => h.book.title);
+    expect(titles).toContain('被讨厌的勇气');
+    expect(titles).not.toContain('慢慢来，一切都来得及');
+  });
+
+  it('单字母不参与拼音匹配（全拼与首字母都要求 ≥2 位）', () => {
+    // 注意：单字母仍可能命中作者（例如作者名本身是拉丁字母），这里只钉死拼音这一路
+    const hits = searchBooks('y', SEED_BOOKS);
+    expect(hits.every((h) => h.field !== 'pinyin')).toBe(true);
+  });
 });
 
 describe('searchQuestion', () => {
@@ -111,7 +135,7 @@ describe('searchCandidates（外围书库）', () => {
       mk({ id: 'b', title: '无关书', authors: ['沟通大师'] }),
       mk({ id: 'c', title: '另一本' }),
     ];
-    const ids = searchCandidates('沟通', books).map((b) => b.id);
+    const ids = searchCandidates('沟通', books).map((h) => h.book.id);
     expect(ids).toContain('a');
     expect(ids).toContain('b');
     expect(ids).not.toContain('c');
@@ -124,7 +148,7 @@ describe('searchCandidates（外围书库）', () => {
       mk({ id: '3', title: '沟通丙', bucket: 'high', q: 0.85, votes: 10 }),
       mk({ id: '4', title: '沟通丁', bucket: 'high', q: 0.85, votes: 900 }),
     ];
-    expect(searchCandidates('沟通', books).map((b) => b.id)).toEqual(['4', '3', '2', '1']);
+    expect(searchCandidates('沟通', books).map((h) => h.book.id)).toEqual(['4', '3', '2', '1']);
   });
 
   it('同输入两次结果一致；默认截断 12 条', () => {
@@ -133,12 +157,65 @@ describe('searchCandidates（外围书库）', () => {
     );
     const a = searchCandidates('沟通', books);
     const b = searchCandidates('沟通', books);
-    expect(a.map((x) => x.id)).toEqual(b.map((x) => x.id));
+    expect(a.map((x) => x.book.id)).toEqual(b.map((x) => x.book.id));
     expect(a.length).toBe(12);
   });
 
   it('空串与无命中返回空数组', () => {
     expect(searchCandidates('  ', [mk({})])).toEqual([]);
     expect(searchCandidates('zzz不存在', [mk({ title: '沟通' })])).toEqual([]);
+  });
+
+  it('副标题命中时给出原文片段（否则用户看不出这本书为什么出现）', () => {
+    const books = [
+      mk({ id: 'g', title: '游戏力', subtitle: '笑声，激活孩子天性中的合作与勇气' }),
+      mk({ id: 'x', title: '无关书', subtitle: '别的副标题' }),
+    ];
+    const hits = searchCandidates('勇气', books);
+    expect(hits.map((h) => h.book.id)).toEqual(['g']);
+    expect(hits[0]?.field).toBe('subtitle');
+    expect(hits[0]?.snippet).toContain('勇气');
+  });
+
+  it('书名命中时不给片段（书名本身就是证据）', () => {
+    const hits = searchCandidates('沟通', [mk({ id: 'a', title: '沟通的艺术' })]);
+    expect(hits[0]?.field).toBe('title');
+    expect(hits[0]?.snippet).toBe('');
+  });
+
+  it('同书名同作者合并成一条，其余记成版本数', () => {
+    const books = [
+      mk({ id: '1', title: '游戏力', bucket: 'high', q: 0.9, votes: 900 }),
+      mk({ id: '2', title: '游戏力', bucket: 'mid', q: 0.8, votes: 500 }),
+      mk({ id: '3', title: '游戏力', bucket: 'low', q: 0.6, votes: 100 }),
+    ];
+    const hits = searchCandidates('游戏力', books);
+    expect(hits.length).toBe(1);
+    expect(hits[0]?.book.id).toBe('1');
+    expect(hits[0]?.editions).toBe(2);
+  });
+
+  it('不同作者的相同书名不合并（可能是两本不同的书）', () => {
+    const books = [
+      mk({ id: '1', title: '心理学', authors: ['甲'] }),
+      mk({ id: '2', title: '心理学', authors: ['乙'] }),
+    ];
+    expect(searchCandidates('心理学', books).length).toBe(2);
+  });
+
+  it('作者写法不同也算同一本：方括号、间隔号、一元素 vs 两元素', () => {
+    const books = [
+      mk({ id: '1', title: '幸福的勇气', authors: ['[日] 岸见一郎、[日] 古贺史健'] }),
+      mk({ id: '2', title: '幸福的勇气', authors: ['[日] 岸见一郎', '古贺史健'] }),
+    ];
+    const hits = searchCandidates('幸福的勇气', books);
+    expect(hits.length).toBe(1);
+    expect(hits[0]?.editions).toBe(1);
+  });
+
+  it('短副标题整句给出，不切半截词', () => {
+    const books = [mk({ id: 's', title: '游戏力', subtitle: '笑声，激活孩子天性中的合作与勇气' })];
+    const hits = searchCandidates('勇气', books);
+    expect(hits[0]?.snippet).toBe('笑声，激活孩子天性中的合作与勇气');
   });
 });

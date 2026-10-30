@@ -101,6 +101,55 @@ describe('SearchPanel', () => {
     expect(w.text()).toContain('豆瓣');
     expect(w.text()).toContain('OpenLibrary');
   });
+
+  it('空输入：按钮置灰，回车提交也不清掉上一次的结果', async () => {
+    const { w } = mountWith();
+    await search(w, '非暴力');
+    expect(w.text()).toContain('非暴力沟通');
+    await w.find('input').setValue('   ');
+    const btn = w.find('button[type="submit"]').element as HTMLButtonElement;
+    expect(btn.disabled).toBe(true);
+    await w.find('form').trigger('submit'); // 回车走的就是这条隐式提交
+    await flushPromises();
+    expect(w.text()).toContain('非暴力沟通');
+  });
+
+  it('近似命中要说「差一个字」，不让它冒充精确结果', async () => {
+    const { w } = mountWith();
+    await search(w, '被讨厌勇气');
+    expect(w.text()).toContain('被讨厌的勇气');
+    expect(w.text()).toContain('差一个字');
+  });
+
+  it('外围结果说明命中原因：副标题命中时把原文片段贴出来', async () => {
+    const books = [
+      {
+        id: '777',
+        title: '游戏力',
+        subtitle: '笑声，激活孩子天性中的合作与勇气',
+        authors: ['劳伦斯·科恩'],
+        publisher: '中信出版社',
+        year: 2017,
+        q: 0.8,
+        bucket: 'high',
+        votes: 3000,
+        tags: ['亲子'],
+        domains: ['relationship'],
+        url: 'https://book.douban.com/subject/777/',
+      },
+    ];
+    vi.stubGlobal('fetch', async (url: string) => {
+      const body = String(url).endsWith('index.json')
+        ? { all_file: 'all.json', total: 1, by_domain: { relationship: 1 }, generated_at: '2026-10-19', source_sha256: 'x' }
+        : books;
+      return { ok: true, json: async () => body };
+    });
+    const { w } = mountWith();
+    await search(w, '勇气');
+    expect(w.text()).toContain('副标题');
+    expect(w.text()).toContain('合作与勇气');
+    expect(w.text()).toContain('未入库');
+  });
 });
 
 describe('搜索诊断不进本地计数', () => {

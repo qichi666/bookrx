@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- 书方标记：一册翻开的书压在处方笺的横线上，笔画统一 2px 描边，无填充块 -->
+  <rect x="3" y="3" width="26" height="26" rx="6" fill="#FAF8F4" stroke="#A5503A" stroke-width="2" />
+  <path d="M9 10.5h6.5v11H9z" fill="none" stroke="#A5503A" stroke-width="2" stroke-linejoin="round" />
+  <path d="M16.5 10.5H23v11h-6.5z" fill="none" stroke="#A5503A" stroke-width="2" stroke-linejoin="round" />
+  <path d="M9 25h14" stroke="#EDBFA9" stroke-width="2" stroke-linecap="round" />
+</svg>

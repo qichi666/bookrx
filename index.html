@@ -16,6 +16,8 @@
       content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'"
     />
     <title>BookRx</title>
+    <!-- 站点图标：不写这个的话浏览器会去请求 /favicon.ico，控制台里就是一条 404。 -->
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <!--
       分享卡片：微信 / X / Slack / Discord / Telegram 抓的是这一组，不是页面正文。
       社交预览图必须是**绝对 URL**——抓取端不会按页面的相对 base 去解析图片路径。

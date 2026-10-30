@@ -14,18 +14,17 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import type { Diagnosis } from '@/contracts/diagnosis.js';
-import type { CandidateBook } from '@/data/candidates.js';
 import { loadCandidateBooks, loadCandidateIndex } from '@/data/candidates.js';
 import { SEED_BOOKS } from '@/data/catalog.js';
 import { saveDiagnosis } from '@/engine/session.js';
-import { searchBooks, searchCandidates, searchQuestion, type BookHit } from '@/engine/search.js';
+import { searchBooks, searchCandidates, searchQuestion, type BookHit, type CandidateHit } from '@/engine/search.js';
 import OuterResults from '@/components/OuterResults.vue';
 
 const router = useRouter();
 
 const query = ref('');
 const bookHits = ref<BookHit[]>([]);
-const candidateHits = ref<CandidateBook[]>([]);
+const candidateHits = ref<CandidateHit[]>([]);
 const questionDiagnosis = ref<Diagnosis | null>(null);
 const searched = ref(false);
 const lastQuery = ref('');
@@ -40,6 +39,9 @@ const noResult = computed(
     questionDiagnosis.value === null &&
     !outerLoading.value,
 );
+
+/** 有一本以上是「差一个字」兜底命中的——必须在标题上方说清楚，不能让它冒充精确命中 */
+const hasFuzzy = computed(() => bookHits.value.some((h) => h.fuzzy));
 
 const doubanHref = computed(
   () => `https://www.douban.com/search?cat=1001&q=${encodeURIComponent(lastQuery.value)}`,
@@ -74,7 +76,7 @@ async function outerSearch(q: string): Promise<void> {
     if (!books) return;
     const inCore = new Set(bookHits.value.map((h) => h.book.title.replace(/\s+/g, '')));
     candidateHits.value = searchCandidates(q, books).filter(
-      (c) => !inCore.has(c.title.replace(/\s+/g, '')),
+      (h) => !inCore.has(h.book.title.replace(/\s+/g, '')),
     );
   } finally {
     outerLoading.value = false;
@@ -83,8 +85,10 @@ async function outerSearch(q: string): Promise<void> {
 
 async function submit(): Promise<void> {
   const q = query.value.trim();
+  // 空输入直接不响应：既不清空上一次的结果，也不假装搜过（按钮同时置灰）
+  if (q.length === 0) return;
   lastQuery.value = q;
-  searched.value = q.length > 0;
+  searched.value = true;
   bookHits.value = searchBooks(q, SEED_BOOKS);
   questionDiagnosis.value = searchQuestion(q);
   await outerSearch(q);
@@ -115,11 +119,12 @@ function goQuestion(): void {
         placeholder="搜书名 / 作者，或直接描述你的问题"
         aria-label="搜索书籍或描述你的问题"
       />
-      <button type="submit" class="btn-primary">搜一下</button>
+      <button type="submit" class="btn-primary" :disabled="query.trim().length === 0">搜一下</button>
     </form>
 
     <template v-if="bookHits.length > 0">
       <h3 class="search-title">找到了这些书</h3>
+      <p v-if="hasFuzzy" class="search-hint">没有书名完全对上的，下面是按「差一个字」找到的。</p>
       <article v-for="h in bookHits" :key="h.book.book_id" class="search-hit">
         <div class="hit-head">
           <h4 class="hit-name">{{ h.book.title }}</h4>
@@ -175,6 +180,12 @@ function goQuestion(): void {
 .search-title {
   font-size: 1rem;
   margin: 16px 0 8px;
+}
+
+.search-hint {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  margin: 0 0 8px;
 }
 
 .search-hit {
