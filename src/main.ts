@@ -2,6 +2,7 @@ import { createApp } from 'vue';
 import { createRouter, createWebHashHistory } from 'vue-router';
 import App from './App.vue';
 import { registerOffline } from './lib/offline.js';
+import { applyTheme, readTheme } from './lib/theme.js';
 import './tokens.css';
 import './styles/controls.css';
 import './styles/sections.css';
@@ -35,11 +36,20 @@ const router = createRouter({
     { path: '/print', name: 'print', component: () => import('./views/PrintView.vue') },
     { path: '/admin', name: 'admin', component: () => import('./views/AdminView.vue') },
     { path: '/profile', name: 'profile', component: () => import('./views/ProfileView.vue') },
-    // 兜底：hash 路由下任何拼错的地址（#/stas、#/book/）原本会渲染成一张白页，
+    // 兜底：hash 路由下任何拼错的地址（#/stas、#/book/）原本会渲染成一片空白，
     // 连返回入口都没有。重定向回首页，比让人对着空白页刷新强。
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
 });
+
+/**
+ * 首屏就把主题落上，别等 AppHeader 挂载——晚一步的话，显式选了深色的人
+ * 会先看到一帧浅色背景再翻黑，像页面闪了一下。
+ *
+ * 彻底消掉这一帧需要在 `<head>` 里写内联脚本，而 CSP 是 `script-src 'self'`，
+ * 内联脚本会被直接拦掉（见 index.html）。所以这里接受一帧，不为了零闪白去放宽 CSP。
+ */
+applyTheme(readTheme());
 
 createApp(App).use(router).mount('#app');
 

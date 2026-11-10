@@ -1,0 +1,145 @@
+/**
+ * 阅读目标卡片（N2）。
+ *
+ * 抽成独立文件不是为了好看，是因为 `GoalCard.vue` 加上样式会超过 300 行上限——
+ * 组件里只留结构，视觉都在这里。
+ *
+ * 层级：卡片用 `--surface` 而不是 `--bg`，因为它嵌在统计页里，需要"浮起一层"；
+ * 进度条沿用 `--tier-track` + `--accent`，与书架进度条同一套，不另造颜色。
+ * 按钮三档：主要（朱砂填充）/ 普通（描边）/ 安静（无框灰字）——「清除目标」是第三档，
+ * 它不该比「保存」更显眼，也不该用危险色，因为清除目标不是破坏性操作。
+ */
+.goal {
+  margin: 20px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.goal-title {
+  margin: 0 0 6px;
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+}
+
+.goal-period {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.goal-num {
+  margin: 4px 0 8px;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.goal-num strong {
+  font-family: var(--font-book);
+  font-size: 1.5rem;
+  color: var(--text-primary);
+}
+
+.goal-bar {
+  height: 6px;
+  background: var(--tier-track);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.goal-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.goal-status,
+.goal-intro {
+  margin: 8px 0 0;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.goal-pace {
+  color: var(--text-muted);
+}
+
+.goal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.g-btn {
+  min-height: 44px;
+  padding: 6px 14px;
+  border: 1px solid var(--border-control);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.g-primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+
+.g-quiet {
+  border-color: transparent;
+  color: var(--text-muted);
+}
+
+.goal-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+  margin-top: 10px;
+}
+
+.g-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.g-label {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+
+.g-input {
+  min-height: 44px;
+  padding: 4px 10px;
+  border: 1px solid var(--border-control);
+  border-radius: 6px;
+  background: var(--surface-sunken);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.8125rem;
+}
+
+.g-num {
+  width: 96px;
+}
+
+.goal-err {
+  flex: 1 1 100%;
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--danger);
+}
+
+.goal-note {
+  flex: 1 1 100%;
+  margin: 2px 0 0;
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+}

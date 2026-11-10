@@ -2,10 +2,12 @@
 /**
  * 书架上一本书。
  *
- * 三条约束写在这里，因为它们是「删书」这件事的全部风险：
+ * 四条约束写在这里，因为它们是「删书」和「放下」这两件事的全部风险：
  *  ① 删除是**两步**的（第一次点只进入确认态），且必须说清"划线和笔记会留下"；
  *  ② 「读完」只能由用户自己点——系统不替他判断（读到 99% 也不等于读完）；
- *  ③ 进度条只在"有进度"时画，0% 画一条空槽等于天天提醒人没读书。
+ *  ③ 进度条只在"有进度"时画，0% 画一条空槽等于天天提醒人没读书；
+ *  ④ 「读不下去」是**灰色次级**按钮，不是红色危险按钮——放下不是失败，
+ *     用警示色等于在他手上盖一个章。
  */
 import { computed } from 'vue';
 import { humanCount, percentText, relativeTime } from '@/lib/format.js';
@@ -26,8 +28,10 @@ const meta = computed(() => {
   return bits.join(' · ');
 });
 
-const canRead = computed(() => props.book.group !== 'finished');
-</script>
+/** 读完的书点开是"重读"，不是"继续读"；放下的书主按钮走「重新在读」那一支 */
+const canRead = computed(() => props.book.group !== 'finished' && props.book.group !== 'abandoned');
+const canFinish = computed(() => props.book.group !== 'finished');
+const isPaused = computed(() => props.book.group === 'abandoned');</script>
 
 <template>
   <li class="shelf-item">
@@ -44,18 +48,26 @@ const canRead = computed(() => props.book.group !== 'finished');
       <button v-if="canRead" type="button" class="mini" @click="emit('open', book.id)">
         {{ book.percent > 0 ? '继续读' : '开始读' }}
       </button>
+      <!-- 主操作永远排第一、且是唯一的强调色：读完 / 放下这两组里，
+           "还得再读一次"是主动作，"标为读完"是其次，"删除"最次 -->
       <button
-        v-if="book.group !== 'finished'"
+        v-if="book.group === 'finished' || isPaused"
+        type="button"
+        class="mini"
+        @click="emit('move', { id: book.id, group: 'reading' })"
+      >重新在读</button>
+      <button
+        v-if="canFinish"
         type="button"
         class="mini ghost"
         @click="emit('move', { id: book.id, group: 'finished' })"
       >标为读完</button>
       <button
-        v-else
+        v-if="book.group === 'reading'"
         type="button"
         class="mini ghost"
-        @click="emit('move', { id: book.id, group: 'reading' })"
-      >重新在读</button>
+        @click="emit('move', { id: book.id, group: 'abandoned' })"
+      >读不下去</button>
 
       <template v-if="confirming">
         <button type="button" class="mini danger" @click="emit('remove', book.id)">确认删除</button>

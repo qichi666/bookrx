@@ -13,7 +13,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import ShelfCard from '@/components/shelf/ShelfCard.vue';
 import NotesTransfer from '@/components/shelf/NotesTransfer.vue';
-import { buildShelf, shelfStats, type ShelfGroups } from '@/domain/shelf.js';
+import { buildShelf, emptyGroups, SHELF_ORDER, shelfStats, type ShelfGroups } from '@/domain/shelf.js';
 import { buildWishlist, type WishItem } from '@/domain/wishlist.js';
 import { humanSize } from '@/lib/file-io.js';
 import { SEED_BOOKS } from '@/data/catalog.js';
@@ -23,7 +23,7 @@ import { moveToShelf, removeBook, SHELF_LABEL } from '@/storage/library.js';
 import type { ShelfGroup } from '@/storage/db.js';
 
 const router = useRouter();
-const groups = ref<ShelfGroups>({ reading: [], want: [], finished: [] });
+const groups = ref<ShelfGroups>(emptyGroups());
 const loading = ref(true);
 const failed = ref('');
 const confirming = ref<string | null>(null);
@@ -34,7 +34,20 @@ const sampleError = ref('');
 const wishlist = ref<WishItem[]>([]);
 
 const stats = computed(() => shelfStats(groups.value));
-const order: ShelfGroup[] = ['reading', 'want', 'finished'];
+/** 顺序只有 `SHELF_ORDER` 一份，这里不再另写数组字面量（漏改一组时页面不会报错，只会少一段） */
+const order = SHELF_ORDER;
+
+/**
+ * 每组空着的原因不同，所以不写"这一组是空的"这种废话。
+ * 都只有一句、且**与组名同一行**：四个分组全空时，四段独立空态会把页面拉长一倍，
+ * 而空态本质上只是"这里暂时没东西"——它不该比有内容的书更占地方。
+ */
+const EMPTY_HINT: Record<ShelfGroup, string> = {
+  reading: '从「想读」里点开一本，就会到这里。',
+  want: '逛书库时看到想读的，会先存在这里。',
+  finished: '读完由你自己点，系统不替你判断。',
+  abandoned: '放下过的书留在这里，不算失败也不算读完。',
+};
 
 const usageText = computed(() => {
   const u = usage.value;
@@ -170,13 +183,13 @@ onMounted(refresh);
 
     <template v-else>
       <div v-for="g in order" :key="g" class="group">
-        <h2 class="group-title">
-          {{ SHELF_LABEL[g] }}<span class="group-count">{{ stats.byGroup[g] }}</span>
-        </h2>
-        <p v-if="groups[g].length === 0" class="group-empty">
-          {{ g === 'reading' ? '还没有正在读的书。从「想读」里点开一本就到这里了。' : '这一组是空的。' }}
-        </p>
-        <ul v-else class="shelf-list">
+        <div class="group-head">
+          <h2 class="group-title">
+            {{ SHELF_LABEL[g] }}<span class="group-count">{{ stats.byGroup[g] }}</span>
+          </h2>
+          <p v-if="groups[g].length === 0" class="group-empty">{{ EMPTY_HINT[g] }}</p>
+        </div>
+        <ul v-if="groups[g].length > 0" class="shelf-list">
           <ShelfCard
             v-for="b in groups[g]"
             :key="b.id"
@@ -210,7 +223,9 @@ onMounted(refresh);
       </section>
 
       <div class="extra">
-        <button v-if="!stats.byGroup.reading && !stats.byGroup.finished" type="button" class="mini" :disabled="sampleBusy" @click="loadSample">
+        <!-- 只在"书架上一本本机书都没有"时露出来：它的意思是"先试读一段"，
+             书架里已经有书了还挂着这个按钮，像在劝人换个东西读 -->
+        <button v-if="stats.total === 0" type="button" class="mini" :disabled="sampleBusy" @click="loadSample">
           {{ sampleBusy ? '正在准备示例…' : '试读示例' }}
         </button>
       </div>

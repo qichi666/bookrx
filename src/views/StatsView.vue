@@ -13,11 +13,13 @@
  *     用户的第一反应不是重新开始，而是不再看这个数字。
  */
 import { computed, onMounted, ref } from 'vue';
+import GoalCard from '@/components/stats/GoalCard.vue';
 import { listBooks, listProgress, listShelf } from '@/storage/db.js';
 import { listReceipts, listSessions } from '@/storage/activity.js';
 import type { Receipt } from '@/storage/activity.js';
+import { countShelfStatus } from '@/domain/shelf.js';
 import { bucketSessions, computeStreak, humanDuration, lastDays } from '@/domain/stats.js';
-import { todayIso, shortDay } from '@/lib/local-date.js';
+import { localDayIso, todayIso, shortDay } from '@/lib/local-date.js';
 
 const loading = ref(true);
 const failed = ref('');
@@ -28,6 +30,10 @@ const receipts = ref<Receipt[]>([]);
 const titles = ref(new Map<string, string>());
 const finishedCount = ref(0);
 const startedCount = ref(0);
+/** 放下的书：单列一个数字，**不进**读完率的分子分母 */
+const abandonedCount = ref(0);
+/** 「标为读完」的那天，按本机时区折算成日期——目标的周期边界用的是同一套本地日期 */
+const finishedDays = ref<string[]>([]);
 const totalMs = ref(0);
 
 async function refresh(): Promise<void> {
@@ -52,9 +58,15 @@ async function refresh(): Promise<void> {
     const t = new Map<string, string>();
     for (const b of books) t.set(b.book_id, b.title);
     titles.value = t;
-    finishedCount.value = shelf.filter((s) => s.group === 'finished').length;
-    // 「开始过」= 在读 + 读完。想读不算开始，否则读完率会被自己收藏的书稀释成 3%
-    startedCount.value = shelf.filter((s) => s.group === 'reading' || s.group === 'finished').length;
+    // 四个状态的计数与「开始过」的口径都在 domain 里定死，
+    // 不在这里各写一遍 filter——写完就有人把弃读加进分母
+    const counts = countShelfStatus(shelf);
+    finishedCount.value = counts.finished;
+    startedCount.value = counts.started;
+    abandonedCount.value = counts.abandoned;
+    finishedDays.value = shelf
+      .filter((s) => s.group === 'finished')
+      .map((s) => localDayIso(s.updated_at));
 
     const fromSessions = sessions.reduce((sum, s) => sum + s.duration_ms, 0);
     const fromProgress = progress.reduce((sum, p) => sum + (p.total_reading_ms ?? 0), 0);
@@ -85,7 +97,8 @@ const usefulRate = computed(() => {
  * 读完率：读完 / 开始过。
  *
  * 之前只有「读完 N 本」这个绝对数——它回答不了"我是不是读一本弃一本"。
- * 分母取「在读 + 读完」，**不取想读**：收藏不叫开始，把想读算进去等于自己骗自己。
+ * 分母取「在读 + 读完」，**不取想读、也不取弃读**：收藏不叫开始；
+ * 而放下的书放进去，这个数就不再描述阅读，只描述放弃了几次。
  */
 const finishRate = computed(() => {
   if (startedCount.value === 0) return null;
@@ -107,6 +120,16 @@ onMounted(refresh);
         这些数字只存在这台设备上，不上传、不同步。换浏览器或清站点数据后归零。
       </p>
     </header>
+
+    <!-- 目标卡片放在整条 v-if 链**之前**：链的首项是"加载中"，把目标夹进链里
+         就得为"有目标但还没记录"再加一个分支。它自己判断该不该出现更直接，
+         而且没读过书的人最需要一个起点，这里也是他唯一能设目标的地方。 -->
+    <GoalCard
+      v-if="!loading && !failed"
+      :sessions="sessionDays"
+      :finished-days="finishedDays"
+      :today="today"
+    />
 
     <p v-if="loading" class="st-state">正在读本机记录…</p>
 
@@ -153,6 +176,10 @@ onMounted(refresh);
             读完率（{{ finishRate.finished }} / {{ finishRate.started }} 本开始的）
           </span>
         </div>
+        <div v-if="abandonedCount > 0" class="st-card">
+          <span class="st-num">{{ abandonedCount }} 本</span>
+          <span class="st-label">放下的书（不算读完，也不算没读完）</span>
+        </div>
       </div>
 
       <section class="st-block">
@@ -182,6 +209,11 @@ onMounted(refresh);
 
       <p v-if="finishRate" class="st-note">
         读完率只算「开始过的书」，想读不算——收藏不叫开始。分母小的前期，这个数字会很难看，那是对的。
+      </p>
+
+      <p v-if="abandonedCount > 0" class="st-note">
+        放下的书单独计，不进读完率：把它算进分母，这个百分比就会随着每次放弃往下掉，
+        它也就不再说「我读完了几本」，只说「我放弃了几次」。
       </p>
 
       <section v-if="topBooks.length > 0" class="st-block">

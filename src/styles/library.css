@@ -58,11 +58,21 @@
   margin-bottom: 20px;
 }
 
+/* 组名与空态提示同一行：空分组只是"这里暂时没东西"，
+   给它一段独立的纵向空间会让四个全空的页面看起来像四个错误 */
+.group-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  margin-bottom: 4px;
+}
+
 .group-title {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  margin: 0 0 4px;
+  margin: 0;
   font-size: 0.875rem;
   color: var(--text-primary);
 }
@@ -75,9 +85,9 @@
 
 .group-empty {
   margin: 0;
-  padding: 8px 0;
   font-size: 0.75rem;
   color: var(--text-muted);
+  line-height: 1.6;
 }
 
 .shelf-list {

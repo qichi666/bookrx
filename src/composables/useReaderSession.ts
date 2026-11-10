@@ -119,9 +119,11 @@ export function useReaderSession(bookId: Ref<string>) {
         resumeParagraph.value = paragraphOfChapterOffset(ch.chapters, resumeChapter.value, pg.locator.offset);
       }
       // 首次打开：放进"在读"组；导入时是"想读"的，也在第一次打开时转成"在读"。
+      // 「放下的」同理：真的又打开了，就等于没放下——留着弃读标记会让书架继续
+      // 说"这本你放着了"，而人正在读它。
       // 已经手动标成"读完"的不动——用户对自己的判断优先于我们的推断。
       const s = await getShelf(bookId.value);
-      if (!s || s.group === 'want') {
+      if (!s || s.group === 'want' || s.group === 'abandoned') {
         shelf.value = { book_id: bookId.value, group: 'reading', updated_at: Date.now() };
         await putShelf(shelf.value);
       } else {

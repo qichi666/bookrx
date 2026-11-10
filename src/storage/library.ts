@@ -86,6 +86,8 @@ export const SHELF_LABEL = {
   reading: '在读',
   want: '想读',
   finished: '读完',
+  /** 不叫"弃读"：用户是自己决定先放下，不是失败。措辞会影响他怎么看待这件事 */
+  abandoned: '放下的书',
 } as const;
 
 /** 删除一本本机书。标注与笔记不删（见 `db.deleteBookData` 的注释）。 */
@@ -95,5 +97,9 @@ export async function removeBook(bookId: string): Promise<void> {
 
 /** 用户手动改书架分组（"读完"是用户自己的判断，不由系统推断） */
 export async function moveToShelf(bookId: string, group: keyof typeof SHELF_LABEL): Promise<void> {
-  await putShelf({ book_id: bookId, group, updated_at: Date.now() });
+  const now = Date.now();
+  // 「什么时候放下的」只在弃读时写。别的分组不带这个字段——
+  // 带着它换组，统计页/未来的筛选会读到一个过期的时间点。
+  const at = group === 'abandoned' ? { abandoned_at: now } : {};
+  await putShelf({ book_id: bookId, group, updated_at: now, ...at });
 }

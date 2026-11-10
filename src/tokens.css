@@ -79,8 +79,22 @@
   --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
 }
 
+/**
+ * 主题层叠（N1，2026-11-10）。三种状态，两处深色：
+ *   ① 没选过 → 跟随系统：系统深色时命中下面第 ② 段；
+ *   ② 显式选浅色 → 不给 `data-theme` 属性留值，也不命中第 ② 段（`:not([data-theme="light"])`），
+ *      于是落回上面的 `:root` 浅色——**显式浅色不需要写任何令牌**；
+ *   ③ 显式选深色 → 命中第 ③ 段，与系统设置无关。
+ *
+ * 为什么不用 `:root:not([data-theme])`：那样第 ② 段确实不会命中显式浅色，
+ * 但用户显式选深色、系统却是浅色时，媒体查询整段不生效，只能靠第 ③ 段兜；
+ * `:not([data-theme="light"])` 与 `[data-theme="dark"]` 的并集才覆盖得全。
+ *
+ * 注意：第 ②③ 段的令牌值**必须逐字相同**：CSS 没有 mixin，拆不开就只能靠这条注释。
+ * 改一处忘另一处，症状是"选了深色但页面没变"，而构建与门禁全绿。
+ */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     /* 纸在灯下的暗，不是屏幕的黑：暖黑底，不用纯黑也不用冷灰 */
     --bg: #17130f;
     --surface: #1f1a15;
@@ -125,6 +139,51 @@
     --reader-dark-bg: #12100d;
     --reader-dark-fg: #ede4d8;
   }
+}
+
+/* 与上面第 ② 段逐字相同（见文件上方的层叠说明） */
+:root[data-theme="dark"] {
+  --bg: #17130f;
+  --surface: #1f1a15;
+  --surface-sunken: #272119;
+  --surface-brand: #3a1f1633;
+
+  --text-primary: #ede4d8;
+  --text-secondary: #cbbeb0;
+  --text-muted: #a2937f;
+  --text-disabled: #766a5b;
+
+  --border: #332c24;
+  --border-soft: #2e2820;
+  --border-control: #7a6c5a;
+
+  --accent: #de9c7e;
+  --accent-hover: #edbfa9;
+  --accent-active: #f6dccf;
+  --accent-fg: #17130f;
+  --focus-ring-color: #de9c7e;
+
+  --flag-strong: #de9c7e;
+  --flag-worth: #cbbeb0;
+  --flag-explore: #9a8b78;
+  --tier-track: #332c24;
+
+  --warn: #dca95c;
+  --danger: #f0968a;
+  --info: #86b6d2;
+
+  --inline-bg: #3a1f1633;
+  --inline-fg: #edbfa9;
+  --byo-bg: #272119;
+  --byo-fg: #cbbeb0;
+
+  --highlight: rgba(222, 156, 126, 0.2);
+  --highlight-rule: #de9c7e;
+
+  --surface-raised: #272119;
+  --shadow-pop: 0 6px 20px rgba(0, 0, 0, 0.55);
+  --reader-dark-bg: #12100d;
+  --reader-dark-fg: #ede4d8;
 }
 
 /* ── 基础排版 ── */

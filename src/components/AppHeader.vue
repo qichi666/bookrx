@@ -13,14 +13,38 @@
  * 为什么不塞 6 个：375px 下 6 个链接必然挤成两行或溢出，等于没扩。
  * 5 个 + 首页的功能卡已经能表达全部面积。
  *
+ * 主题开关（N1）因此**不进导航条**：它是个设置，不是一处目的地，
+ * 塞进那 5 个里会让导航从"地图"退化成"杂物抽屉"。放在左侧，与返回按钮同级。
+ *
  * **不放 `data-crisis-entry`**：全项目该配额只有 2 个（结果页 + /about），
  * 由层 1 门禁数着，头部加了配额测试会红。
  */
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { applyTheme, nextTheme, readTheme, saveTheme, type ThemeChoice } from '@/lib/theme.js';
 
 const route = useRoute();
 const router = useRouter();
+
+/** 三态标签就是按钮上的字：不写"主题"两个字，因为按钮所在位置已经说明了它是设置 */
+const THEME_LABEL: Record<ThemeChoice, string> = { auto: '跟随系统', light: '浅色', dark: '深色' };
+const theme = ref<ThemeChoice>(readTheme());
+
+/**
+ * 单击循环：跟随系统 → 浅色 → 深色 → 跟随系统。
+ *
+ * 为什么不是两个按钮或一个开关：两态开关表达不了"跟随系统"这个默认值，
+ * 而默认值的意义是"我不用管它"。三个状态用一个按钮走完，是这里最省的面积。
+ * 所以也**不用 `aria-pressed`**：`aria-pressed` 描述的是开 / 关，
+ * 套在一个三态循环上会让读屏读出"未按下"，而实际状态是"深色"。
+ * 可读的状态由按钮文字给出，动作由 `aria-label` 说明。
+ */
+function cycleTheme(): void {
+  const next = nextTheme(theme.value);
+  theme.value = next;
+  applyTheme(next);
+  saveTheme(next);
+}
 
 const isHome = computed(() => route.path === '/');
 const isAbout = computed(() => route.path === '/about');
@@ -43,6 +67,12 @@ function goBack(): void {
   <header class="app-header">
     <div class="header-side">
       <button v-if="!isHome" type="button" class="btn-back" @click="goBack">← 返回</button>
+      <button
+        type="button"
+        class="btn-theme"
+        :aria-label="`主题：${THEME_LABEL[theme]}，点击切换为${THEME_LABEL[nextTheme(theme)]}`"
+        @click="cycleTheme"
+      >{{ THEME_LABEL[theme] }}</button>
     </div>
     <router-link class="brand" to="/">BookRx</router-link>
     <nav class="header-nav" aria-label="主导航">
@@ -70,6 +100,8 @@ function goBack(): void {
 .header-side {
   flex: 0 0 auto;
   display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .header-right {
@@ -87,13 +119,29 @@ function goBack(): void {
   cursor: pointer;
 }
 
+/* 与返回按钮同一触控高度，但**不画边框**：层级低于返回，高于正文 */
+.btn-theme {
+  min-height: 44px;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.btn-theme:hover {
+  color: var(--text-primary);
+}
+
 .brand {
   color: var(--text-primary);
   font-weight: 600;
   text-decoration: none;
-}
-
-.header-nav {
+}.header-nav {
   display: flex;
   align-items: center;
   gap: 16px;

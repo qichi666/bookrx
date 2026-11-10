@@ -22,12 +22,23 @@ import { DB_NAME, DB_VERSION, getAll, open, tx } from './connection.js';
 // 保持 `db.js` 是存储层唯一对外入口：老代码 / 测试不需要为新模块改 import。
 export { DB_NAME, DB_VERSION, getAll, open, tx };
 
-export type ShelfGroup = 'reading' | 'finished' | 'want';
+/**
+ * 书架状态。`abandoned`（放下的书）不是"读完"的反面，也不是失败：
+ * 它记录的是「我试过、我决定先不读了」——把这种状态逼进"在读"，
+ * 书架上就会长期挂着几本永远不会动的书，那个列表也就不再可信。
+ */
+export type ShelfGroup = 'reading' | 'finished' | 'want' | 'abandoned';
 
 export interface ShelfEntry {
   book_id: string;
   group: ShelfGroup;
   updated_at: number;
+  /**
+   * 什么时候放下的，只在 `group === 'abandoned'` 时有意义。
+   * **可选**：老记录没有这个字段，读取端一律 `?? updated_at` 兜底，
+   * 所以加它不需要迁移脚本，也不会让半旧的库读出 `undefined`。
+   */
+  abandoned_at?: number;
   /**
    * 想读队列里的人工顺序（小的在前）。**缺失 = 没排过队**，按 `updated_at` 倒序。
    * 只影响「用户自己的队列」，任何排序实现都不得把它接进推荐打分。
