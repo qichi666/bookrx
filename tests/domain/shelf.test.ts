@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { UserBook } from '@/contracts/book.js';
 import type { ReadingProgress } from '@/contracts/reader.js';
 import type { ShelfEntry } from '@/storage/db.js';
-import { buildShelf, shelfStats } from '@/domain/shelf.js';
+import { buildShelf, countShelfStatus, shelfStats } from '@/domain/shelf.js';
 import { findLocalCopy, normalizeTitle } from '@/data/local-copy.js';
 import { humanCount, percentText, relativeTime } from '@/lib/format.js';
 
@@ -87,12 +87,38 @@ describe('buildShelf', () => {
     expect(g.reading[0]!.lastOpenedAt).toBeNull();
   });
 
-  it('shelfStats 的总数等于三组之和', () => {
+  it('shelfStats 的总数等于各组之和', () => {
     const books = [book('a', '甲'), book('b', '乙')];
     const g = buildShelf(books, [{ book_id: 'a', group: 'reading', updated_at: 1 }], []);
     const s = shelfStats(g);
     expect(s.total).toBe(2);
-    expect(s.byGroup.reading + s.byGroup.want + s.byGroup.finished).toBe(2);
+    expect(s.byGroup.reading + s.byGroup.want + s.byGroup.finished + s.byGroup.abandoned).toBe(2);
+  });
+
+  it('弃读是独立的第四组，既不进"在读"也不进"读完"', () => {
+    const books = [book('a', '甲'), book('b', '乙')];
+    const shelf: ShelfEntry[] = [
+      { book_id: 'a', group: 'abandoned', updated_at: 9, abandoned_at: 9 },
+      { book_id: 'b', group: 'reading', updated_at: 1 },
+    ];
+    const g = buildShelf(books, shelf, []);
+    expect(g.abandoned.map((x) => x.id)).toEqual(['a']);
+    expect(g.reading.map((x) => x.id)).toEqual(['b']);
+    expect(g.finished).toEqual([]);
+    expect(shelfStats(g).byGroup.abandoned).toBe(1);
+  });
+
+  it('弃读不影响「读完」计数，也不进「开始过」的分母', () => {
+    const shelf: ShelfEntry[] = [
+      { book_id: 'a', group: 'reading', updated_at: 1 },
+      { book_id: 'b', group: 'finished', updated_at: 1 },
+      { book_id: 'c', group: 'abandoned', updated_at: 1 },
+      { book_id: 'd', group: 'want', updated_at: 1 },
+    ];
+    const c = countShelfStatus(shelf);
+    expect(c).toEqual({ reading: 1, want: 1, finished: 1, abandoned: 1, started: 2 });
+    // 读完率 = 1 / 2，若弃读混进 started 会变成 1 / 3
+    expect(Math.round((c.finished / c.started) * 100)).toBe(50);
   });
 });
 

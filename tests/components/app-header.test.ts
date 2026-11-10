@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 import AppHeader from '@/components/AppHeader.vue';
 import { makeTestRouter } from '../router-helper.js';
@@ -72,5 +72,52 @@ describe('AppHeader', () => {
   it('头部不挂 data-crisis-entry（全项目配额 = 2：结果页 + /about）', async () => {
     const { w } = await mountWith();
     expect(w.html()).not.toContain('data-crisis-entry');
+  });
+});
+
+describe('AppHeader 主题开关（N1）', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    document.documentElement.removeAttribute('data-theme');
+  });
+
+  it('默认「跟随系统」：不写 data-theme，交给 prefers-color-scheme', async () => {
+    const { w } = await mountWith();
+    expect(w.find('.btn-theme').text()).toBe('跟随系统');
+    expect(document.documentElement.hasAttribute('data-theme')).toBe(false);
+  });
+
+  it('点一下变浅色、再变深色、第三下回到跟随系统——同时写进存储', async () => {
+    const { w } = await mountWith();
+    const btn = w.find('.btn-theme');
+
+    await btn.trigger('click');
+    expect(btn.text()).toBe('浅色');
+    expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+    expect(localStorage.getItem('bookrx.theme')).toBe('light');
+
+    await btn.trigger('click');
+    expect(btn.text()).toBe('深色');
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+
+    await btn.trigger('click');
+    expect(btn.text()).toBe('跟随系统');
+    // 关键：属性被摘掉，而不是留一个 "auto" 值——tokens.css 不认识 auto
+    expect(document.documentElement.hasAttribute('data-theme')).toBe(false);
+  });
+
+  it('下次打开沿用上次的选择（挂载时就把状态读出来）', async () => {
+    localStorage.setItem('bookrx.theme', 'dark');
+    const { w } = await mountWith();
+    expect(w.find('.btn-theme').text()).toBe('深色');
+  });
+
+  it('按钮有可读的状态与动作说明，且触控高度不低于 44px', async () => {
+    const { w } = await mountWith();
+    const btn = w.find('.btn-theme');
+    expect(btn.attributes('aria-label')).toContain('跟随系统');
+    expect(btn.attributes('aria-label')).toContain('浅色');
+    // aria-pressed 描述的是开 / 关，套在三态循环上会读出错误状态，所以不用它
+    expect(btn.attributes('aria-pressed')).toBeUndefined();
   });
 });
