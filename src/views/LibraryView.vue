@@ -14,8 +14,10 @@ import { useRouter } from 'vue-router';
 import ShelfCard from '@/components/shelf/ShelfCard.vue';
 import NotesTransfer from '@/components/shelf/NotesTransfer.vue';
 import { buildShelf, shelfStats, type ShelfGroups } from '@/domain/shelf.js';
+import { buildWishlist, type WishItem } from '@/domain/wishlist.js';
 import { humanSize } from '@/lib/file-io.js';
-import { listBooks, listProgress, listShelf, quota } from '@/storage/db.js';
+import { SEED_BOOKS } from '@/data/catalog.js';
+import { deleteShelf, listBooks, listProgress, listShelf, putShelf, quota } from '@/storage/db.js';
 import { installSample, SAMPLE_BOOKS } from '@/data/samples.js';
 import { moveToShelf, removeBook, SHELF_LABEL } from '@/storage/library.js';
 import type { ShelfGroup } from '@/storage/db.js';
@@ -28,6 +30,8 @@ const confirming = ref<string | null>(null);
 const usage = ref<{ usage: number; quota: number } | null>(null);
 const sampleBusy = ref(false);
 const sampleError = ref('');
+/** 想读队列里来自核心书库的外链书：本机没有正文，单独列一块，不混进 ShelfCard */
+const wishlist = ref<WishItem[]>([]);
 
 const stats = computed(() => shelfStats(groups.value));
 const order: ShelfGroup[] = ['reading', 'want', 'finished'];
@@ -45,6 +49,11 @@ async function refresh(): Promise<void> {
   try {
     const [books, shelf, progress] = await Promise.all([listBooks(), listShelf(), listProgress()]);
     groups.value = buildShelf(books, shelf, progress);
+    // 本机导入的书已经由 buildShelf 列在「想读」组里，这里只补核心库的外链书，
+    // 否则同一本会在同一页出现两次
+    wishlist.value = buildWishlist(shelf, SEED_BOOKS, books.map((b) => b.book_id)).filter(
+      (w) => !w.local && w.title.length > 0,
+    );
     usage.value = await quota();
   } catch (e) {
     // 打不开本机数据库（隐私模式最常见）：说清楚，不要显示成一个空书架
@@ -72,6 +81,32 @@ async function onRemove(id: string): Promise<void> {
 
 function askRemove(id: string): void {
   confirming.value = id;
+}
+
+/** 队列顺序只影响用户自己的先后，绝不回写推荐打分 */
+async function moveWish(index: number, dir: -1 | 1): Promise<void> {
+  const arr = [...wishlist.value];
+  const j = index + dir;
+  const a = arr[index];
+  const b = arr[j];
+  if (!a || !b) return;
+  // 没排过队的条目折算成"极大值 - 显示位置"，语义是"排在队尾"。
+  // 不能用数组下标兜底：下标是 0/1，与 Date.now() 量级的真实序号差十几个数量级，
+  // 交换之后这一条会直接跳到队首，与用户按的方向相反。
+  const orderOf = (v: number | null, i: number): number =>
+    typeof v === 'number' ? v : Number.MAX_SAFE_INTEGER - i;
+  const oa = orderOf(a.sortOrder, index);
+  const ob = orderOf(b.sortOrder, j);
+  await Promise.all([
+    putShelf({ book_id: a.book_id, group: 'want', updated_at: a.addedAt, sort_order: ob }),
+    putShelf({ book_id: b.book_id, group: 'want', updated_at: b.addedAt, sort_order: oa }),
+  ]);
+  await refresh();
+}
+
+async function dropWish(bookId: string): Promise<void> {
+  await deleteShelf(bookId);
+  await refresh();
 }
 
 /** 示例书走的是和导入完全相同的链路，所以"试出来的手感"就是真手感 */
@@ -115,7 +150,7 @@ onMounted(refresh);
       <button type="button" class="btn-ghost" @click="refresh">再试一次</button>
     </div>
 
-    <div v-else-if="stats.total === 0" class="state">
+    <div v-else-if="stats.total === 0 && wishlist.length === 0" class="state">
       <p class="state-title">还没有书</p>
       <p class="state-body">
         导入你自己的 EPUB 或 TXT，就能在这里读：翻页、调字号、划线、写笔记。
@@ -156,11 +191,37 @@ onMounted(refresh);
         </ul>
       </div>
 
+      <section v-if="wishlist.length > 0" class="wish-block">
+        <h2 class="group-title">
+          从书库存的想读<span class="group-count">{{ wishlist.length }}</span>
+        </h2>
+        <p class="wish-hint">这些书不在本机，点开会去看它的详情和去哪读。顺序可以自己调。</p>
+        <ul class="wish-list">
+          <li v-for="(w, i) in wishlist" :key="w.book_id" class="wish-row">
+            <router-link class="wish-title" :to="`/book/${w.book_id}`">{{ w.title }}</router-link>
+            <span class="wish-meta">{{ w.author }} · 约 {{ w.hours }} 小时</span>
+            <span class="wish-btns">
+              <button type="button" class="mini" :disabled="i === 0" aria-label="上移" @click="moveWish(i, -1)">上移</button>
+              <button type="button" class="mini" :disabled="i === wishlist.length - 1" aria-label="下移" @click="moveWish(i, 1)">下移</button>
+              <button type="button" class="mini" @click="dropWish(w.book_id)">移出</button>
+            </span>
+          </li>
+        </ul>
+      </section>
+
       <div class="extra">
         <button v-if="!stats.byGroup.reading && !stats.byGroup.finished" type="button" class="mini" :disabled="sampleBusy" @click="loadSample">
           {{ sampleBusy ? '正在准备示例…' : '试读示例' }}
         </button>
       </div>
+
+      <nav class="lib-more" aria-label="更多功能">
+        <router-link to="/notes">划线与笔记</router-link>
+        <router-link to="/plan">读书计划</router-link>
+        <router-link to="/stats">阅读统计</router-link>
+        <router-link to="/books">逛书库</router-link>
+      </nav>
+
       <p v-if="usageText" class="usage">{{ usageText }}</p>
       <NotesTransfer />
       <p class="privacy">
@@ -170,127 +231,4 @@ onMounted(refresh);
   </section>
 </template>
 
-<style scoped>
-.library {
-  max-width: 720px;
-  margin: 0 auto;
-}
-
-.lib-head {
-  margin-bottom: 16px;
-}
-
-.lib-title {
-  margin: 0 0 6px;
-  font-size: 1.25rem;
-  color: var(--text-primary);
-}
-
-.lib-sub {
-  margin: 0 0 12px;
-  font-size: 0.8125rem;
-  color: var(--text-secondary);
-  line-height: 1.8;
-}
-
-.lib-import {
-  display: inline-block;
-  text-decoration: none;
-}
-
-.state {
-  padding: 20px 0;
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  line-height: 1.9;
-}
-
-.state-title {
-  margin: 0 0 6px;
-  color: var(--text-primary);
-}
-
-.state-body {
-  margin: 0 0 10px;
-}
-
-.state-detail {
-  margin: 0 0 10px;
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  color: var(--text-muted);
-  word-break: break-all;
-}
-
-.state-bad {
-  border-left: 2px solid var(--danger);
-  padding-left: 12px;
-}
-
-.group {
-  margin-bottom: 20px;
-}
-
-.group-title {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin: 0 0 4px;
-  font-size: 0.875rem;
-  color: var(--text-primary);
-}
-
-.group-count {
-  font-size: 0.6875rem;
-  color: var(--text-muted);
-  font-variant-numeric: tabular-nums;
-}
-
-.group-empty {
-  margin: 0;
-  padding: 8px 0;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
-.shelf-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.state-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-}
-
-.state-note {
-  margin: 8px 0 0;
-  font-size: 0.6875rem;
-  color: var(--text-muted);
-}
-
-.mini {
-  min-height: 32px;
-  padding: 2px 0;
-  border: none;
-  background: transparent;
-  color: var(--accent);
-  font: inherit;
-  font-size: 0.75rem;
-  cursor: pointer;
-}
-
-.extra {
-  margin: 4px 0 8px;
-}
-
-.usage,
-.privacy {
-  margin: 4px 0;
-  font-size: 0.6875rem;
-  color: var(--text-muted);
-}
-</style>
+<style scoped src="../styles/library.css"></style>

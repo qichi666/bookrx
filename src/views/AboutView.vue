@@ -6,6 +6,7 @@
  */
 import { computed, ref } from 'vue';
 import { DOMAIN_OPTIONS } from '@/data/quiz.js';
+import { SEED_BOOKS } from '@/data/catalog.js';
 import { readCounters, resetCounters } from '@/engine/telemetry.js';
 
 const counters = ref(readCounters());
@@ -68,6 +69,20 @@ function clear(): void {
     <button v-if="counters.total > 0" type="button" class="btn-ghost clear-counts" @click="clear">
       清空这份计数
     </button>
+
+    <h2>这个应用里还有什么</h2>
+    <ul class="privacy-list">
+      <li><a href="#/books">书库</a>：不答题也能翻的 {{ SEED_BOOKS.length }} 本标注过的书。</li>
+      <li><a href="#/stats">阅读统计</a>：读了多久、连着读了几天，只在本机算。</li>
+      <li><a href="#/notes">划线与笔记</a>：跨书回看，可以做成一张书摘图。</li>
+      <li><a href="#/plan">读书计划</a>：把想读排进四周，不提醒也不催。</li>
+      <li><a href="#/print">书方</a>：把推荐打印成一张能带走的纸。</li>
+    </ul>
+
+    <p class="admin-link">
+      <a href="#/profile">本机档案（同设备分开书架与笔记）</a> ·
+      <a href="#/admin">维护者面板（只读）</a>
+    </p>
   </section>
 </template>
 
@@ -123,5 +138,26 @@ h2 {
 /* 按钮本体在 styles/controls.css，这里只补这块版式需要的间距 */
 .clear-counts {
   margin-top: 8px;
+}
+
+.privacy-list a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.privacy-list a:hover {
+  text-decoration: underline;
+}
+
+.admin-link {
+  margin-top: 28px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-soft);
+  font-size: 0.6875rem;
+}
+
+.admin-link a {
+  color: var(--text-muted);
+  text-decoration: none;
 }
 </style>

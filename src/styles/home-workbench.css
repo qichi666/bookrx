@@ -1,0 +1,159 @@
+.workbench {
+  max-width: 480px;
+  margin: 0 auto 8px;
+  padding: 20px 0 4px;
+}
+
+.wb-eyebrow {
+  margin: 0 0 6px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+
+.wb-title {
+  font-family: var(--font-book);
+  font-size: 1.75rem;
+  line-height: 1.35;
+  margin: 0 0 10px;
+  color: var(--text-primary);
+}
+
+.wb-lead {
+  margin: 0 0 20px;
+  font-size: 0.875rem;
+  line-height: 1.85;
+  color: var(--text-secondary);
+}
+
+.wb-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.wb-start {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 0.9375rem;
+}
+
+.wb-second {
+  font-size: 0.8125rem;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.wb-second:hover {
+  text-decoration: underline;
+}
+
+.wb-numbers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 18px 0 20px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.wb-numbers strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.wb-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.wb-card {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.wb-card-link {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 14px 16px;
+  min-height: 76px;
+  text-decoration: none;
+  color: inherit;
+  box-sizing: border-box;
+}
+
+.wb-card-link:hover .wb-card-title {
+  color: var(--accent);
+}
+
+.wb-card-title {
+  font-family: var(--font-book);
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.wb-card-desc {
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.wb-card-note {
+  font-size: 0.6875rem;
+  color: var(--text-disabled);
+}
+
+.wb-card-hide {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text-disabled);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 0 10px 0 10px;
+}
+
+.wb-card-hide:hover {
+  color: var(--text-secondary);
+  background: var(--surface-sunken);
+}
+
+.wb-restore {
+  margin-top: 10px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.75rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.wb-restore-line {
+  margin: 0;
+}

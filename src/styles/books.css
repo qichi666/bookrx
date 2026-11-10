@@ -1,0 +1,149 @@
+.books {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px 0 80px;
+}
+
+.bk-head {
+  margin-bottom: 16px;
+}
+
+.bk-title {
+  font-family: var(--font-book);
+  font-size: 1.5rem;
+  margin: 4px 0 8px;
+}
+
+.bk-sub {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.85;
+  color: var(--text-secondary);
+}
+
+.bk-filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.bk-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.bk-label {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+
+.bk-field select {
+  min-height: 44px;
+  padding: 0 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border-control);
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.8125rem;
+}
+
+.bk-tally {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 0 8px;
+}
+
+.bk-count {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.bk-reset {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.bk-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bk-empty {
+  padding: 24px 0;
+  text-align: left;
+}
+
+.bk-empty-title {
+  margin: 0 0 6px;
+  font-family: var(--font-book);
+  font-size: 1.0625rem;
+  color: var(--text-primary);
+}
+
+.bk-empty-body {
+  margin: 0 0 14px;
+  font-size: 0.8125rem;
+  line-height: 1.85;
+  color: var(--text-secondary);
+}
+
+.bk-compare-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+  background: var(--surface-raised);
+  border-top: 1px solid var(--border);
+  box-shadow: var(--shadow-pop);
+}
+
+.bk-picked,
+.bk-tip {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.bk-go {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  font-size: 0.8125rem;
+  padding: 6px 18px;
+}
+
+.bk-clear {
+  margin-left: auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}

@@ -19,6 +19,9 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import BookHead from '@/components/detail/BookHead.vue';
 import BookReason from '@/components/detail/BookReason.vue';
+import FitBreakdown from '@/components/detail/FitBreakdown.vue';
+import RelatedBooks from '@/components/detail/RelatedBooks.vue';
+import WishButton from '@/components/wish/WishButton.vue';
 import { SEED_BOOKS } from '@/data/catalog.js';
 import { linksOf } from '@/data/book-links.js';
 import { CATEGORY_LABEL, DIFFICULTY_LABEL, LENGTH_LABEL, TIER_LABEL, TIER_SQUARES } from '@/data/book-labels.js';
@@ -52,7 +55,7 @@ const matched = computed(() => {
 
 const judged = computed(() => {
   const m = matched.value;
-  return m ? tierOf(m.score_bp, m.primary_hit) : null;
+  return m ? tierOf(m.score_bp, m.primary_hit, m.book_coverage_bp) : null;
 });
 
 /** 命中依据：诊断里用户自己选过/写过的原词，最多 4 个（PRD §7.3 层②）。 */
@@ -114,6 +117,22 @@ const metaItems = computed(() => {
       <!-- 理由四段：S1 回引 / S2 讲什么 / S3 能得到什么 / B1 边界声明 -->
       <BookReason :book="book" :hits="hits" :reason-lines="matched?.reason.lines ?? []" :boundary="boundary" />
 
+      <div class="detail-actions">
+        <WishButton :book-id="book.book_id" />
+        <router-link class="detail-compare" :to="`/compare?a=${encodeURIComponent(book.book_id)}`">
+          拿它跟别的书比
+        </router-link>
+      </div>
+
+      <!-- 可信度面板：只有这次真的算过分才显示。直接打开链接时退化成书目页 -->
+      <FitBreakdown
+        v-if="matched"
+        :factors="matched.factors"
+        :score-bp="matched.score_bp"
+        :coverage-bp="matched.book_coverage_bp"
+        :primary-hit="matched.primary_hit"
+      />
+
       <section class="meta-block">
         <h2 class="block-title">书目信息</h2>
         <dl class="meta-grid">
@@ -123,6 +142,8 @@ const metaItems = computed(() => {
           </template>
         </dl>
       </section>
+
+      <RelatedBooks :book-id="book.book_id" />
 
       <section v-if="related.length > 0" class="related-block">
         <h2 class="block-title">同主题的其它几本</h2>
@@ -193,6 +214,24 @@ const metaItems = computed(() => {
   font-size: 0.6875rem;
   color: var(--text-muted);
   margin-left: 4px;
+}
+
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.detail-compare {
+  font-size: 0.8125rem;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.detail-compare:hover {
+  text-decoration: underline;
 }
 
 .meta-grid {

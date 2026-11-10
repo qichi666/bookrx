@@ -24,6 +24,8 @@ import {
   putShelf,
   type ShelfEntry,
 } from '@/storage/db.js';
+import { putSession } from '@/storage/activity.js';
+import { localDayIso } from '@/lib/local-date.js';
 
 /**
  * 阅读会话：把「读一本书」需要的四份数据（元数据 / 章节 / 进度 / 标注）合成一份视图状态。
@@ -125,6 +127,10 @@ export function useReaderSession(bookId: Ref<string>) {
       } else {
         shelf.value = s;
       }
+      // 计时基线定在"书真的打开了"这一刻：之前的时间不算阅读
+      baseMs = pg?.total_reading_ms ?? 0;
+      baselineMs = baseMs;
+      sessionStart = Date.now();
     } finally {
       loading.value = false;
     }
@@ -181,6 +187,15 @@ export function useReaderSession(bookId: Ref<string>) {
    */
   let activeSince: number | null = null;
   let accumulated = 0;
+  /**
+   * 打开这本书时**已经落盘**的累计时长。打开之后不再变化。
+   *
+   * 这里必须是一个固定值，不能改读 `progress.value.total_reading_ms`：
+   * `saveProgress` 会把 `baseMs + accumulated + live` 写回进度，
+   * 再拿它当下一轮的起点，同一段时间就会被重复相加（切一次后台或翻一次页
+   * 都会让总时长按二次曲线膨胀）。基线只在 `load()` 里取一次。
+   */
+  let baseMs = 0;
 
   function pauseClock(): void {
     if (activeSince !== null) {
@@ -195,7 +210,39 @@ export function useReaderSession(bookId: Ref<string>) {
 
   function totalReadingMs(): number {
     const live = activeSince === null ? 0 : Date.now() - activeSince;
-    return (progress.value?.total_reading_ms ?? 0) + accumulated + live;
+    return baseMs + accumulated + live;
+  }
+
+  /**
+   * 阅读会话落库（F7 的数据源）。
+   *
+   * 三条口径：
+   *  ① **按会话写一次，不按秒写**——按秒写会把配额花在计数上，而配额是给书正文的；
+   *  ② 不足 20 秒不记：翻一下目录就走了，记成"今天读了"会污染连续天数；
+   *  ③ 写失败绝不影响阅读——统计是附加价值，不是阅读的前置条件。
+   */
+  let baselineMs = 0;
+  let sessionStart = 0;
+
+  async function flushSession(): Promise<void> {
+    const now = Date.now();
+    const total = totalReadingMs();
+    const delta = total - baselineMs;
+    if (delta < 20_000) return;
+    baselineMs = total;
+    try {
+      await putSession({
+        session_id: `ses:${now.toString(36)}:${Math.random().toString(36).slice(2, 7)}`,
+        book_id: bookId.value,
+        day: localDayIso(now),
+        started_at: sessionStart,
+        ended_at: now,
+        duration_ms: delta,
+      });
+    } catch {
+      /* 统计存不下就存不下，读者不该因此被弹窗打断 */
+    }
+    sessionStart = now;
   }
 
   async function saveProgress(chapter: number, paragraph: number, ratio: number, totalChapters: number): Promise<void> {
@@ -240,5 +287,6 @@ export function useReaderSession(bookId: Ref<string>) {
     removeMark,
     saveNote,
     saveProgress,
+    flushSession,
   };
 }

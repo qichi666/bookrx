@@ -59,7 +59,7 @@ export function buildBooklist(
   const items: BooklistItem[] = result.items.map((it) => ({
     book_id: it.book.book_id,
     title: it.book.title,
-    tier: tierOf(it.score_bp, it.primary_hit).tier,
+    tier: tierOf(it.score_bp, it.primary_hit, it.book_coverage_bp).tier,
   }));
   return {
     schema: BOOKLIST_SCHEMA,

@@ -5,21 +5,22 @@ import type { ParsedChapter, ParsedCover } from '@/engine/import/types.js';
 import { plainValue } from '@/lib/plain.js';
 
 /**
- * 本机存储（IndexedDB）。**全部数据只在这里**，不上传、不同步、没有账号。
+ * 本机存储（IndexedDB）的**读写层**。全部用户数据只在这里，不上传、不同步、没有账号。
+ *
+ * 连接、库名、schema 在 `connection.ts`：F12 之后「当前在哪个档案」决定库名，
+ * 读写函数不该也不需要知道这件事——它们只管调 `open()`。
  *
  * 为什么用 IndexedDB 而不是 localStorage：
  *  - localStorage 只有 5 MB 且是同步的，一本书的正文就可能超过它；
  *  - 存 ArrayBuffer（书文件）必须用 IndexedDB，localStorage 只能存字符串。
  *
- * 六个表的分工（版本 1，升级只加表、不改字段语义）：
- *  `books` 元数据（UserBook） / `chapters` 章节文本 / `files` 原始字节
- *  `progress` 阅读进度 / `annotations` 划线 / `notes` 笔记 / `shelf` 书架分组
- *
  * 章节与文件分开存：列表页只需要元数据，不该为了显示书名把整本正文读出来。
+ * 表的分工与 v1 → v2 的幂等建表逻辑见 `connection.ts`。
  */
+import { DB_NAME, DB_VERSION, getAll, open, tx } from './connection.js';
 
-export const DB_NAME = 'bookrx';
-export const DB_VERSION = 1;
+// 保持 `db.js` 是存储层唯一对外入口：老代码 / 测试不需要为新模块改 import。
+export { DB_NAME, DB_VERSION, getAll, open, tx };
 
 export type ShelfGroup = 'reading' | 'finished' | 'want';
 
@@ -27,7 +28,15 @@ export interface ShelfEntry {
   book_id: string;
   group: ShelfGroup;
   updated_at: number;
+  /**
+   * 想读队列里的人工顺序（小的在前）。**缺失 = 没排过队**，按 `updated_at` 倒序。
+   * 只影响「用户自己的队列」，任何排序实现都不得把它接进推荐打分。
+   */
+  sort_order?: number;
+  /** 这本书怎么进想读的：推荐结果里点进来的，还是自己导入的。列表上要分开显示 */
+  from?: 'recommend' | 'import';
 }
+
 
 export interface ChapterRecord {
   book_id: string;
@@ -35,77 +44,7 @@ export interface ChapterRecord {
   cover?: ParsedCover;
 }
 
-/**
- * 连接复用。
- *
- * 旧实现是每次操作 `indexedDB.open(...)` 再 `db.close()`：一次翻页要开三次连接
- * （进度 / 书架读 / 书架写），而且**只要事务抛错就跳过了 close**——异常路径上
- * 句柄一个都收不回来。复用一个连接同时解决两件事。
- *
- * `onversionchange` 必须让路：别的标签页要升级版本时，我们这条旧连接不关，
- * 它就会被永久挡住。
- */
-let conn: Promise<IDBDatabase> | null = null;
-
-function open(): Promise<IDBDatabase> {
-  conn ??= new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = () => {
-      const db = req.result;
-      if (!db.objectStoreNames.contains('books')) db.createObjectStore('books', { keyPath: 'book_id' });
-      if (!db.objectStoreNames.contains('chapters')) db.createObjectStore('chapters', { keyPath: 'book_id' });
-      if (!db.objectStoreNames.contains('files')) db.createObjectStore('files', { keyPath: 'book_id' });
-      if (!db.objectStoreNames.contains('progress')) db.createObjectStore('progress', { keyPath: 'book_id' });
-      if (!db.objectStoreNames.contains('shelf')) db.createObjectStore('shelf', { keyPath: 'book_id' });
-      if (!db.objectStoreNames.contains('annotations')) {
-        const s = db.createObjectStore('annotations', { keyPath: 'annotation_id' });
-        s.createIndex('by_book', 'book_id');
-      }
-      if (!db.objectStoreNames.contains('notes')) {
-        const s = db.createObjectStore('notes', { keyPath: 'note_id' });
-        s.createIndex('by_book', 'book_id');
-      }
-    };
-    req.onsuccess = () => {
-      const db = req.result;
-      db.onversionchange = () => {
-        db.close();
-        conn = null;
-      };
-      resolve(db);
-    };
-    req.onerror = () => {
-      conn = null; // 失败不要缓存，否则这个会话再也打不开
-      reject(req.error ?? new Error('indexedDB.open 失败'));
-    };
-  });
-  return conn;
-}
-
-function tx<T>(
-  db: IDBDatabase,
-  stores: string | string[],
-  mode: IDBTransactionMode,
-  run: (t: IDBTransaction) => IDBRequest<T> | void,
-): Promise<T | undefined> {
-  return new Promise((resolve, reject) => {
-    const t = db.transaction(stores, mode);
-    let req: IDBRequest<T> | void;
-    t.oncomplete = () => resolve(req ? req.result : undefined);
-    t.onerror = () => reject(t.error ?? new Error('事务失败'));
-    t.onabort = () => reject(t.error ?? new Error('事务被中止'));
-    req = run(t);
-  });
-}
-
-function getAll<T>(db: IDBDatabase, store: string, query?: IDBKeyRange | IDBValidKey): Promise<T[]> {
-  return new Promise((resolve, reject) => {
-    const t = db.transaction(store, 'readonly');
-    const req = t.objectStore(store).getAll(query);
-    req.onsuccess = () => resolve(req.result as T[]);
-    req.onerror = () => reject(req.error ?? new Error(`读取 ${store} 失败`));
-  });
-}
+/* 连接 / 事务 / 建表已拆到 connection.ts ── 下面只保留表的读写 */
 
 /* ── 元数据 ─────────────────────────────────────────────────────────── */
 
@@ -189,6 +128,12 @@ export async function getShelf(bookId: string): Promise<ShelfEntry | undefined> 
   return out;
 }
 
+/** 移出想读：只删分组记录，不动书本身（核心库的书本来也不在本机）。 */
+export async function deleteShelf(bookId: string): Promise<void> {
+  const db = await open();
+  await tx(db, 'shelf', 'readwrite', (t) => t.objectStore('shelf').delete(bookId));
+}
+
 /* ── 标注 / 笔记 ────────────────────────────────────────────────────── */
 
 export async function putAnnotation(a: Annotation): Promise<void> {
@@ -240,6 +185,7 @@ export async function listAllNotes(): Promise<Note[]> {
   const out = await getAll<Note>(db, 'notes');
   return out;
 }
+
 
 /* ── 删除与配额 ─────────────────────────────────────────────────────── */
 

@@ -81,7 +81,10 @@ const grouped = computed(() => {
     seen.add(key);
     return true;
   });
-  const judged = unique.map((it) => ({ it, tier: tierOf(it.score_bp, it.primary_hit).tier }));
+  const judged = unique.map((it) => ({
+    it,
+    tier: tierOf(it.score_bp, it.primary_hit, it.book_coverage_bp).tier,
+  }));
   return GROUPS.map((g) => ({ ...g, items: judged.filter((x) => x.tier === g.tier).map((x) => x.it) }));
 });
 
@@ -120,7 +123,7 @@ const noInlineDomain = computed(() => {
 // 本地匿名计数（SPEC §10.2）：同一诊断只计一次；只记域与档位，自由文本不入计数
 watch(result, (r) => {
   if (!r) return;
-  const tiers = r.items.map((it) => tierOf(it.score_bp, it.primary_hit).tier);
+  const tiers = r.items.map((it) => tierOf(it.score_bp, it.primary_hit, it.book_coverage_bp).tier);
   recordResult(r.diagnosis, tiers);
 });
 
@@ -222,6 +225,8 @@ function onTune(key: string, value: string | null): void {
 
       <footer class="result-footer">
         <button type="button" class="btn-ghost" @click="restart">重新填问卷</button>
+        <a href="#/books">逛书库</a>
+        <a href="#/notes">我的笔记</a>
         <a href="#/framework">怎么读这本书</a>
         <a href="#/about">关于 BookRx 与你的数据</a>
       </footer>

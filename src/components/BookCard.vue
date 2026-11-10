@@ -13,10 +13,15 @@ import { SOURCE_LABEL } from '@/domain/scoring/reason.js';
 import { metaLine, TIER_LABEL, TIER_SQUARES } from '@/data/book-labels.js';
 import { availabilityClass, availabilityOf } from '@/data/availability.js';
 import { cardLinksOf } from '@/data/book-links.js';
+import WishButton from '@/components/wish/WishButton.vue';
 
 const props = defineProps<{ item: RankedItem }>();
 
-const judged = computed(() => tierOf(props.item.score_bp, props.item.primary_hit));
+// 第三参数不能省：省略时 tierOf 默认按满覆盖处理，候选层 38% 覆盖率的书
+// 会被标成「强匹配」，而详情面板还在解释「因覆盖不足封顶」——结论与解释互相打架
+const judged = computed(() =>
+  tierOf(props.item.score_bp, props.item.primary_hit, props.item.book_coverage_bp),
+);
 
 /** explore 不渲染方块（1 格方块等于反复告诉用户「这本不行」），只留文字标签。 */
 const squareCount = computed(() => TIER_SQUARES[judged.value.tier] ?? 0);
@@ -81,192 +86,14 @@ const detailHref = computed(() => `#/book/${props.item.book.book_id}`);
       </a>
       <a class="detail-link" :href="detailHref">为什么是这本</a>
     </div>
+
+    <div class="card-wish">
+      <WishButton :book-id="item.book.book_id" compact />
+      <router-link class="wish-compare" :to="`/compare?a=${encodeURIComponent(item.book.book_id)}`">
+        拿它比一比
+      </router-link>
+    </div>
   </article>
 </template>
 
-<style scoped>
-.book-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 16px;
-}
-
-.tier-line {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  margin-bottom: 8px;
-}
-
-.tier-square {
-  width: 8px;
-  height: 8px;
-  border-radius: 3px;
-  background: var(--tier-track);
-}
-
-.tier-strong {
-  background: var(--flag-strong);
-}
-
-.tier-worth {
-  background: var(--flag-worth);
-}
-
-.tier-label {
-  font-size: 0.6875rem;
-  color: var(--text-muted);
-  margin-left: 4px;
-}
-
-.book-title {
-  font-family: var(--font-book);
-  font-size: 1.125rem;
-  margin: 0;
-}
-
-.book-title a {
-  color: inherit;
-  text-decoration: none;
-}
-
-.book-title a:hover {
-  color: var(--accent);
-}
-
-.book-author {
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  margin: 2px 0 10px;
-}
-
-.match-brief {
-  font-size: 0.9375rem;
-  color: var(--text-primary);
-  margin: 0 0 8px;
-}
-
-.avail-badge {
-  display: inline-block;
-  font-size: 0.6875rem;
-  border-radius: 3px;
-  padding: 2px 8px;
-  margin-bottom: 10px;
-}
-
-.avail-inline {
-  background: var(--inline-bg);
-  color: var(--inline-fg);
-}
-
-.avail-byo {
-  background: var(--byo-bg);
-  color: var(--byo-fg);
-}
-
-.avail-external {
-  background: var(--surface-sunken);
-  color: var(--text-muted);
-}
-
-.structure-note {
-  color: var(--text-secondary);
-  font-size: 0.8125rem;
-  margin: 0 0 8px;
-}
-
-.meta-line {
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  font-variant-numeric: tabular-nums;
-  margin: 0 0 4px;
-}
-
-.boundary {
-  color: var(--warn);
-  font-size: 0.75rem;
-  margin: 0 0 4px;
-}
-
-.card-links {
-  display: flex;
-  gap: 12px;
-  align-items: baseline;
-  flex-wrap: wrap;
-  margin-top: 10px;
-}
-
-.links-label {
-  color: var(--text-muted);
-  font-size: 0.75rem;
-}
-
-/* 理由展开区：默认收起 —— 卡面必须一眼看完，追溯是"想深究时再点"的动作 */
-.why {
-  margin: 4px 0 2px;
-}
-
-.why-summary {
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  cursor: pointer;
-  list-style: none;
-}
-
-.why-summary::before {
-  content: "？";
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  line-height: 14px;
-  text-align: center;
-  border: 1px solid var(--border-control);
-  border-radius: 50%;
-  margin-right: 6px;
-  font-size: 0.625rem;
-}
-
-.why-list {
-  list-style: none;
-  padding: 8px 0 0;
-  margin: 0;
-}
-
-.why-line {
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  margin-bottom: 6px;
-}
-
-.why-source {
-  flex: 0 0 auto;
-  padding: 1px 6px;
-  border: 1px solid var(--border-control);
-  border-radius: 4px;
-  color: var(--text-muted);
-  font-size: 0.6875rem;
-}
-
-.why-text {
-  flex: 1 1 auto;
-}
-
-.card-links a {
-  color: var(--accent);
-  font-size: 0.8125rem;
-  text-decoration: none;
-}
-
-.card-links a:hover {
-  text-decoration: underline;
-}
-
-/* 详情入口与"到哪读"不同类：前四个是把书拿到手，这个是把理由讲透 */
-.detail-link {
-  margin-left: auto;
-}
-</style>
+<style scoped src="../styles/book-card.css"></style>

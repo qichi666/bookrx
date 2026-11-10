@@ -30,6 +30,7 @@ function onExport(): void {
     </p>
     <div class="io-actions">
       <button type="button" class="btn-ghost" @click="onExport">导出书单（.json）</button>
+      <a class="io-link" href="#/print">打印成一张书方</a>
       <a class="io-link" href="#/booklist">导入别人的书单</a>
     </div>
   </section>

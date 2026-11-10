@@ -20,9 +20,12 @@ import ReaderSearch from '@/components/reader/ReaderSearch.vue';
 import ReaderStage from '@/components/reader/ReaderStage.vue';
 import ReaderNav from '@/components/reader/ReaderNav.vue';
 import ReaderMarkTip from '@/components/reader/ReaderMarkTip.vue';
+import ReceiptPrompt from '@/components/reader/ReceiptPrompt.vue';
 import { useReaderSession } from '@/composables/useReaderSession.js';
 import { useReaderPrefs } from '@/composables/useReaderPrefs.js';
 import { chapterPercent, pageCapacity, pageOfParagraph, paginate } from '@/engine/paginate.js';
+import { paragraphOfChapterOffset } from '@/domain/locator.js';
+import { parseReaderJump } from '@/lib/reader-link.js';
 import { selectionSpan } from '@/lib/selection.js';
 
 const route = useRoute();
@@ -39,6 +42,14 @@ const capacity = ref(600);
 const panel = ref<'none' | 'toc' | 'marks' | 'search'>('none');
 const pending = ref<{ p: number; start: number; end: number; quote: string } | null>(null);
 const tip = ref('');
+const receiptOpen = ref(false);
+/**
+ * 本次会话是否已经问过回执。
+ *
+ * 只靠 `receiptOpen` 不够：用户在最后一页点「以后再说」后，往回翻一页再翻回来
+ * 就会重新触发 `atEnd`，弹窗原地复活——「以后再说」变成了「每翻一次问一次」。
+ */
+const receiptAsked = ref(false);
 
 const paragraphs = computed(() => chapters.value[chapterIndex.value]?.paragraphs ?? []);
 const pages = computed(() => paginate(paragraphs.value, capacity.value));
@@ -149,6 +160,7 @@ function onVisibility(): void {
     // 症状就是「最后读的那几页没记住」。切走时就写，不赌卸载时机。
     flushProgress();
     session.pauseClock();
+    void session.flushSession();
   } else session.resumeClock();
 }
 
@@ -166,6 +178,12 @@ function flushProgress(): void {
 watch([chapterIndex, pageIndex], () => {
   if (saveTimer) clearTimeout(saveTimer);
   saveTimer = setTimeout(flushProgress, 500);
+  // 翻到全书最后一页才邀请回执；组件内部还会再查一次"是否已经回执过"。
+  // 每次会话最多邀请一次，避免"以后再说"之后每次翻回末页都被再问一遍。
+  if (atEnd.value && !receiptAsked.value) {
+    receiptAsked.value = true;
+    receiptOpen.value = true;
+  }
 });
 
 watch(
@@ -176,11 +194,18 @@ watch(
 onMounted(async () => {
   await session.load();
   if (!notFound.value) {
-    chapterIndex.value = session.startChapter.value;
+    // 深链只认 `?ch=&off=`（来自「今天」区块的旧划线）；给不出就正常打开
+    const jump = parseReaderJump(route.query as Record<string, unknown>);
+    chapterIndex.value = jump
+      ? Math.min(jump.chapter, Math.max(0, chapters.value.length - 1))
+      : session.startChapter.value;
     await nextTick();
     measure();
     // 续读：进度记的是"章节 + 字符偏移"，换算成段落才找得到页
-    pageIndex.value = pageOfParagraph(pages.value, session.startParagraph.value);
+    const paragraph = jump
+      ? paragraphOfChapterOffset(chapters.value, chapterIndex.value, jump.offset)
+      : session.startParagraph.value;
+    pageIndex.value = pageOfParagraph(pages.value, paragraph);
   }
   session.resumeClock();
   window.addEventListener('resize', remeasureKeepPlace);
@@ -196,6 +221,7 @@ onBeforeUnmount(() => {
   document.removeEventListener('visibilitychange', onVisibility);
   session.pauseClock();
   flushProgress();
+  void session.flushSession();
 });
 
 const themeClass = computed(() => `theme-${prefs.value.theme}`);
@@ -259,40 +285,14 @@ const themeClass = computed(() => `theme-${prefs.value.theme}`);
       @prev="prevPage"
       @next="nextPage"
     />
+
+    <ReceiptPrompt
+      v-if="receiptOpen && !notFound"
+      :book-id="bookId"
+      :book-title="book?.title ?? '这本书'"
+      @close="receiptOpen = false"
+    />
   </div>
 </template>
 
-<style scoped>
-.reader {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  background: var(--surface-raised);
-  color: var(--text-primary);
-}
-
-.theme-sepia {
-  background: var(--surface-sunken);
-}
-
-.theme-dark {
-  background: var(--reader-dark-bg);
-  color: var(--reader-dark-fg);
-}
-
-.missing {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  line-height: 1.9;
-  padding: 24px 16px;
-}
-
-.tip-line {
-  margin: 0;
-  padding: 6px 16px;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  text-align: center;
-}
-</style>
+<style scoped src="../styles/reader.css"></style>

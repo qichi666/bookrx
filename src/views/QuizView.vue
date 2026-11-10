@@ -19,10 +19,18 @@ import { buildDiagnosis } from '@/engine/diagnose.js';
 import { saveDiagnosis } from '@/engine/session.js';
 import ChipRow from '@/components/ChipRow.vue';
 import DomainList from '@/components/DomainList.vue';
+import HomeWorkbench from '@/components/home/HomeWorkbench.vue';
 import SearchPanel from '@/components/SearchPanel.vue';
 import TagPicker from '@/components/TagPicker.vue';
 
 const router = useRouter();
+
+/** 工作台的「开始诊断」把视线带到问卷本身：不新增步骤，只是滚过去 */
+const picker = ref<HTMLElement | null>(null);
+
+function scrollToPicker(): void {
+  picker.value?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 
 const step = ref(1);
 const domain = ref<ProblemDomain | null>(null);
@@ -128,9 +136,12 @@ function submit(): void {
 
     <!-- 第 1 屏：搜索快路径 + 困境域 -->
     <div v-if="step === 1" class="quiz-body">
-      <SearchPanel />
-      <p class="quiz-lead">或者从这几类里选——哪一类最接近你此刻的状态？</p>
-      <DomainList :model-value="domain" @select="chooseDomain" />
+      <HomeWorkbench @start="scrollToPicker" />
+      <div ref="picker" class="quiz-picker">
+        <SearchPanel />
+        <p class="quiz-lead">或者从这几类里选——哪一类最接近你此刻的状态？</p>
+        <DomainList :model-value="domain" @select="chooseDomain" />
+      </div>
     </div>
 
     <!-- 第 2 屏：标签多选 + 主诉追问 -->

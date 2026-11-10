@@ -1,0 +1,227 @@
+.notes {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px 0 40px;
+}
+
+.nt-title {
+  font-family: var(--font-book);
+  font-size: 1.5rem;
+  margin: 4px 0 8px;
+}
+
+.nt-sub {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+}
+
+.nt-state {
+  padding: 20px 0;
+  font-size: 0.875rem;
+  line-height: 1.9;
+  color: var(--text-secondary);
+}
+
+.nt-state-title {
+  margin: 0 0 6px;
+  font-family: var(--font-book);
+  font-size: 1.0625rem;
+  color: var(--text-primary);
+}
+
+.nt-state-body {
+  margin: 0 0 12px;
+}
+
+.nt-bad {
+  border-left: 2px solid var(--danger);
+  padding-left: 12px;
+}
+
+.nt-detail {
+  margin: 0 0 12px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  word-break: break-all;
+}
+
+.nt-cta {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.nt-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin: 18px 0 8px;
+}
+
+.nt-search {
+  flex: 1 1 200px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border-control);
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.875rem;
+}
+
+.nt-theme {
+  display: flex;
+  gap: 4px;
+}
+
+.nt-theme button {
+  min-height: 36px;
+  padding: 4px 10px;
+  border: 1px solid var(--border-control);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.nt-theme button.on {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--surface-brand);
+}
+
+.nt-tally {
+  margin: 0 0 8px;
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.nt-error {
+  margin: 0 0 10px;
+  font-size: 0.75rem;
+  color: var(--danger);
+}
+
+.nt-book {
+  margin-top: 22px;
+}
+
+.nt-book-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 4px;
+  font-size: 0.9375rem;
+  border-bottom: 1px solid var(--border-soft);
+  padding-bottom: 6px;
+}
+
+.nt-book-title a {
+  font-family: var(--font-book);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.nt-book-title a:hover {
+  color: var(--accent);
+}
+
+.nt-book-count {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.nt-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nt-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.nt-quote {
+  margin: 0 0 6px;
+  padding-left: 12px;
+  border-left: 2px solid var(--accent);
+  font-family: var(--font-read);
+  font-size: 0.9375rem;
+  line-height: 1.8;
+  color: var(--text-primary);
+}
+
+.nt-note {
+  margin: 0 0 8px;
+  font-size: 0.8125rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+}
+
+.nt-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.nt-card {
+  min-height: 36px;
+  padding: 4px 12px;
+  border: 1px solid var(--border-control);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.nt-card:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.nt-open {
+  font-size: 0.75rem;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.nt-foot {
+  display: flex;
+  gap: 16px;
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-soft);
+  font-size: 0.8125rem;
+}
+
+.nt-foot a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+/* 检索命中：底色比高亮划线更淡，避免和阅读器里的划线混淆 */
+.nt-hit {
+  background: var(--highlight);
+  color: inherit;
+  padding: 0 1px;
+  border-radius: 2px;
+}
+
+.nt-hits {
+  margin: 2px 0 0;
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}

@@ -1,0 +1,203 @@
+.rx {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px 0 40px;
+}
+
+.rx-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.rx-back {
+  font-size: 0.8125rem;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.rx-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  min-height: 44px;
+}
+
+.rx-toggle input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+
+.rx-hint {
+  margin: 0 0 20px;
+  font-size: 0.6875rem;
+  line-height: 1.8;
+  color: var(--text-muted);
+}
+
+/* 屏幕上像一张纸：便于先看再打印 */
+.rx-sheet {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 28px 26px 24px;
+}
+
+.sheet-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sheet-mark {
+  margin: 0;
+  font-family: var(--font-book);
+  font-size: 1.0625rem;
+  letter-spacing: 0.08em;
+  color: var(--text-primary);
+}
+
+.sheet-date {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.sheet-title {
+  font-family: var(--font-book);
+  margin: 0 0 8px;
+}
+
+.sheet-lead {
+  margin: 0 0 12px;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.sheet-tags {
+  margin: 14px 0 4px;
+  font-size: 0.8125rem;
+  color: var(--text-primary);
+}
+
+.sheet-tags-hidden {
+  color: var(--text-muted);
+}
+
+.sheet-domain {
+  color: var(--text-muted);
+}
+
+.sheet-group {
+  margin-top: 18px;
+}
+
+.sheet-group-title {
+  margin: 0 0 6px;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-soft);
+  padding-bottom: 4px;
+}
+
+.sheet-list {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.sheet-item {
+  /* 条目被分页截断是打印里最常见的坏结果：一条拆两页读起来像两本 */
+  break-inside: avoid;
+  page-break-inside: avoid;
+  margin-bottom: 10px;
+}
+
+.sheet-book {
+  margin: 0 0 2px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.sheet-book-title {
+  font-family: var(--font-book);
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+}
+
+.sheet-book-meta {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+
+.sheet-why {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.75;
+  color: var(--text-secondary);
+}
+
+.sheet-foot {
+  margin-top: 22px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.sheet-foot p {
+  margin: 0 0 6px;
+  font-size: 0.6875rem;
+  line-height: 1.8;
+  color: var(--text-muted);
+}
+
+@media print {
+  /*
+   * 全局导航头是 AppHeader 的根节点，不在本组件的 scoped 范围内，
+   * `.no-print` 管不到它——不显式隐藏，A4 顶上会印出一条导航条。
+   */
+  :global(.app-header) {
+    display: none;
+  }
+
+  /* 屏幕上的 16px 内边距在纸上只是浪费边距 */
+  :global(main) {
+    padding: 0;
+  }
+
+  .no-print {
+    display: none;
+  }
+
+  /* 打印时不要卡片感：纸本身就有边界，再加边框只是浪费墨 */
+  .rx-sheet {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+  }
+
+  .sheet-book-title,
+  .sheet-group-title,
+  .sheet-mark {
+    color: #000;
+  }
+
+  /* 打印一律落到纯黑：暗色主题下 `--text-primary` 是浅色，直接打会白纸白字 */
+  .sheet-why,
+  .sheet-book-meta,
+  .sheet-date,
+  .sheet-tags,
+  .sheet-foot p {
+    color: #000;
+  }
+}
