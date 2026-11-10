@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
-import { createMemoryHistory, createRouter } from 'vue-router';
+import { makeTestRouter } from '../router-helper.js';
 import QuizView from '@/views/QuizView.vue';
 
 /**
@@ -16,14 +16,9 @@ import QuizView from '@/views/QuizView.vue';
  */
 
 async function mountQuiz() {
-  const router = createRouter({
-    history: createMemoryHistory(),
-    routes: [
-      { path: '/', component: { template: '<div>home</div>' } },
-      { path: '/framework', component: { template: '<div>framework</div>' } },
-      { path: '/result', component: { template: '<div>result</div>' } },
-    ],
-  });
+  // 路径表统一走 router-helper：首页工作台新增了 /books /library /stats /import 等链接，
+  // 自建残缺路由会让它们在控制台刷 "No match found"，而断言依然绿——静默失败比红更危险。
+  const router = makeTestRouter();
   // 先 mount（plugins 触发初始导航），再等 isReady——顺序反了会一直挂起
   const w = mount(QuizView, { global: { plugins: [router] } });
   await router.isReady();

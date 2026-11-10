@@ -23,6 +23,14 @@ const APP_PATHS = [
   '/crisis',
   '/about',
   '/framework',
+  '/books',
+  '/compare',
+  '/stats',
+  '/notes',
+  '/plan',
+  '/print',
+  '/admin',
+  '/profile',
 ] as const;
 
 export function makeTestRouter(): Router {

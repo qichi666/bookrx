@@ -32,6 +32,22 @@ describe('档位判定（SPEC §6.3 ⑦）', () => {
     expect(tierOf(4000, 0)).toEqual({ tier: 'explore', capped_by_primary_miss: false, capped_by_low_coverage: false });
   });
 
+  it('覆盖率不足 ⇒ 封顶 worth，不给 strong（候选层 3800 的书只能到"较为契合"）', () => {
+    expect(tierOf(9000, 120, 3800)).toEqual({
+      tier: 'worth',
+      capped_by_primary_miss: false,
+      capped_by_low_coverage: true,
+    });
+    // 满覆盖的核心库书不受影响
+    expect(tierOf(9000, 120, 10000).tier).toBe('strong');
+    // 分数本来就不到 strong 的，不置 capped（没有可解释的落差）
+    expect(tierOf(6500, 120, 3800)).toEqual({
+      tier: 'worth',
+      capped_by_primary_miss: false,
+      capped_by_low_coverage: false,
+    });
+  });
+
   it('档位枚举只允许三个值', () => {
     for (const s of [0, 5999, 6000, 7999, 8000, 10000]) {
       expect(['strong', 'worth', 'explore']).toContain(tierOf(s, 10000).tier);
