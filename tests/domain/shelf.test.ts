@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { UserBook } from '@/contracts/book.js';
 import type { ReadingProgress } from '@/contracts/reader.js';
 import type { ShelfEntry } from '@/storage/db.js';
-import { buildShelf, countShelfStatus, shelfStats } from '@/domain/shelf.js';
+import { buildShelf, countShelfStatus, SHELF_ORDER, shelfStats } from '@/domain/shelf.js';
 import { findLocalCopy, normalizeTitle } from '@/data/local-copy.js';
 import { humanCount, percentText, relativeTime } from '@/lib/format.js';
 
@@ -119,6 +119,31 @@ describe('buildShelf', () => {
     expect(c).toEqual({ reading: 1, want: 1, finished: 1, abandoned: 1, started: 2 });
     // 读完率 = 1 / 2，若弃读混进 started 会变成 1 / 3
     expect(Math.round((c.finished / c.started) * 100)).toBe(50);
+  });
+
+  it('一本书都没有：四组都是空数组（不是 undefined）', () => {
+    const g = buildShelf([], [], []);
+    expect(SHELF_ORDER.map((k) => g[k].length)).toEqual([0, 0, 0, 0]);
+    expect(shelfStats(g).total).toBe(0);
+  });
+
+  it('同一本书有两条 shelf 记录（脏数据）：以最后一条为准，不在两组里各出现一次', () => {
+    const g = buildShelf(
+      [book('a', '甲')],
+      [
+        { book_id: 'a', group: 'want', updated_at: 1 },
+        { book_id: 'a', group: 'finished', updated_at: 2 },
+      ],
+      [],
+    );
+    expect(g.want).toHaveLength(0);
+    expect(g.finished.map((x) => x.id)).toEqual(['a']);
+  });
+
+  it.fails('库里出现不认识的分组（装了旧版本 / 手改过）不该把整页书架带崩', () => {
+    // 现状：`out[group].push` 对未知键取到 undefined → TypeError，整页书架白屏。
+    // 已登记为测试报告中的问题 3；修法是在 buildShelf 里把未知分组折回 'want'。
+    buildShelf([book('a', '甲')], [{ book_id: 'a', group: 'dnf' as never, updated_at: 1 }], []);
   });
 });
 
