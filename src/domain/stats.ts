@@ -36,10 +36,15 @@ export const FREEZE_BUDGET = 2;
  * 而连续天数偏一天就是"永远差一天"这种查不出来的错。
  */
 export function dayNumber(iso: string): number {
-  const y = Number(iso.slice(0, 4));
-  const m = Number(iso.slice(5, 7));
-  const d = Number(iso.slice(8, 10));
-  if (!Number.isFinite(y) || !Number.isFinite(m) || !Number.isFinite(d)) return NaN;
+  // 先按 `YYYY-MM-DD` 严格解析。`Number('')` 是 0，原先空串会被当成
+  // 1970-01-01 混进集合——一天的脏数据就能给「连续天数」掺水，而这种错
+  // 在界面上完全看不出来（数字只是多了 1）。
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (match === null) return NaN;
+  const y = Number(match[1]);
+  const m = Number(match[2]);
+  const d = Number(match[3]);
+  if (m < 1 || m > 12 || d < 1 || d > 31) return NaN;
   const yy = m <= 2 ? y - 1 : y;
   const era = Math.floor(yy / 400);
   const yoe = yy - era * 400;
@@ -96,17 +101,27 @@ export function computeStreak(days: readonly string[], today: string, freezeBudg
 
   let count = 0;
   let freezes = 0;
+  /**
+   * 已经跨过、但还没被"更早的记录"证明值得的缺口。
+   *
+   * 原先一碰到缺口就 `freezes += 1`，于是连续三天全勤也会显示「已用 1 次冻结」
+   * ——结尾那段没接上任何记录的缺口被记了账。冻结的语义是"花一次额度把断掉
+   * 的那天补上"，补上了才算花；补不上就不该让用户看到这个数字。
+   */
+  let pending = 0;
   let gapRun = 0;
   for (let i = cursor; i > cursor - 4000; i -= 1) {
     if (set.has(i)) {
       count += 1;
+      freezes += pending;
+      pending = 0;
       gapRun = 0;
       continue;
     }
     // 连续缺口超过 1 天就真的要停：冻结只补"漏了一天"，不补"消失了两周"
     if (gapRun >= 1) break;
-    if (freezes >= freezeBudget) break;
-    freezes += 1;
+    if (freezes + pending >= freezeBudget) break;
+    pending += 1;
     gapRun += 1;
   }
   return { days: count, freezes_used: freezes, active_today: activeToday };

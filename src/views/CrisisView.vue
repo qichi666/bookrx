@@ -14,6 +14,7 @@
  */
 import { useRouter } from 'vue-router';
 import { CRISIS_RESOURCES, latestVerifiedAt } from '@/data/crisis.js';
+import CrisisContacts from '@/components/CrisisContacts.vue';
 
 const router = useRouter();
 
@@ -40,7 +41,7 @@ function goBack(): void {
     <ul class="crisis-list">
       <li v-for="r in CRISIS_RESOURCES.resources" :key="r.contact" class="crisis-item">
         <p class="crisis-name">{{ r.name }}</p>
-        <p class="crisis-contact">{{ r.contact }}</p>
+        <p class="crisis-contact"><CrisisContacts :resource="r" /></p>
         <p class="crisis-meta">
           {{ r.scope }}<span v-if="r.hours"> · {{ r.hours }}</span>
         </p>
@@ -54,9 +55,13 @@ function goBack(): void {
 
     <div class="crisis-emergency">
       <p class="crisis-name">{{ CRISIS_RESOURCES.emergency.name }}</p>
-      <p class="crisis-contact">{{ CRISIS_RESOURCES.emergency.contact }}</p>
+      <p class="crisis-contact"><CrisisContacts :resource="CRISIS_RESOURCES.emergency" /></p>
       <p class="crisis-meta">{{ CRISIS_RESOURCES.emergency.note }}</p>
     </div>
+
+    <p class="crisis-dial">
+      手机上点号码就能直接拨出去；用电脑打开时，需要你手动拨。
+    </p>
 
     <p class="crisis-verified">
       最近核实日期：{{ lastChecked }}。号码若有变动，以官方公布为准。
@@ -137,6 +142,12 @@ function goBack(): void {
   color: var(--text-muted);
   font-size: 0.75rem;
   margin: 20px 0 0;
+}
+
+.crisis-dial {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  margin: 10px 0 0;
 }
 
 .crisis-source a {

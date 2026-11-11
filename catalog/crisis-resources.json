@@ -6,6 +6,7 @@
     {
       "name": "全国统一心理援助热线",
       "contact": "12356",
+      "tel": "12356",
       "scope": "全国",
       "hours": "每日不少于 18 小时（多数地区为 24 小时）",
       "source_url": "https://www.gov.cn/zhengce/zhengceku/202412/content_6994470.htm",
@@ -16,6 +17,7 @@
     {
       "name": "北京心理危机研究与干预中心 · 北京市心理援助热线",
       "contact": "010-82951332",
+      "tel": "010-82951332",
       "scope": "全国可拨",
       "hours": "24 小时",
       "source_url": "https://www.crisis.org.cn/shows/13/566.html",
@@ -26,6 +28,7 @@
     {
       "name": "希望24热线",
       "contact": "400-161-9995",
+      "tel": "400-161-9995",
       "scope": "全国",
       "hours": "7×24 小时",
       "note": "按语音提示选择学生或成人专线",
@@ -38,6 +41,7 @@
   "emergency": {
     "name": "紧急情况",
     "contact": "120 / 110",
+    "tel": ["120", "110"],
     "note": "有即刻的生命危险时，先打急救或报警电话",
     "hours": "24 小时",
     "source_url": "https://www.gov.cn/",

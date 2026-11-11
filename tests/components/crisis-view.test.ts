@@ -36,8 +36,21 @@ describe('CrisisView', () => {
     expect(w.findAll('.crisis-source')[0]!.text()).toContain('核实 20');
   });
 
-  it('有返回按钮；无历史时点击回到首页', async () => {
-    const { router, w } = mountWith();
+  it('每条号码都是 tel: 链接，紧急条目的 120 与 110 分开', () => {
+    const { w } = mountWith();
+    const tels = w.findAll('.crisis-contact a');
+    // 3 条热线 + 紧急情况的 120 / 110
+    expect(tels).toHaveLength(5);
+    for (const a of tels) expect(a.attributes('href')).toMatch(/^tel:[0-9-]+$/);
+    const hrefs = tels.map((a) => a.attributes('href'));
+    expect(hrefs).toContain('tel:12356');
+    expect(hrefs).toContain('tel:120');
+    expect(hrefs).toContain('tel:110');
+    // 拆成两个链接之后，读起来仍是原来那一行
+    expect(w.findAll('.crisis-contact')[3]!.text()).toContain('120 / 110');
+  });
+
+  it('有返回按钮；无历史时点击回到首页', async () => {    const { router, w } = mountWith();
     const back = w.findAll('button').find((b) => b.text().includes('返回'));
     expect(back).toBeDefined();
     await back!.trigger('click');

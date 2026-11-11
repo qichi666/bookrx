@@ -133,7 +133,8 @@ async function onPick(e: Event): Promise<void> {
 }
 
 .notes-btn {
-  min-height: 36px;
+  /* 44px 是触控下限：这两个按钮并排、间距只有 8px，36px 时拇指很容易点到隔壁 */
+  min-height: 44px;
   padding: 4px 14px;
   border-radius: 6px;
   border: 1px solid var(--border-control);

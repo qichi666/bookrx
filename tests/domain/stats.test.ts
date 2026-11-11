@@ -43,12 +43,19 @@ describe('dayNumber / isoOfDay', () => {
   it('不是日期的输入不参与计算，也不抛异常', () => {
     // 已知缺陷（见 docs/全功能测试报告-2026-11-10.md 问题 2）：
     // `Number('')` 是 0，所以空串会被当成一个"远古日期"收进集合，而不是被判为脏数据。
-    // 这里先钉住**期望**行为；修好后这条会变红，提醒把 it.fails 改成 it。
     expect(Number.isNaN(dayNumber('not-a-date'))).toBe(true);
   });
 
-  it.fails('空串应判为脏数据（已知缺陷 2：目前被当成合法日期）', () => {
+  it('空串判为脏数据，不当成合法日期', () => {
+    // `Number('')` 是 0：不校验格式的话，空串会被算成 1970-01-01 混进连续天数
     expect(Number.isNaN(dayNumber(''))).toBe(true);
+  });
+
+  it('月份 / 日越界不算合法日期', () => {
+    expect(Number.isNaN(dayNumber('2026-13-01'))).toBe(true);
+    expect(Number.isNaN(dayNumber('2026-00-10'))).toBe(true);
+    expect(Number.isNaN(dayNumber('2026-05-00'))).toBe(true);
+    expect(Number.isNaN(dayNumber('2026-05-32'))).toBe(true);
   });
 });
 
@@ -60,13 +67,12 @@ describe('computeStreak', () => {
   });
 
   /**
-   * 已知缺陷 1（见 docs/全功能测试报告-2026-11-10.md）：
-   * 循环一碰到缺口就 `freezes += 1`，**在确认缺口后面还有没有记录之前**就记了账。
-   * 于是"三天全勤、之后什么都没读"也会显示"已用 1 次冻结"——
-   * 而冻结额度是产品明确承诺给用户的东西，虚报一次就等于额度少一次。
-   * 下面三条用 `it.fails` 钉住**期望**行为：修好后它们会变红，提醒改回 `it`。
+   * 曾经的问题（2026-11-10 修）：循环一碰到缺口就 `freezes += 1`，
+   * **在确认缺口后面还有没有记录之前**就记了账。于是"三天全勤、之后什么都没读"
+   * 也会显示"已用 1 次冻结"——而冻结额度是产品明确承诺给用户的东西，
+   * 虚报一次就等于额度少一次。现在缺口先挂 pending，接上记录才结算。
    */
-  it.fails('连续三天不该记成"用掉 1 次冻结"（已知缺陷 1）', () => {
+  it('连续三天全勤不算用掉冻结', () => {
     expect(computeStreak([d(2), d(1), d(0)], d(0)).freezes_used).toBe(0);
   });
 
@@ -86,8 +92,7 @@ describe('computeStreak', () => {
     expect(r.days).toBe(3);
   });
 
-  it.fails('漏一天只该记 1 次冻结，不该把结尾的缺口也记上（已知缺陷 1）', () => {
-    // 现状是 2：中间真正补上的 1 次 + 结尾那段没救到任何东西的缺口
+  it('漏一天只算 1 次冻结，结尾的缺口不记账', () => {
     expect(computeStreak([d(0), d(2), d(3)], d(0)).freezes_used).toBe(1);
   });
 
@@ -96,7 +101,7 @@ describe('computeStreak', () => {
     expect(r.days).toBe(1);
   });
 
-  it.fails('连续已经断了就不该报"用掉冻结"（已知缺陷 1）', () => {
+  it('连续已经断了就不报"用掉冻结"', () => {
     expect(computeStreak([d(0), d(3), d(4), d(5)], d(0)).freezes_used).toBe(0);
   });
 

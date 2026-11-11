@@ -48,6 +48,20 @@ function newestFirst(a: ShelfBook, b: ShelfBook): number {
   return (b.lastOpenedAt ?? b.addedAt) - (a.lastOpenedAt ?? a.addedAt);
 }
 
+/**
+ * 认不出来的分组一律折回「想读」。
+ *
+ * 记录可能来自旧版本、手改过的库，或将来新增的组别。原先直接 `out[group].push`
+ * 会取到 `undefined` 然后抛 TypeError，整页书架变成白屏——用户连"哪本书坏了"
+ * 都看不到。折回「想读」至少让书还在，而且「默认想读」与本文件开头第 ② 条同源：
+ * 不知道归哪组时，不要替用户判断他已经在读了。
+ */
+function groupOf(raw: string | undefined): ShelfGroup {
+  return raw !== undefined && (SHELF_ORDER as readonly string[]).includes(raw)
+    ? (raw as ShelfGroup)
+    : 'want';
+}
+
 export function buildShelf(
   books: readonly UserBook[],
   shelf: readonly ShelfEntry[],
@@ -62,7 +76,7 @@ export function buildShelf(
   for (const b of books) {
     const entry = byShelf.get(b.book_id);
     // 没有分组记录：默认"想读"，不从进度反推
-    const group: ShelfGroup = entry?.group ?? 'want';
+    const group: ShelfGroup = groupOf(entry?.group);
     const pg = byProgress.get(b.book_id);
     const item: ShelfBook = {
       id: b.book_id,

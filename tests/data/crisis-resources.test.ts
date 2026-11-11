@@ -53,6 +53,19 @@ describe('危机资源可核实性', () => {
     expect(new Set(contacts).size).toBe(contacts.length);
   });
 
+  it.skipIf(raw === null)('每条的 tel 都能拼成可拨号链接（只含数字与连字符）', () => {
+    const bad: string[] = [];
+    for (const r of ALL) {
+      const t = r.tel;
+      const list = Array.isArray(t) ? t : t === undefined ? [] : [t];
+      if (list.length === 0) bad.push(`${String(r.contact)}:缺 tel`);
+      for (const one of list) {
+        if (!/^[0-9-]+$/.test(String(one))) bad.push(`${String(r.contact)}:${String(one)}`);
+      }
+    }
+    expect(bad, `tel 不合法：${bad.join(', ')}`).toEqual([]);
+  });
+
   it.skipIf(raw === null)('页脚取的是最近一次核实日期，不是某个写死的常量', () => {
     expect(latestVerifiedAt()).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     const newest = ALL.map((r) => String(r.verified_at)).sort().pop();

@@ -140,10 +140,16 @@ describe('buildShelf', () => {
     expect(g.finished.map((x) => x.id)).toEqual(['a']);
   });
 
-  it.fails('库里出现不认识的分组（装了旧版本 / 手改过）不该把整页书架带崩', () => {
-    // 现状：`out[group].push` 对未知键取到 undefined → TypeError，整页书架白屏。
-    // 已登记为测试报告中的问题 3；修法是在 buildShelf 里把未知分组折回 'want'。
-    buildShelf([book('a', '甲')], [{ book_id: 'a', group: 'dnf' as never, updated_at: 1 }], []);
+  it('库里出现不认识的分组（旧版本 / 手改过）折回想读，不把整页书架带崩', () => {
+    // 原先 `out[group].push` 对未知键取到 undefined → TypeError，整页书架白屏，
+    // 用户连"哪本书坏了"都看不到。现在认不出的分组一律折回 'want'。
+    const g = buildShelf(
+      [book('a', '甲')],
+      [{ book_id: 'a', group: 'dnf' as never, updated_at: 1 }],
+      [],
+    );
+    expect(g.want.map((x) => x.id)).toEqual(['a']);
+    expect(g.reading).toHaveLength(0);
   });
 });
 

@@ -4,6 +4,7 @@
  * 数据来自 catalog/crisis-resources.json；改任何一条前先重核官方来源。
  */
 import { CRISIS_RESOURCES } from '@/data/crisis.js';
+import CrisisContacts from '@/components/CrisisContacts.vue';
 </script>
 
 <template>
@@ -12,11 +13,11 @@ import { CRISIS_RESOURCES } from '@/data/crisis.js';
     <p class="crisis-note">这一刻书帮不上忙。这些电话有人接，随时可以打：</p>
     <ul class="crisis-list">
       <li v-for="r in CRISIS_RESOURCES.resources" :key="r.contact">
-        <strong>{{ r.contact }}</strong>　{{ r.name }}<span v-if="r.hours">（{{ r.hours }}）</span>
+        <strong><CrisisContacts :resource="r" /></strong>　{{ r.name }}<span v-if="r.hours">（{{ r.hours }}）</span>
       </li>
     </ul>
     <p class="crisis-emergency">
-      {{ CRISIS_RESOURCES.emergency.note }}：{{ CRISIS_RESOURCES.emergency.contact }}
+      {{ CRISIS_RESOURCES.emergency.note }}：<CrisisContacts :resource="CRISIS_RESOURCES.emergency" />
     </p>
   </div>
 </template>

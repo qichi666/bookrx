@@ -10,6 +10,17 @@ import resourcesJson from '../../catalog/crisis-resources.json';
 export interface CrisisResource {
   name: string;
   contact: string;
+  /**
+   * 能直接拨出去的号码。
+   *
+   * 与 `contact` 分开是因为两件事不一样：`contact` 是**给人读的**（「120 / 110」
+   * 这样挤在一行里最省眼），`tel` 是**给拨号盘读的**（一个号码一个 href）。
+   * 早先只有 `contact`，于是整页号码是纯文本——在手机上要长按、复制、切到
+   * 拨号盘粘贴，而这一页恰恰是最不该多一步的地方。
+   *
+   * 缺省时不渲染链接，退回纯文本：数据没告诉我们怎么拨，就不要编一个 `tel:`。
+   */
+  tel?: string | readonly string[];
   scope?: string;
   hours?: string;
   note?: string;
@@ -20,6 +31,16 @@ export interface CrisisResource {
   verified_at: string;
   /** 核实方式：只核对了官方页面，还是实际拨通过 */
   verify_method?: 'official-page' | 'phone';
+}
+
+/**
+ * 一条资源可拨打的号码列表（`tel:` 只接一个号码，所以「120 / 110」要拆开）。
+ * 返回空数组表示「这份数据没给可拨号码」，调用方应退回纯文本。
+ */
+export function telNumbers(r: CrisisResource): string[] {
+  if (r.tel === undefined) return [];
+  const list: readonly string[] = typeof r.tel === 'string' ? [r.tel] : r.tel;
+  return list.map((t) => t.trim()).filter((t) => t.length > 0);
 }
 
 export interface CrisisResourceData {
